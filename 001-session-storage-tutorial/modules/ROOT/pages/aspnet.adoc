@@ -1,0 +1,86 @@
+= Using Couchbase Server as a Session Store
+
+++++
+<link rel="canonical" href="http://docs.couchbase.com/???/session-storage-tutorial/dotnet.html" />
+++++
+
+== What is a session store?
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+image:image_placeholder.png[placeholder image]
+
+=== Why do I need one?
+
+Etiam id dolor pellentesque, vehicula lorem eget, vestibulum sem.
+
+=== What is stored in session?
+
+Pellentesque gravida non nibh ut cursus.
+
+=== Session storage with web farms
+
+Phasellus accumsan felis at justo commodo tempus.
+
+=== Why Couchbase is a good choice for a Session Store
+
+Morbi fringilla ante ac lectus vulputate dictum.
+
+== How to Setup and Configure a Couchbase Cluster
+
+Integer ac quam vulputate, posuere lorem in, rutrum ex. 
+
+=== Installing Couchbase Server
+
+Proin in tincidunt enim. Donec non hendrerit lectus.
+
+=== Setting up Couchbase Server
+
+Donec et commodo quam.
+
+=== Creating a bucket
+
+Interdum et malesuada fames ac ante ipsum primis in faucibus.
+
+==== Couchbase vs Ephemeral
+
+Aenean eget lectus lorem.
+
+==== Replication
+
+Donec consequat ante ut arcu pellentesque egestas.
+
+== Web server integration
+
+Donec scelerisque libero ut massa facilisis iaculis.
+
+=== Web frameworks
+
+Suspendisse non faucibus dui.
+
+==== ASP.NET / ASP.NET Core
+
+[source,C#,indent=0]
+----
+include::{examplesdir}/test.cs[]
+----
+
+Curabitur porttitor facilisis risus, vitae eleifend mauris sollicitudin ac.
+
+==== Spring
+
+Praesent vel turpis eu mi mattis convallis.
+
+==== Express
+
+Donec vel risus massa.
+
+=== ASP.NET Session Storage Integration
+
+In convallis felis magna, eget malesuada nisi finibus in. 
+
+maybe links to here: https://blog.couchbase.com/distributed-session-aspnet-couchbase/           and here: https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md
+
+=== Links to more session storage resources
+
+Donec dignissim hendrerit metus non sodales.
