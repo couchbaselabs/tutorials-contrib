@@ -20,7 +20,11 @@ Because HTTP is "stateless", a web application needs to store session-related da
 
 === Session storage with web farms
 
-Another reason to store session data elsewhere is because of web farms. If session data is stored on the web server, then a single user can only interact with a single server. This is known as "sticky sessions".
+Another reason to store session data elsewhere is because of web farms.
+
+image:00101-session-diagram.png[]
+
+If session data is stored on the web server, then a single user can only interact with a single server. This is known as "sticky sessions".
 
 Sticky sessions can be problematic, so using another location for data avoids the need for sticky sessions.
 
