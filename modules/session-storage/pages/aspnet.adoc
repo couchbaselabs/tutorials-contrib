@@ -40,27 +40,51 @@ Couchbase Server is an ideal choice for a session store.
 
 == How to Setup and Configure a Couchbase Cluster
 
-Integer ac quam vulputate, posuere lorem in, rutrum ex. 
+To use Couchbase as a session store, you must first install Couchbase (somewhere). Then, you must set up the Couchbase cluster. Finally, you'll need to create a bucket to store the session data.
 
 === Installing Couchbase Server
 
-Proin in tincidunt enim. Donec non hendrerit lectus.
+There are a number of options for getting started with Couchbase Server:
+
+* Directly on your computer: follow the link:https://docs.couchbase.com/server/6.0/install/install-intro.html[Install] guide.
+* Docker: follow the link:https://docs.couchbase.com/server/6.0/getting-started/do-a-quick-install.html[Quick Install] guide
+* Kubernetes or OpenShift: use the link:https://docs.couchbase.com/operator/1.0/install-kubernetes.html[Couchbase Autonomous Operator] to create and manage a Couchbase cluster.
+* Cloud: Couchbase has partnered with link:https://www.couchbase.com/partners/amazon[Amazon AWS], link:https://www.couchbase.com/partners/microsoft[Microsoft Azure], and link:https://www.couchbase.com/partners/google[Google Cloud Platform]
 
 === Setting up Couchbase Server
 
-Donec et commodo quam.
+If you are using the Kubernetes operator, it will do the setup work for you.
+
+Otherwise, you will need to start by accessing the Couchbase Server Console with a web browser on port 8091 (for example, \http://localhost:8091). Once there, you will see a "Welcome" screen that will start to walk you through the process of setting up a new cluster. For complete details, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-nodes/create-cluster.html[Create Cluster] documentation.
+
+Note that you can also set up Couchbase by using link:https://docs.couchbase.com/server/6.0/cli/cli-intro.html[command line tools] and/or link:https://docs.couchbase.com/server/6.0/rest-api/rest-intro.html[a REST API] instead of the UI. Using the UI for this tutorial will help you get comfortable with Couchbase, but in the long run you may want to script/automate cluster management using CLI/REST.
 
 === Creating a bucket
 
-Interdum et malesuada fames ac ante ipsum primis in faucibus.
+Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[buckets], which are a collection of key/value pairs.
+
+To store session data, you need at least one bucket. In the Couchbase Server Console, navigate to "Buckets" and then "Add Bucket". Give it whatever name you'd like, for example "mySessionStore".
+
+Two important factors that this tutorial will touch on is bucket types: "Ephemeral vs Couchbase". This tutorial will also touch on replication, briefly.
+
+For more details on how to create a bucket and all of the advanced settings, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-buckets/create-bucket.html[Create Bucket] documentation.
 
 ==== Couchbase vs Ephemeral
 
-Aenean eget lectus lorem.
+There are two kinds of buckets you can use for a session store:
+
+* Couchbase: this is the default bucket type. Data is stored in memory as well as disk. If memory is full, items are ejected from RAM, but can still be accessed from disk when needed.
+* Ephemeral: this is a memory-only bucket. You can avoid the overhead of disk access, but if memory is full, then there is nowhere else to store data. You can configure items to be rejected or you can forbid additional data being added.
+
+There's actually a third kind of bucket: Memcached. These are also memory-only buckets. If memory is full, items will be ejected to make room as new items are added. Unless you need Memcached compatibility, you are better off using Couchbase or Ephemeral buckets.
+
+For more details about the different bucket types, check out link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[Buckets] in the Couchbase documentation.
 
 ==== Replication
 
-Donec consequat ante ut arcu pellentesque egestas.
+To start with, your Couchbase Server cluster may only consist of a single instance of Couchbase Server. One of Couchbase Server's strengths is its ability to horizontally scale to accomodate large scale applications. As you add more "nodes" to a cluster, you gain the ability to *replicate* data across the cluster. This means that if a single node goes down, you can (automatically) recover data from replicas.
+
+When creating a bucket, if you enable replicas, then you will need to select how many total replicas you want: "1", "2", or "3". Note that you will need to have at least that many servers for replication to work properly.
 
 == Web server integration
 
