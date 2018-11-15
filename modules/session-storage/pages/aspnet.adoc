@@ -88,35 +88,20 @@ When creating a bucket, if you enable replicas, then you will need to select how
 
 == Web server integration
 
-Donec scelerisque libero ut massa facilisis iaculis.
+Session stores can take several different forms. Most commonly, integration between a persistence tool (aka a database like Couchbase) and web framework software (like ASP.NET, Spring, Express, etc).
 
 === Web frameworks
 
-Suspendisse non faucibus dui.
+Web frameworks are the tools that developers typically use to create web sites. They may serve up dynamically generated content (e.g. HTML), static content (e.g. CSS/JS/images), or they may directly serve data (e.g. JSON over HTTP/REST).
 
-==== ASP.NET / ASP.NET Core
-
-[source,C#,indent=0]
-----
-include::{examplesdir}/test.cs[]
-----
-
-Curabitur porttitor facilisis risus, vitae eleifend mauris sollicitudin ac.
-
-==== Spring
-
-Praesent vel turpis eu mi mattis convallis.
-
-==== Express
-
-Donec vel risus massa.
+In this tutorial, we'll look at how to use Couchbase as a session store for an ASP.NET Core website.
 
 === ASP.NET Session Storage Integration
 
-In convallis felis magna, eget malesuada nisi finibus in. 
-
-maybe links to here: https://blog.couchbase.com/distributed-session-aspnet-couchbase/           and here: https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md
+https://blog.couchbase.com/distributed-session-aspnet-couchbase/
 
 === Links to more session storage resources
 
-Donec dignissim hendrerit metus non sodales.
+https://github.com/couchbaselabs/couchbase-aspnet/
+https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md
+https://blog.couchbase.com/distributed-session-aspnet-couchbase/ 

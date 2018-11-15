@@ -1,0 +1,35 @@
+﻿@model IndexView
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h2>Welcome to the Couchbase ASP.NET Session Tutorial Example app.</h2>
+
+<p>The current data in the session is:</p>
+<pre>@Model.RawJson</pre>
+
+<h2>Click on one of these buttons to put values into the session store.</h2>
+
+<div class="row">
+    <div class="col-md-3">
+        <h2>User</h2>
+        <ul>
+            <li>@Html.ActionLink("Add basic information to session","AddUserDataToSession","Home")</li>
+            <li>@Html.ActionLink("Clear","ClearUserDataInSession","Home")</li>
+        </ul>
+    </div>
+    <div class="col-md-3">
+        <h2>Preferences</h2>
+        <ul>
+            <li>@Html.ActionLink("Add user's preferences to session", "AddPreferencesDataToSession", "Home")</li>
+            <li>@Html.ActionLink("Clear", "ClearPreferencesDataInSession", "Home")</li>
+        </ul>
+    </div>
+    <div class="col-md-3">
+        <h2>Location</h2>
+        <ul>
+            <li>@Html.ActionLink("Add location information to session", "AddLocationDataToSession", "Home")</li>
+            <li>@Html.ActionLink("Clear", "ClearLocationDataInSession", "Home")</li>
+        </ul>
+    </div>
+</div>
