@@ -1,14 +1,12 @@
 = Using Couchbase Server as a Session Store
 
 ++++
-<link rel="canonical" href="http://docs.couchbase.com/???/session-storage-tutorial/dotnet.html" />
+<link rel="canonical" href="http://docs.couchbase.com/tutorials/session-storage-tutorial/dotnet.html" />
 ++++
 
 == What is a session store?
 
 Web applications are session-oriented. When a user logs in to a site, for example, they start a "session". When the user logs out (or the session times out, more commonly), the session ends.
-
-image:image_placeholder.png[placeholder image]
 
 === What is stored in session?
 
