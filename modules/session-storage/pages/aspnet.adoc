@@ -38,7 +38,7 @@ Because HTTP is "stateless", a web application needs to store session-related da
 
 Another reason to store session data elsewhere is because of web farms. In the below diagram, an ASP.NET web application is being scaled horizontally. Incoming HTTP requests are routed through a load balancer.
 
-image:../assets/images/00101-session-diagram.png[]
+image:../assets/images/00101-session-diagram.png[Session storage diagram]
 
 If session data is stored on the web server _itself_, then a single user can only interact with a single server. The load balancer must send the user to the same server every time. This is known as "sticky sessions".
 
@@ -114,15 +114,84 @@ In this tutorial, we'll look at how to use Couchbase as a session store for an A
 
 === ASP.NET Session Storage Integration
 
-https://blog.couchbase.com/distributed-session-aspnet-couchbase/
+The complete source code for this example is link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/session-storage/examples/AspNetCoreSession[available on GitHub] if you'd like to follow along.
 
-=== Links to more session storage resources
+To start with, let's create a brand new ASP.NET Core project in Visual Studio or Visual Studio Code. I've used the standard *Web Application (Model-View-Controller)* template.
 
-https://github.com/couchbaselabs/couchbase-aspnet/
-https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md
-https://blog.couchbase.com/distributed-session-aspnet-couchbase/ 
+Follow these steps to setup ASP.NET Core session as well as using Couchbase as a session store.
+
+First, in Startup.cs, in the `Configure` function, tell ASP.NET Core to use session:
+
+[source,C#,indent=0]
+----
+include::../examples/AspNetCoreSession/AspNetCoreSession/Startup.cs[tag=usesession]
+----
+
+Next, install the `Couchbase.Extensions.Session` package using NuGet. You can do this via the NuGet UI or simply enter `Install-Package Couchbase.Extensions.Session` in the Package Manager Console.
+
+After that is installed, we'll use this extension to tell ASP.NET Core where an how to use Couchbase as a session store. Recall that I created a bucket named "mySessionStore" earlier. You should also know the location and credentials for your Couchbase cluster. To tell ASP.NET Core about Couchbase, add this code to `ConfigureServices` in Startup.cs.
+
+[source,C#,indent=0]
+----
+include::../examples/AspNetCoreSession/AspNetCoreSession/Startup.cs[tag=couchbase]
+----
+
+The `AddCouchbase` simply makes Couchbase available to other services in the ASP.NET Core application. In the above example, I hardcoded the cluster location and credentials, but you can also use a config file.
+
+The `AddDistributedCouchbaseCache` sets up ASP.NET Core to use Couchbase as a cache. This is a prerequisite to using the session store, but it can also be used by itself for any caching use cases you have.
+
+Finally, the last part of configuration is to tell ASP.NET to use Couchbase for session storage.
+
+[source,C#,indent=0]
+----
+include::../examples/AspNetCoreSession/AspNetCoreSession/Startup.cs[tag=session]
+----
+
+You can specify options like session timeout and cookie name here. In this example, session will timeout after not being used for 20 minutes, and the corresponding cookie will be called ".MyApp.Cookie". At this point, your ASP.NET Core application is ready to read and write session store.
+
+=== Reading/writing from session
+
+Let's start by writing to session.
+
+In the sample application, there are three different types of session objects that a given user may store: User, Preferences, Location. `User` stores username as well as SMS number. `Preferences` stores region and employer. `Location` stores address and latitude/longitude. I chose to model these as three different session objects. In your application, you may want to break up different areas of session, as not all users will need every session object. For instance, a customer who is visiting your site may need browse-back and site activity tracking data, but may not need any shopping cart data until they put the first item into their cart.
+
+To store an item in session, use `HttpContext.Session.SetObject`. Here's an example of the "User" session data being stored:
+
+[source,C#,indent=0]
+----
+include::../examples/AspNetCoreSession/AspNetCoreSession/Controllers/HomeController.cs[tag=setuser]
+----
+
+To retrieve an item from session, use `HttpContext.Session.GetObject`. Here's an example of the "User" session data being retrieved:
+
+[source,C#,indent=0]
+----
+include::../examples/AspNetCoreSession/AspNetCoreSession/Controllers/HomeController.cs[tag=getuser]
+----
+
+_Notes:_
+
+* When storing data, the example is using an anonymous type. This could be replaced with a defined C# type instead.
+* When retrieve data, the example is using `dynamic`. If using a type to set data, you can also use that same type when getting.
+* `_faker` is being used to set random data to these session objects for example purposes.
+
+Finally, though session data will be erased automatically after 20 minutes, you can also elect to clear session data at any time by using `HttpContext.Session.Remove`:
+
+[source,C#,indent=0]
+----
+include::../examples/AspNetCoreSession/AspNetCoreSession/Controllers/HomeController.cs[tag=clearuser]
+----
+
+Putting these all together, the example application is able to create objects, read objects, and remove objects from session storage:
+
+image:../assets/images/00102-session-example.gif[Session storage example in action]
 
 == Exploring Session Data
 
 interesting n1ql queries on session data
 
+== Links to more session storage resources
+
+https://github.com/couchbaselabs/couchbase-aspnet/
+https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md
+https://blog.couchbase.com/distributed-session-aspnet-couchbase/ 

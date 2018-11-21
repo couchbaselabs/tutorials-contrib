@@ -26,6 +26,7 @@ namespace AspNetCoreSession
         {
             services.AddMvc();
 
+            // tag::couchbase[]
             // sets up Couchbase to be used by other services
             services.AddCouchbase(opt =>
             {
@@ -36,13 +37,16 @@ namespace AspNetCoreSession
 
             // adds Couchbase as a distributed cache (which the session storage will use)
             services.AddDistributedCouchbaseCache("sessionstore", opt => { });
+            // end::couchbase[]
 
+            // tag::session[]
             // add couchbase as the session state provider
             services.AddCouchbaseSession(opt =>
             {
                 opt.IdleTimeout = new TimeSpan(0, 0, 20, 0);
                 opt.Cookie = new CookieBuilder {Name = ".MyApp.Cookie"};
             });
+            // end::session[]
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
@@ -62,8 +66,10 @@ namespace AspNetCoreSession
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
+            // tag::usesession[]
             // tell ASP.NET that we want to use session
             app.UseSession();
+            // end::usesession[]
 
             app.UseMvc(routes =>
             {

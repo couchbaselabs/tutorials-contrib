@@ -19,8 +19,10 @@ namespace AspNetCoreSession.Controllers
         {
             var model = new IndexView();
 
+            // tag::getuser[]
             if(HttpContext.Session.Get("user") != null)
                 model.User = HttpContext.Session.GetObject<dynamic>("user");
+            // end::getuser[]
             if (HttpContext.Session.Get("preferences") != null)
                 model.Prefs = HttpContext.Session.GetObject<dynamic>("preferences");
             if (HttpContext.Session.Get("location") != null)
@@ -31,11 +33,13 @@ namespace AspNetCoreSession.Controllers
 
         public RedirectToActionResult AddUserDataToSession()
         {
+            // tag::setuser[]
             HttpContext.Session.SetObject("user", new
             {
                 UserName = _faker.Internet.UserName(),
                 SMS = _faker.Phone.PhoneNumber()
             });
+            // end::setuser[]
 
             return RedirectToAction("Index");
         }
@@ -68,7 +72,9 @@ namespace AspNetCoreSession.Controllers
 
         public RedirectToActionResult ClearUserDataInSession()
         {
+            // tag::clearuser[]
             HttpContext.Session.Remove("user");
+            // end::clearuser[]
             return RedirectToAction("Index");
         }
 
