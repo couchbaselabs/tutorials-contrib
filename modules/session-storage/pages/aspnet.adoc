@@ -1,5 +1,14 @@
 = Using Couchbase Server as a Session Store
 
+== Overview
+
+This tutorial contains four main sections:
+
+* <<What is a session store?>> If you're new to session stores, this section discusses the how/why of sessions.
+* <<How to Setup and Configure a Couchbase Cluster>>. Start here if you've never setup Couchbase before.
+* <<Web server integration>>. Once you have a Couchbase Cluster set up, this tutorial will show how to integrate it with ASP.NET Core.
+* <<Exploring Session Data>>. In contrast to many other session storage options, Couchbase has unique capabilities for exploring session data and gaining insights into your users and customers.
+
 ++++
 <link rel="canonical" href="http://docs.couchbase.com/tutorials/session-storage-tutorial/dotnet.html" />
 ++++
@@ -12,19 +21,28 @@ Web applications are session-oriented. When a user logs in to a site, for exampl
 
 Any state that a user needs can be stored in session. It could be as minimal as the user's name. User preferences can also be stored in session: language, preferred retail location, invitation/coupon codes, and more.
 
+Some more examples of data you might put in a session store:
+
+* Shopping carts / baskets (for ecommerce)
+* Ticket selections (for events/ticket sales)
+* Bet slips (as you build before you submit)
+* Cookie tracking
+* Browse-back (to keep track of where a user came from)
+* Site activity tracking (to watch a customer's journey on your site)
+
 === Why do I need one?
 
 Because HTTP is "stateless", a web application needs to store session-related data somewhere. By default, session data is usually stored in memory on the web server. However, if the web server goes down or is restarted, that session information is wiped out. To prevent this, session data can be stored elsewhere.
 
 === Session storage with web farms
 
-Another reason to store session data elsewhere is because of web farms.
+Another reason to store session data elsewhere is because of web farms. In the below diagram, an ASP.NET web application is being scaled horizontally. Incoming HTTP requests are routed through a load balancer.
 
-image:00101-session-diagram.png[]
+image:../assets/images/00101-session-diagram.png[]
 
-If session data is stored on the web server, then a single user can only interact with a single server. This is known as "sticky sessions".
+If session data is stored on the web server _itself_, then a single user can only interact with a single server. The load balancer must send the user to the same server every time. This is known as "sticky sessions".
 
-Sticky sessions can be problematic, so using another location for data avoids the need for sticky sessions.
+Sticky sessions can be problematic, so using a shared location for data avoids the need for sticky sessions.
 
 === Why Couchbase is a good choice for a Session Store
 
@@ -103,3 +121,8 @@ https://blog.couchbase.com/distributed-session-aspnet-couchbase/
 https://github.com/couchbaselabs/couchbase-aspnet/
 https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md
 https://blog.couchbase.com/distributed-session-aspnet-couchbase/ 
+
+== Exploring Session Data
+
+interesting n1ql queries on session data
+
