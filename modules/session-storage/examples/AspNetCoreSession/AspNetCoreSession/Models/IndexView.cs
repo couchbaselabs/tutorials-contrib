@@ -25,5 +25,6 @@ namespace AspNetCoreSession.Models
         public object User { get; set; }
         public object Prefs { get; set; }
         public object Location { get; set; }
+        public int SessionCount { get; set; }
     }
 }

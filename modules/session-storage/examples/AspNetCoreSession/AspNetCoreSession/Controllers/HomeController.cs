@@ -1,4 +1,7 @@
-﻿using AspNetCoreSession.Models;
+﻿using System;
+using System.Collections.Generic;
+using AspNetCoreSession.Models;
+using AspNetCoreSession.Models.Repositories;
 using Bogus;
 using Microsoft.AspNetCore.Mvc;
 using Couchbase.Extensions.Session;
@@ -9,10 +12,12 @@ namespace AspNetCoreSession.Controllers
     public class HomeController : Controller
     {
         private readonly Faker _faker;
+        private readonly ISessionStorageRepository _sessionRepo;
 
-        public HomeController()
+        public HomeController(ISessionStorageRepository sessionRepo, Faker faker)
         {
-            _faker = new Faker("en");
+            _faker = faker;
+            _sessionRepo = sessionRepo;
         }
 
         public IActionResult Index()
@@ -23,10 +28,12 @@ namespace AspNetCoreSession.Controllers
             if(HttpContext.Session.Get("user") != null)
                 model.User = HttpContext.Session.GetObject<dynamic>("user");
             // end::getuser[]
-            if (HttpContext.Session.Get("preferences") != null)
-                model.Prefs = HttpContext.Session.GetObject<dynamic>("preferences");
+            if (HttpContext.Session.Get("shoppingcart") != null)
+                model.Prefs = HttpContext.Session.GetObject<dynamic>("shoppingcart");
             if (HttpContext.Session.Get("location") != null)
                 model.Location = HttpContext.Session.GetObject<dynamic>("location");
+
+            model.SessionCount = _sessionRepo.GetCountOfAllSessions();
 
             return View(model);
         }
@@ -44,15 +51,32 @@ namespace AspNetCoreSession.Controllers
             return RedirectToAction("Index");
         }
 
-        public RedirectToActionResult AddPreferencesDataToSession()
+        public RedirectToActionResult AddShoppingCartDataToSession()
         {
-            HttpContext.Session.SetObject("preferences", new
-            {
-                Region = _faker.Address.CountryCode(),
-                Employer = _faker.Company.CompanyName()
-            });
+            AddRandomShoppingCartToSession();
 
             return RedirectToAction("Index");
+        }
+
+        private void AddRandomShoppingCartToSession()
+        {
+            string[] POSSIBLE_SHOPPING_CART_ITEMS = { "Socks", "T-Shirt", "Hat", "Tennis Shoes", "Scarf", "Gloves", "Necklace", "Watch" };
+            var cart = new
+            {
+                DateCreated = DateTime.Now,
+                Items = new List<dynamic>()
+            };
+            var randomNumberOfItems = _faker.Random.Int(1, 3);
+            for (var i = 0; i < randomNumberOfItems; i++)
+            {
+                cart.Items.Add(new
+                {
+                    ItemName = _faker.PickRandom(POSSIBLE_SHOPPING_CART_ITEMS),
+                    Price = _faker.Random.Decimal(0.99M, 49.99M),
+                    Quantity = _faker.Random.Int(1, 5)
+                });
+            }
+            HttpContext.Session.SetObject("shoppingcart", cart);
         }
 
         public RedirectToActionResult AddLocationDataToSession()
@@ -60,6 +84,7 @@ namespace AspNetCoreSession.Controllers
             HttpContext.Session.SetObject("location", new
             {
                 ClosestStoreLocation = _faker.Address.FullAddress(),
+                Country = _faker.Address.Country(),
                 GeoCoordinates = new
                 {
                     Lat = _faker.Address.Latitude(),
@@ -78,9 +103,9 @@ namespace AspNetCoreSession.Controllers
             return RedirectToAction("Index");
         }
 
-        public RedirectToActionResult ClearPreferencesDataInSession()
+        public RedirectToActionResult ClearShoppingCartDataInSession()
         {
-            HttpContext.Session.Remove("preferences");
+            HttpContext.Session.Remove("shoppingcart");
             return RedirectToAction("Index");
         }
 
@@ -88,6 +113,24 @@ namespace AspNetCoreSession.Controllers
         {
             HttpContext.Session.Remove("location");
             return RedirectToAction("Index");
+        }
+
+        public IActionResult NewSession()
+        {
+            HttpContext.Response.Cookies.Delete(".MyApp.Cookie");
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult ReportRecentShoppingCarts()
+        {
+            var recentShoppingCartReport = _sessionRepo.GetReportRecentShoppingCarts();
+            return View(recentShoppingCartReport);
+        }
+
+        public IActionResult ReportMostCommonShoppingCartItems()
+        {
+            var mostCommonShoppingCartItems = _sessionRepo.GetReportMostCommonShoppingCartItems();
+            return View(mostCommonShoppingCartItems);
         }
 
         public IActionResult Error()

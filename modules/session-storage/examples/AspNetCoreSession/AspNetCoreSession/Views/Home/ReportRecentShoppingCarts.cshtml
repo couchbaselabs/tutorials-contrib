@@ -1,0 +1,26 @@
+﻿@model List<AspNetCoreSession.Models.Repositories.ReportRecentShoppingCart>
+@{
+    ViewData["Title"] = "Recent Shopping Carts";
+}
+
+<h2>10 Most Recent Shopping Carts in Session Storage:</h2>
+
+<p>@Html.ActionLink("<-- Back to main page", "Index", "Home")</p>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <tr>
+            <th>Session Store ID</th>
+            <th>Date Created</th>
+            <th># Items</th>
+        </tr>
+        @foreach (var cart in Model)
+        {
+            <tr>
+                <td>@cart.SessionStoreId</td>
+                <td>@cart.DateCreated</td>
+                <td>@cart.NumItems</td>
+            </tr>
+        }
+    </table>
+</div>

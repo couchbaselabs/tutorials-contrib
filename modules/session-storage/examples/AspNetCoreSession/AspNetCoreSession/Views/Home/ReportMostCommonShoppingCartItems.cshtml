@@ -1,0 +1,24 @@
+﻿@model List<AspNetCoreSession.Models.Repositories.ReportMostCommonShoppingCartItems>
+@{
+    ViewData["Title"] = "Recent Shopping Carts";
+}
+
+<h2>Most Common Items in Shopping Carts in Session Storage (by total quantity):</h2>
+
+<p>@Html.ActionLink("<-- Back to main page", "Index", "Home")</p>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <tr>
+            <th>Item</th>
+            <th>Total Quantity</th>
+        </tr>
+        @foreach (var cart in Model)
+        {
+        <tr>
+            <td>@cart.ItemName</td>
+            <td>@cart.TotalQuantity</td>
+        </tr>
+        }
+    </table>
+</div>

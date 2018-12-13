@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using AspNetCoreSession.Models.Repositories;
+using Bogus;
 using Couchbase.Extensions.Caching;
 using Couchbase.Extensions.DependencyInjection;
 using Couchbase.Extensions.Session;
@@ -34,6 +36,9 @@ namespace AspNetCoreSession
                 opt.Username = "Administrator";
                 opt.Password = "password";
             });
+
+            services.AddTransient<ISessionStorageRepository, SessionStorageRepository>();
+            services.AddSingleton(new Faker("en"));
 
             // adds Couchbase as a distributed cache (which the session storage will use)
             services.AddDistributedCouchbaseCache("sessionstore", opt => { });
