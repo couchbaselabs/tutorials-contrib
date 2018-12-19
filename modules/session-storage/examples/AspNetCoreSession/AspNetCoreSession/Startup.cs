@@ -28,6 +28,9 @@ namespace AspNetCoreSession
         {
             services.AddMvc();
 
+            services.AddTransient<ISessionStorageRepository, SessionStorageRepository>();
+            services.AddSingleton(new Faker("en"));
+
             // tag::couchbase[]
             // sets up Couchbase to be used by other services
             services.AddCouchbase(opt =>
@@ -36,9 +39,6 @@ namespace AspNetCoreSession
                 opt.Username = "Administrator";
                 opt.Password = "password";
             });
-
-            services.AddTransient<ISessionStorageRepository, SessionStorageRepository>();
-            services.AddSingleton(new Faker("en"));
 
             // adds Couchbase as a distributed cache (which the session storage will use)
             services.AddDistributedCouchbaseCache("sessionstore", opt => { });

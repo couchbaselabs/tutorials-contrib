@@ -15,7 +15,7 @@ This tutorial contains four main sections:
 
 == What is a session store?
 
-Web applications are session-oriented. When a user logs in to a site, for example, they start a "session". When the user logs out (or the session times out, more commonly), the session ends.
+Web applications are session-oriented. When a user logs in to a site, for example, they start a "session". When the user logs out (or the session times out, more commonly), the session ends. The session and the user are correlated by giving a cookie to the user's web browser with a lookup  value that directly corresponds to session storage on the server side. (These details are generally behind the scenes when using a session storage framework).
 
 === What is stored in session?
 
@@ -36,13 +36,13 @@ Because HTTP is "stateless", a web application needs to store session-related da
 
 === Session storage with web farms
 
-Another reason to store session data elsewhere is because of web farms. In the below diagram, an ASP.NET web application is being scaled horizontally. Incoming HTTP requests are routed through a load balancer.
+Another reason to store session data elsewhere is because of web farms. In the below diagram, an ASP.NET web application is being scaled horizontally. Incoming HTTP requests are routed through a load balancer which picks one of the ASP.NET servers to send the user's request.
 
 image:../assets/images/00101-session-diagram.png[Session storage diagram]
 
 If session data is stored on the web server _itself_, then a single user can only interact with a single server. The load balancer must send the user to the same server every time. This is known as "sticky sessions".
 
-Sticky sessions can be problematic, so using a shared location for data avoids the need for sticky sessions.
+Sticky sessions can be problematic (can result in unbalanced loads, and data still can be wiped out by a web server going down). Using a shared location for data avoids enabling sticky sessions.
 
 === Why Couchbase is a good choice for a Session Store
 
@@ -79,7 +79,7 @@ Note that you can also set up Couchbase by using link:https://docs.couchbase.com
 
 Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[buckets], which are a collection of key/value pairs.
 
-To store session data, you need at least one bucket. In the Couchbase Server Console, navigate to "Buckets" and then "Add Bucket". Give it whatever name you'd like, for example "mySessionStore".
+To store session data, you need at least one bucket. In the Couchbase Server Console, navigate to "Buckets" and then "Add Bucket". Give it whatever name you'd like, for example "sessionstore".
 
 Two important factors that this tutorial will touch on is bucket types: "Ephemeral vs Couchbase". This tutorial will also touch on replication, briefly.
 
@@ -90,7 +90,7 @@ For more details on how to create a bucket and all of the advanced settings, che
 There are two kinds of buckets you can use for a session store:
 
 * Couchbase: this is the default bucket type. Data is stored in memory as well as disk. If memory is full, items are ejected from RAM, but can still be accessed from disk when needed.
-* Ephemeral: this is a memory-only bucket. You can avoid the overhead of disk access, but if memory is full, then there is nowhere else to store data. You can configure items to be rejected or you can forbid additional data being added.
+* Ephemeral: this is a memory-only bucket. You can avoid the overhead of disk access, but if memory is full, then there is nowhere else to store data. You can configure items to be ejected or you can forbid additional data being added.
 
 There's actually a third kind of bucket: Memcached. These are also memory-only buckets. If memory is full, items will be ejected to make room as new items are added. Unless you need Memcached compatibility, you are better off using Couchbase or Ephemeral buckets.
 
@@ -104,7 +104,7 @@ When creating a bucket, if you enable replicas, then you will need to select how
 
 == Web server integration
 
-Session stores can take several different forms. Most commonly, integration between a persistence tool (aka a database like Couchbase) and web framework software (like ASP.NET, Spring, Express, etc).
+Session stores can take several different forms. Most commonly, it's an integration between a persistence tool (a database like Couchbase) and web framework software (like ASP.NET, Spring, Express, etc).
 
 === Web frameworks
 
@@ -118,7 +118,7 @@ The complete source code for this example is link:https://github.com/couchbasela
 
 To start with, let's create a brand new ASP.NET Core project in Visual Studio or Visual Studio Code. I've used the standard *Web Application (Model-View-Controller)* template.
 
-Follow these steps to setup ASP.NET Core session as well as using Couchbase as a session store.
+Follow these steps to setup ASP.NET Core to use Couchbase as a session store.
 
 First, in Startup.cs, in the `Configure` function, tell ASP.NET Core to use session:
 
@@ -129,7 +129,7 @@ include::../examples/AspNetCoreSession/AspNetCoreSession/Startup.cs[tag=usesessi
 
 Next, install the `Couchbase.Extensions.Session` package using NuGet. You can do this via the NuGet UI or simply enter `Install-Package Couchbase.Extensions.Session` in the Package Manager Console.
 
-After that is installed, we'll use this extension to tell ASP.NET Core where an how to use Couchbase as a session store. Recall that I created a bucket named "mySessionStore" earlier. You should also know the location and credentials for your Couchbase cluster. To tell ASP.NET Core about Couchbase, add this code to `ConfigureServices` in Startup.cs.
+After that is installed, we'll use this extension to tell ASP.NET Core where and how to use Couchbase as a session store. Recall that I created a bucket named "sessionstore" earlier. You should also know the location and credentials for your Couchbase cluster. To tell ASP.NET Core about Couchbase, add this code to `ConfigureServices` in Startup.cs.
 
 [source,C#,indent=0]
 ----
@@ -153,7 +153,7 @@ You can specify options like session timeout and cookie name here. In this examp
 
 Let's start by writing to session.
 
-In the sample application, there are three different types of session objects that a given user may store: User, Preferences, Location. `User` stores username as well as SMS number. `Preferences` stores region and employer. `Location` stores address and latitude/longitude. I chose to model these as three different session objects. In your application, you may want to break up different areas of session, as not all users will need every session object. For instance, a customer who is visiting your site may need browse-back and site activity tracking data, but may not need any shopping cart data until they put the first item into their cart.
+In the sample application, there are three different types of session objects that a given user may store: User, Shopping Cart, Location. `User` stores username as well as SMS number. `Shopping Cart` stores items, prices, and quantities of items that a user will purchase. `Location` stores address and latitude/longitude. I chose to model these as three different session objects. In your application, you may want to break up different areas of session, as not all users will need every session object. For instance, a customer who is visiting your site may need browse-back and site activity tracking data, but may not need any shopping cart data until they put the first item into their cart.
 
 To store an item in session, use `HttpContext.Session.SetObject`. Here's an example of the "User" session data being stored:
 
@@ -188,10 +188,89 @@ image:../assets/images/00102-session-example.gif[Session storage example in acti
 
 == Exploring Session Data
 
-interesting n1ql queries on session data
+Using Couchbase for session storage so far has been primarily based in fundamental key/value operations. However, Couchbase can do far more than perform operations based on document keys. Couchbase has SQL query capabilities (known as N1QL) that can be used to perform queries against _all_ the sessions stored in Couchbase. This can be useful to gain valuable insights about your customers and users.
 
-== Links to more session storage resources
+In the above example, note that a session could contain a shopping cart. Suppose there are hundreds and thousands of sessions being stored at any given time. It would be useful to query all of this data to gain insights such as:
 
-https://github.com/couchbaselabs/couchbase-aspnet/
-https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md
-https://blog.couchbase.com/distributed-session-aspnet-couchbase/ 
+* Most/least popular items in shopping carts
+* Average age of a shopping cart
+* Average value of all the items in a shopping cart.
+* Much more, the sky's the limit.
+
+Let's explore a couple of simple examples of how N1QL could be used to explore the session data.
+
+=== How session data is stored
+
+Before we begin, let's look at what a session storage document actually looks like.
+
+[source,JavaScript,indent=0]
+----
+key : c0077f11-401c-7a1d-72a3-a80b2f13084e
+
+{
+  "shoppingcart": "eyJEYXRlQ3JlYXRlZCI6IjIwMTgtMTItMTlUMTM6NTc6Mz...etc...==",
+  "user": "eyJVc2VyTmFtZSI6Ikx5bm5fS29zcyIsIlNNUyI6IjEtMzMyLTUxMS...etc...=="
+}
+----
+
+Each time information is added to a user's session, that is represented by another JSON field. Inconveniently, ASP.NET Core stores them as base64 encoded objects. We'll have to do a little more work to decode them before we can meaningfully explore them, but it's not a major hurdle for N1QL.
+
+=== Most recent shopping carts
+
+Let's start with a simple example. Suppose we want a snapshot of the 10 most recent shopping carts. This might be useful for a dashboard or for just looking at what's going on with the site right now. Here's a N1QL query to find those shopping carts:
+
+[source,SQL,indent=0]
+----
+SELECT 
+    META().id AS sessionStoreId,
+    BASE64_DECODE(s.shoppingcart).DateCreated AS dateCreated,
+    ARRAY_COUNT(BASE64_DECODE(s.shoppingcart).Items) AS numItems
+FROM sessionstore s
+WHERE s.shoppingcart IS NOT MISSING
+ORDER BY STR_TO_UTC(BASE64_DECODE(s.shoppingcart).DateCreated) DESC
+LIMIT 10;
+----
+
+First off, this N1QL query is using BASE64_DECODE to turn the base64 representations into a JSON object that can be more easily queried (see link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/metafun.html[more about BASE64_DECODE] in documentation).
+
+Second, to make this query work, we'll need appropriate indexing. The `shoppingcart` field at least needs to be indexed. It's also a good idea to add `BASE64_DECODE(shoppingcart)` to make it a link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/covering-indexes.html[covering index]. Create an index like this:
+
+`CREATE INDEX ix_shoppingcart ON sessionstore (shoppingcart, BASE64_DECODE(shoppingcart));`
+
+After that index is created, the above `SELECT` query will function, and it will return the 10 most recent shopping carts. The sample application (available on Github) uses this query to generate a report that looks like this:
+
+image:../assets/images/00103-recent-shopping-carts.png[10 Most Recent Shopping Cart report]
+
+=== Most common items
+
+Another insight we could gather is the most popular item that has been added to shopping carts. 
+
+[source,SQL,indent=0]
+----
+SELECT 
+    i.ItemName,
+    SUM(i.Quantity) AS totalQuantity
+FROM sessionstore s
+UNNEST BASE64_DECODE(s.shoppingcart).Items i
+WHERE s.shoppingcart IS NOT MISSING
+GROUP BY i.ItemName
+ORDER BY SUM(i.Quantity) DESC
+----
+
+Again, BASE64_DECODE needs to be used here. This query uses the link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/from.html#unnest[`UNNEST` keyword] to break down the nested objects in each shopping cart to the root level.
+
+Fortunately, the index that was created in the above example also works for this query, so no additional index is needed. Here's an example of a report that uses the above query (also included in the sample project on GitHub):
+
+image:../assets/images/00104-most-popular-items.png[Most popular items]
+
+These examples just scratch the surface of the analysis that can be done on the session data that Couchbase is storing.
+
+== Resources
+
+For more information about using Couchbase as a session store, check out these resources:
+
+* link:https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md[Couchbase.Extensions.Session] - the Couchbase.Extension.Session package that was used for ASP.NET Core in this tutorial.
+* link:https://github.com/couchbaselabs/couchbase-aspnet/[Couchbase ASP.NET Integration] - if you haven't switched to ASP.NET Core yet, you can still use this library to store ASP.NET session in Couchbase
+* link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL documentation]
+* link:https://docs.couchbase.com/dotnet-sdk/2.7/start-using-sdk.html[Couchbase .NET SDK documentation]
+* Full source code of the example used in this tutorial is link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/session-storage/examples/AspNetCoreSession[available on GitHub]
