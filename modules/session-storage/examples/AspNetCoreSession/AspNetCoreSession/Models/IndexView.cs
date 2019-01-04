@@ -13,8 +13,8 @@ namespace AspNetCoreSession.Models
 
                 if (User != null)
                     obj.User = User;
-                if (Prefs != null)
-                    obj.Prefs = Prefs;
+                if (ShoppingCart != null)
+                    obj.ShoppingCart = ShoppingCart;
                 if (Location != null)
                     obj.Location = Location;
 
@@ -23,7 +23,7 @@ namespace AspNetCoreSession.Models
         }
 
         public object User { get; set; }
-        public object Prefs { get; set; }
+        public object ShoppingCart { get; set; }
         public object Location { get; set; }
         public int SessionCount { get; set; }
     }

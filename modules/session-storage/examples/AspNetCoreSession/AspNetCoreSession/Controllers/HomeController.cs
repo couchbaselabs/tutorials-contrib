@@ -29,7 +29,7 @@ namespace AspNetCoreSession.Controllers
                 model.User = HttpContext.Session.GetObject<dynamic>("user");
             // end::getuser[]
             if (HttpContext.Session.Get("shoppingcart") != null)
-                model.Prefs = HttpContext.Session.GetObject<dynamic>("shoppingcart");
+                model.ShoppingCart = HttpContext.Session.GetObject<dynamic>("shoppingcart");
             if (HttpContext.Session.Get("location") != null)
                 model.Location = HttpContext.Session.GetObject<dynamic>("location");
 

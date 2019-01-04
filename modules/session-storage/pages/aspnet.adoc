@@ -114,7 +114,13 @@ In this tutorial, we'll look at how to use Couchbase as a session store for an A
 
 === ASP.NET Session Storage Integration
 
-The complete source code for this example is link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/session-storage/examples/AspNetCoreSession[available on GitHub] if you'd like to follow along.
+The complete source code for this example is link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/session-storage/examples/AspNetCoreSession[available on GitHub] if you'd like to follow along. Assuming you've got Couchbase and .NET Core installed, there are three steps to get the example running:
+
+1. `git clone` the repository
+2. `dotnet run` the project
+3. Open the localhost address (that `dotnet run` indicates)
+
+Once you've done that, you'll be able to use the finished sample application. The rest of this tutorial walks through the steps in building the application. You can follow along by browsing the source code or trying to recreate the sample application yourself.
 
 To start with, let's create a brand new ASP.NET Core project in Visual Studio or Visual Studio Code. I've used the standard *Web Application (Model-View-Controller)* template.
 
