@@ -1,0 +1,16 @@
+++++
+<link rel="canonical" href="http://docs.couchbase.com/tutorials/session-storage-tutorial/install.html" />
+++++
+
+= How to Setup and Configure a Couchbase Cluster
+
+To use Couchbase as a session store, you must first install Couchbase (somewhere). Then, you must set up the Couchbase cluster. Finally, you'll need to create a bucket to store the session data.
+
+== Installing Couchbase Server
+
+There are a number of options for getting started with Couchbase Server:
+
+* Directly on your computer: follow the link:https://docs.couchbase.com/server/6.0/install/install-intro.html[Install] guide.
+* Docker: follow the link:https://docs.couchbase.com/server/6.0/getting-started/do-a-quick-install.html[Quick Install] guide
+* Kubernetes or OpenShift: use the link:https://docs.couchbase.com/operator/1.0/install-kubernetes.html[Couchbase Autonomous Operator] to create and manage a Couchbase cluster.
+* Cloud: Couchbase has partnered with link:https://www.couchbase.com/partners/amazon[Amazon AWS], link:https://www.couchbase.com/partners/microsoft[Microsoft Azure], and link:https://www.couchbase.com/partners/google[Google Cloud Platform]
