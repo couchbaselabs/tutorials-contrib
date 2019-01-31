@@ -1,8 +1,5 @@
-++++
-<link rel="canonical" href="http://docs.couchbase.com/tutorials/session-storage-tutorial/install.html" />
-++++
-
 = How to Setup and Configure a Couchbase Cluster
+:page-aliases: tutorials:session-storage-tutorial:install
 
 To use Couchbase as a session store, you must first install Couchbase (somewhere). Then, you must set up the Couchbase cluster. Finally, you'll need to create a bucket to store the session data.
 
