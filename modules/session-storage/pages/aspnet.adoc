@@ -35,7 +35,7 @@ Because HTTP is "stateless", a web application needs to store session-related da
 
 Another reason to store session data elsewhere is because of web farms. In the below diagram, an ASP.NET web application is being scaled horizontally. Incoming HTTP requests are routed through a load balancer which picks one of the ASP.NET servers to send the user's request.
 
-image:../assets/images/00101-session-diagram.png[Session storage diagram]
+image:00101-session-diagram.png[Session storage diagram]
 
 If session data is stored on the web server _itself_, then a single user can only interact with a single server. The load balancer must send the user to the same server every time. This is known as "sticky sessions".
 
@@ -92,7 +92,7 @@ Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buck
 
 To store session data, you need at least one bucket. In the Couchbase Server Console, navigate to "Buckets" and then "Add Bucket". Give it whatever name you'd like, for example "sessionstore".
 
-image:../assets/images/00105-create-bucket-dialog.png[Create session store bucket]
+image:00105-create-bucket-dialog.png[Create session store bucket]
 
 Two important factors that this tutorial will touch on is bucket types: "Ephemeral vs Couchbase". This tutorial will also touch on replication, briefly.
 
@@ -236,7 +236,7 @@ include::../examples/AspNetCoreSession/AspNetCoreSession/Controllers/HomeControl
 
 Putting these all together, the example application is able to create objects, read objects, and remove objects from session storage:
 
-image:../assets/images/00102-session-example.gif[Session storage example in action]
+image:00102-session-example.gif[Session storage example in action]
 
 To simulate multiple users, you can use different browsers, clear your cookies, etc. There's also a link in the sample application to "Start a new session". Before proceeding into exploring session data, it would be helpful to have a bunch of sessions created already in your session store bucket.
 
@@ -307,7 +307,7 @@ Second, to make this query work, we'll need appropriate indexing. The `shoppingc
 
 After that index is created, the above `SELECT` query will function, and it will return the 10 most recent shopping carts. The sample application (available on Github) uses this query to generate a report that looks like this:
 
-image:../assets/images/00103-recent-shopping-carts.png[10 Most Recent Shopping Cart report]
+image:00103-recent-shopping-carts.png[10 Most Recent Shopping Cart report]
 
 === Most common items
 
@@ -329,7 +329,7 @@ Again, BASE64_DECODE needs to be used here. This query uses the link:https://doc
 
 Fortunately, the index that was created in the above example also works for this query, so no additional index is needed. Here's an example of a report that uses the above query (also included in the sample project on GitHub):
 
-image:../assets/images/00104-most-popular-items.png[Most popular items]
+image:00104-most-popular-items.png[Most popular items]
 
 These examples just scratch the surface of the analysis that can be done on the session data that Couchbase is storing.
 
