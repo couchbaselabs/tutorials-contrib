@@ -1,8 +1,5 @@
-++++
-<link rel="canonical" href="http://docs.couchbase.com/tutorials/session-storage-tutorial/dotnet.html" />
-++++
-
 = Using Couchbase Server as a Session Store
+:page-aliases: tutorials:session-storage-tutorial:dotnet
 
 == Overview
 
