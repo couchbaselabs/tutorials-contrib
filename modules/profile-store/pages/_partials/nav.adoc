@@ -1,0 +1,2 @@
+** xref:profile-store:install.adoc[Configure Couchbase Cluster]
+** xref:profile-store:java.adoc[Java]

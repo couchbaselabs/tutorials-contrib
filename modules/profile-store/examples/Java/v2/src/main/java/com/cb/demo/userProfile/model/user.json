@@ -1,0 +1,35 @@
+// tag::code[]
+{
+  "_class" : "com.cb.demo.userProfile.model.UserEntity",
+  "firstName": "Denis",
+  "lastName": "Rosa",
+  "enabled": true,
+  "countryCode": "DE",
+  "username": "someUser",
+  "password": "letMeIn",
+  "securityRoles": ["USER", "ADMIN"],
+  "preferences": [
+    {
+      "name": "lang",
+      "value": "en"
+    },
+    {
+      "name": "currency",
+      "value": "EUR"
+    },
+
+  ],
+  "addresses": [
+    {
+      "name": "Home",
+      "street": "Marienplatz",
+      "number": "1",
+      "zipCode": "80913",
+      "city": "Munich",
+      "state": "Bayern",
+      "countryCode": "DE"
+    }
+  ]
+}
+
+// end::code[]
