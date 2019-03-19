@@ -1,5 +1,4 @@
 = Using Couchbase Server to Build a User Profile Store
-:page-aliases: tutorials:profile-store-tutorial:java
 
 == Overview
 
