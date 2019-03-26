@@ -1,0 +1,265 @@
+:imagesdir: ../assets/images
+= Using Couchbase Server to Build a User Profile Store
+
+== Overview
+
+This tutorial contains seven main sections:
+
+* <<What is a User Profile Store?>> If you're new to user profile stores, this section discusses the how and why.
+* <<Installing Couchbase>> Start here if you've never setup Couchbase before.
+* <<How to Create a Simple User Profile Store>> Once you have a Couchbase Cluster set up, this tutorial will show how get started.
+* <<Querying the Database>>. In contrast to many other NoSQL database options, Couchbase has unique capabilities for querying and exploring your data.
+* <<Searching Users with Full-Text Search>> You don't need to push all your data to a third party tool just to implement an advanced search in your system. With CB FTS you can implement complex string matchings on natural-language texts directly from database.
+* <<Storing User Events>> Storing events is essential to understand how users behave, in this section we will discuss one strategy to maximize the write/read througput of your application.
+* <<How to configure Cross Data Center Replication (XDCR)>> In this section, we will show how to replicate your database in multiple datacenters.
+
+== What is a User Profile Store?
+
+One of the most common paradigms in software architecture is to centralize the code responsible for managing user's data. With the increasing popularity of microservices, software architects started to create a single service to consolidate this task which is commonly referred to as a *User Profile Store*.
+
+=== What is stored in a User Profile Store?
+
+Any user-related data. The most common data stored in a User Profile Store are the user's name, login, password, addresses, preferences, security roles, security groups, etc.
+
+Some more examples of data you might put in according to your use cases:
+
+* User's events
+* Orders (for ecommerce);
+* Medical history (for HealthCare);
+* Transactions history (for Finance);
+* Grades, certifications (for Education);
+* Contracts, insurance policies;
+
+=== Why Couchbase is a good choice for a User Profile Store?
+
+In the majority of the systems, the user is quite often the most frequently accessed data, as it underpins many other applications within organizations. Consequently, this part of the software should be carefully designed, as it will potentially impact the performance of the whole system.
+
+Some of the key non-functional requirements of a successful system are:
+
+* *Strong Consistency*: Operations by key are strong consistent, so you won't get outdated data.
+
+* *High read and write throughput*: Couchbase Server has a memory-first architecture. Data can be retrieved with very low latency and writes are asynchronous by default.
+
+* *Caching*: Frequently accessed data is automatically cached, as Couchbase has a link:https://www.couchbase.com/caching[managed cache] on top of the database 
+
+* *A flexible data model*: User data can vary a lot depending on the needs of different roles, levels, etc.
+
+* *Easy and fast querying*: with link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL] you can query all your data with a powerfull SQL-like language. In addition, you can also keep your indexes in memory with link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/storage-modes.html[Memory Optimized Indexes (MOI)]
+
+* *Natural-Language matching*: with link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] you can easily implement advanced searches on natural-language texts.
+
+* *High Scalability*: Couchbase make it link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/services/services.html[easy to scale] horizontally, but it makes it easy to scale individual services vertically with multi-dimensional scaling (MDS)
+
+* *High Availability*: link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/vbuckets.html[No single point of failure]. Data can also be located in one or multiple data centers (link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-overview.html[XDCR]). 
+
+
+= User Profile Store Step-by-step
+
+The rest of ths tutorial will walk you through the steps of using Couchbase to build a User Profile Store:
+
+****
+* Installing and setting up Couchbase
+
+* Configuring Couchbase for a user profile store
+
+* Creating a simple Java application
+
+* How to query the Database
+
+* How to search natural-language text with CB FTS
+
+* How to use reactive programming to improve your throughput
+
+* How to distribute your data globally with XDCR
+
+****
+
+== Installing Couchbase
+
+There are a number of different ways to get started with Couchbase. Choose the method that's easiest for you. Check out link:http://docs.couchbase.com/tutorials/session-storage-tutorial/install.html[How to Setup and Configure a Couchbase Cluster] to review the options.
+
+== Setting up Couchbase Server
+
+You will need to start by accessing the Couchbase Server Console with a web browser on port 8091 (for example, \http://localhost:8091). Once there, you will see a "Welcome" screen that will start to walk you through the process of setting up a new cluster. For complete details, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-nodes/create-cluster.html[Create Cluster] documentation.
+
+Note that you can also set up Couchbase by using link:https://docs.couchbase.com/server/6.0/cli/cli-intro.html[command line tools] and/or link:https://docs.couchbase.com/server/6.0/rest-api/rest-intro.html[a REST API] instead of the UI. Using the UI for this tutorial will help you get comfortable with Couchbase, but in the long run you may want to script/automate cluster management using CLI/REST. If you are using the Kubernetes Operator, these settings can also be configured in a YAML file.
+
+=== Creating a bucket
+
+Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[buckets], which are a collection of documents. Let’s create a new bucket called *user_profile*:
+
+* Go to http://localhost:8091 and log in with user and password
+* Go to "Buckets" and click on "ADD BUCKET" in the top left corner of the page
+* Add the bucket name and memory quota:
+
+image:00101-add-bucket.png[Add Bucket Pop up]
+
+
+* Click on "Add Bucket";
+* Go to "Query" and create the following primary index:
+
+[source,SQL,indent=0]
+----
+create primary index `primary_user_profile_index` on `user_profile` using GSI;
+----
+
+* Then, go to "Security" and click on "ADD USER" 
+* Fill out the form with the following data:
+
+image:00102-create-user.png[Add Bucket Pop up]
+
+*Username:* user_profile  +
+*Full Name:* user_profile  +
+*Password:* password  +
+*Verify Password:* password +
+*Roles:* under "user_profile", select "Application Access"
+
+* Finally, click on "Add User".
+
+For more details on how to create a bucket and all of the advanced settings, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-buckets/create-bucket.html[Create Bucket] documentation.
+
+== How to Create a Simple User Profile Store
+
+If you are using Visual Studio, use File->New to create a new project. I'm going to create an ASP.NET Core Web Application project. It will just be an API project, and I'll be using .NET Core 2.2.
+
+image:00202-visual-studio-create.png[Visual Studio creating a new project]
+
+****
+If that's not your exact scenario, don't worry. Much of the important code will look the same in other types of projects. You can also use command line dotnet and/or Visual Studio Code instead. This tutorial won't focus on your choice of tools.
+****
+
+If you'd like to follow along, the full source code for this example project is link://[available on GitHub].
+
+Once you've created the application, let's add a few packages to it with NuGet. First, add the Couchbase .NET SDK (`dotnet add package CouchbaseNetClient` if you're using the command line). This package will give your application the ability to interact with the Couchbase cluster you created above. The next package is optional, but it will make some things easier: add the Couchbase.Extensions.DependencyInjection package (`dotnet add package Couchbase.Extensions.DependencyInjection`). This package will make it easy for the Couchbase SDK to be used throughout your .NET applications.
+
+TODO: create user entity class
+
+Then, let’s create a simple entity called User:
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/Models/User.cs[tag=User]
+----
+
+TODO: create repository class
+
+With that class in mind, we can also create a very simple repository class. Right now, we only need two methods. One method to save a new User and one method to get a user by ID:
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/Models/UserRepository.cs[tag=UserRepository]
+----
+
+If you are following the repository pattern in your projects, this is a very simplified example of it. Some key things to point out:
+
+* Each Couchbase document has a key (also known as an ID) which is stored _outside_ of the document itself. Therefore:
+* The `Save` method is manually mapping the incoming `User` object in order to avoid storing a copy of the Id _inside_ the document. This is also a safeguard in case the `User` object changes: you may not want to save every value.
+* THe `FindById` method is doing some extra work to popular the `Id` field of the `User` object it is returning.
+* To keep the tutorial simple, this code is all synchronous. Neither of these methods are doing any retrying or error handling. However, these are all concerns you should be aware of when working with any databases, including Couchbase.
+
+One part of the above repository that may not be clear is the constructor and the `IBucket` object. Remember back to the link:https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/dependency-injection.md[Couchbase.Extensions.DependencyInjection package]. That's what's going to be responsible for supplying this class with an `IBucketProvider` instance. Let's go over to Startup.cs, and add a line to the `ConfigureServices` method:
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/Startup.cs[tag=servicesAddCouchbase]
+----
+
+This line is telling ASP.NET MVC Core two things:
+
+1. Add Couchbase as a service to ASP.NET MVC Core
+2. Where to look in the configuration file to create a Couchbase connection
+
+And speaking of the configuration file, let's add the Couchbase section to it now (based on how we configured it earlier):
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/appsettings.json[]
+----
+
+At this point, any class instantiated through regular ASP.NET Core dependency injection will be able to get a ready-to-use `IBucketProvider`.
+
+Now we're able to actually create a very basic REST endpoint that will create a user, and then immediately retrieve it from the database. For example:
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/ValuesController.cs[doSomething]
+----
+
+When you call the above endpoint (e.g. \http://localhost:5000/api/doSomething), a user will be created, saved to Couchbase, read immediately back out of Couchbase, and returned via HTTP.
+
+****
+Where did the `_userRepository` come from? Check out the GitHub repo for details. The short story is that it also comes from dependency injection, also configured in Startup.cs.
+****
+
+The code above might look trivial for you, especially if you are coming from the relational world. But there is a lot going on under the hood:
+
+* Couchbase is link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/vbuckets.html#understanding-vbuckets[automatically sharding the data], and this process is totally transparent for the developer.
+* You can read after write.
+* The document is automaticaly cached.
+* Operations like findById and save use internally the Key-Value Store Engine, which is, from a 10,000 foot view, a big distributed hash map. This kind of structure is fast for reads and writes and as Couchbase already has a totally transparent manage cache internally, you will get a very good performance without any extra effort.
+
+Even though we haven’t written a lot of code yet, we already achieved 3 of our initial Non-functional requirements:
+
+****
+*  *Strong Consistenncy:* - Core operations like Updates/Save/getById are strongly consistent.
+
+* *High read and write throughput* - Writes are asynchronous, reads by key uses internally the key value store, queries can use Memory Optimized Indexes (MOI)
+
+* *Caching* - Documents are automatically cached.
+****
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+== Querying the Database
+
+
+
+==== Maximizing Schema Flexibility
+
+
+== Searching Users with Full-Text Search
+
+
+
+== Storing User Events
+
+
+
+==== Health Care
+
+
+==== E-Commerce
+
+
+==== Finance
+
+
+== How to configure Cross Data Center Replication (XDCR)
+
+
+=== Configuring Bidirectional Replication
+
+
+
+
+=== Disaster Recovery with XDCR
+
+
+
