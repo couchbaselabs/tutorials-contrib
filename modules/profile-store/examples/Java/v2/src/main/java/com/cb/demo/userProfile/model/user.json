@@ -8,6 +8,7 @@
   "username": "someUser",
   "password": "letMeIn",
   "securityRoles": ["USER", "ADMIN"],
+  "tenantId" : 4,
   "preferences": [
     {
       "name": "lang",
@@ -16,8 +17,7 @@
     {
       "name": "currency",
       "value": "EUR"
-    },
-
+    }
   ],
   "addresses": [
     {
@@ -29,6 +29,12 @@
       "state": "Bayern",
       "countryCode": "DE"
     }
+  ],
+  "telephones": [
+      {
+          "name": "cell",
+          "number": "111-222-3333"
+      }
   ]
 }
 

@@ -1,12 +1,20 @@
-﻿using Couchbase.Core;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Couchbase.Core;
 using Couchbase.Extensions.DependencyInjection;
+using Couchbase.Linq;
+using Couchbase.N1QL;
+using Couchbase.Search;
+using Couchbase.Search.Queries.Compound;
+using Couchbase.Search.Queries.Simple;
 
 namespace UserProfileExample.Models
 {
-    // tag::UserRepository[]
+    /*
+    // tag::UserRepositorySimple[]
     public class UserRepository
     {
-        private IBucket _bucket;
+        private readonly IBucket _bucket;
 
         public UserRepository(IBucketProvider bucketProvider)
         {
@@ -30,6 +38,132 @@ namespace UserProfileExample.Models
                 user.UserName
             });
         }
+    }
+    // end::UserRepositorySimple[]
+    */
+
+    // tag::UserRepository[]
+    public class UserRepository
+    {
+        private readonly IBucket _bucket;
+        private readonly BucketContext _bucketContext;
+
+        public UserRepository(IBucketProvider bucketProvider)
+        {
+            _bucket = bucketProvider.GetBucket("user_profile");
+            _bucketContext = new BucketContext(_bucket);
+        }
+
+        public User FindById(string id)
+        {
+            var result = _bucket.Get<User>(id);
+            var user = result.Value;
+            user.Id = id;
+            return user;
+        }
+
+        public void Save(User user)
+        {
+            _bucket.Upsert(user.Id, new
+            {
+                user.Addresses,
+                user.CountryCode,
+                user.Enabled,
+                user.FirstName,
+                user.LastName,
+                user.MiddleName,
+                user.Password,
+                user.Preferences,
+                user.SecurityRoles,
+                user.SocialSecurityNumber,
+                user.Telephones,
+                user.TenantId,
+                user.UserName,
+                user.Type
+            });
+        }
+
+        // tag::query[]
+        public List<User> ListTenantUsers(int tenantId, int offset, int limit)
+        {
+            var n1ql = $@"Select meta().id as id, username, tenantId, firstName, lastname
+                from `{_bucket.Name}`
+                where type = 'user'
+                and tenantId = $tenantId
+                order by firstName asc
+                limit $limit
+                offset $offset";
+            var query = QueryRequest.Create(n1ql);
+            query.AddNamedParameter("tenantId", tenantId);
+            query.AddNamedParameter("limit", limit);
+            query.AddNamedParameter("offset", offset);
+
+            var results = _bucket.Query<User>(query);
+
+            return results.Rows;
+        }
+
+        public List<User> FindActiveUsersByFirstName(string firstName, bool enabled, string countryCode, int limit, int offset) {
+            var results = _bucketContext.Query<User>()
+                .Where(u => u.Type == "user")
+                .Where(u => u.FirstName.ToLower() == firstName.ToLower())
+                .Where(u => u.Enabled == enabled)
+                .Where(u => u.CountryCode == countryCode)
+                .Select(u => new { key = N1QlFunctions.Meta(u).Id, document = u })
+                .Skip(offset)
+                .Take(limit)
+                .ToList();
+            results.ForEach(r => r.document.Id = r.key);
+            return results.Select(r => r.document).ToList();
+        }
+        // end::query[]
+
+        // tag::FtsListActiveUsers[]
+        public List<User> FtsListActiveUsers(string firstName, bool enabled, string countryCode, int limit, int skip)
+        {
+            // tag::fuzzy[]
+            var firstNameFuzzy = new MatchQuery(firstName).Fuzziness(1).Field("firstName");
+            var firstNameSimple = new MatchQuery(firstName).Field("firstName");
+            var nameQuery = new DisjunctionQuery(firstNameSimple, firstNameFuzzy);
+            // end::fuzzy[]
+
+            // tag::filter[]
+            var isEnabled = new BooleanFieldQuery(enabled).Field("enabled");
+            var countryFilter = new MatchQuery(countryCode).Field("countryCode");
+            // end::filter[]
+
+            // tag::conj[]
+            var conj = new ConjunctionQuery(nameQuery, isEnabled, countryFilter);
+            // end::conj[]
+
+            // tag::result[]
+            var searchQuery = new SearchQuery();
+            searchQuery.Fields("id", "tenantId", "firstName", "lastName", "userName");
+            searchQuery.Index = "user_index";
+            searchQuery.Query = conj;
+            searchQuery.Skip(skip);
+            searchQuery.Limit(limit);
+
+            var result = _bucket.Query(searchQuery);
+            var users = new List<User>();
+            if (result != null && !result.Errors.Any())
+            {
+                foreach (var hit in result.Hits)
+                {
+                    var user = new User();
+                    user.Id = hit.Id;
+                    user.TenantId = int.Parse(hit.Fields["tenantId"].ToString());
+                    user.FirstName = hit.Fields["firstName"];
+                    user.LastName = hit.Fields["lastName"];
+                    user.UserName = hit.Fields["userName"];
+                    users.Add(user);
+                }
+            }
+
+            return users;
+            // end::result[]
+        }
+        // end::FtsListActiveUsers[]
     }
     // end::UserRepository[]
 }
