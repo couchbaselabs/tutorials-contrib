@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Couchbase.Core;
 using Couchbase.Extensions.DependencyInjection;
 using Couchbase.Linq;
+using Couchbase.Linq.Extensions;
 using Couchbase.N1QL;
 using Couchbase.Search;
 using Couchbase.Search.Queries.Compound;
@@ -42,7 +44,6 @@ namespace UserProfileExample.Models
     // end::UserRepositorySimple[]
     */
 
-    // tag::UserRepository[]
     public class UserRepository
     {
         private readonly IBucket _bucket;
@@ -164,6 +165,46 @@ namespace UserProfileExample.Models
             // end::result[]
         }
         // end::FtsListActiveUsers[]
+
+        public async Task AddEventAsync(UserEvent userEvent)
+        {
+            await AddEventsAsync(new List<UserEvent> { userEvent });
+        }
+
+        // tag::AddEventsAsync[]
+        public async Task AddEventsAsync(List<UserEvent> events)
+        {
+            var tasks = events.Select(e => _bucket.InsertAsync(e.Id, new
+            {
+                e.CreatedDate,
+                e.EventType,
+                e.UserId,
+                e.Type
+            }));
+            await Task.WhenAll(tasks);
+        }
+        // end::AddEventsAsync[]
+
+        // tag::FindLatestUserEvents[]
+        public async Task<List<UserEvent>> FindLatestUserEvents(string userId, EventType eventType, int limit, int offset)
+        {
+            var n1ql = $@"SELECT META(e).id, e.userId, e.createdDate, e.eventType
+                            FROM `{_bucket.Name}` e
+                            WHERE e.type = 'userEvent'
+                            AND e.eventType = $eventType
+                            AND e.userId = $userId
+                            LIMIT $limit
+                            OFFSET $offset";
+            var query = QueryRequest.Create(n1ql);
+            query.AddNamedParameter("eventType", eventType);
+            query.AddNamedParameter("userId", userId);
+            query.AddNamedParameter("limit", limit);
+            query.AddNamedParameter("offset", offset);
+
+            var result = await _bucket.QueryAsync<UserEvent>(query);
+
+            return result.Rows;
+        }
+        // end::FindLatestUserEvents[]
     }
-    // end::UserRepository[]
 }

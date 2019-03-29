@@ -127,7 +127,7 @@ image:00202-visual-studio-create.png[Visual Studio creating a new project]
 If that's not your exact scenario, don't worry. Much of the important code will look the same in other types of projects. You can also use command line dotnet and/or Visual Studio Code instead. This tutorial won't focus on your choice of tools.
 ****
 
-If you'd like to follow along, the full source code for this example project is link://[available on GitHub].
+If you'd like to follow along, the full source code for this example project is link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/profile-store/examples/dotnet/UserProfileExample[available on GitHub].
 
 Once you've created the application, let's add a few packages to it with NuGet. First, add the Couchbase .NET SDK (`dotnet add package CouchbaseNetClient` if you're using the command line). This package will give your application the ability to interact with the Couchbase cluster you created above. The next package is optional, but it will make some things easier: add the Couchbase.Extensions.DependencyInjection package (`dotnet add package Couchbase.Extensions.DependencyInjection`). This package will make it easy for the Couchbase SDK to be used throughout your .NET applications.
 
@@ -183,7 +183,7 @@ include::../examples/dotnet/UserProfileExample/UserProfileExample/Controllers/Va
 When you call the above endpoint (e.g. \http://localhost:5000/api/doSomething), a user will be created, saved to Couchbase, read immediately back out of Couchbase, and returned via HTTP.
 
 ****
-Where did the `_userRepository` come from? Check out the link://[GitHub repo for details]. The short story is that it also comes from dependency injection, also configured in Startup.cs.
+Where did the `_userRepository` come from? Check out the link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/profile-store/examples/dotnet/UserProfileExample[GitHub repo for details]. The short story is that it also comes from dependency injection, also configured in Startup.cs.
 ****
 
 The code above might look trivial for you, especially if you are coming from the relational world. But there is a lot going on under the hood:
@@ -410,16 +410,63 @@ Lastly, let's add a new item to our list of non-functional requirements:
 
 ****
 
-
-
-
-
-
-
-
-
 == Storing User Events
 
+So far, in our User Profile Store, we discussed about how to store basic data about our users without targeting any specific scenario. Just as a quick exercise, let's imagine what else we could store in our application according to each use case:
+
+=== Health Care
+* Results and images of medical exams.
+* History of previous diseases
+
+=== E-Commerce
+* Credit Cards
+* Recommendations
+* Alerts
+* Customer 360 data
+
+=== Finance
+
+* User's transactions history
+
+Even though the requirements of a User Profile Store might be very specific for each vertical, they all can benefit from a common use case: storing user events.
+
+Events are essential to understand how the user behaves and might feed several AI/Analytics systems to build predictions or recommendations. However, it will usually demand a high write/read throughput architecture.
+
+Up until now, all of the code has been synchronous. We can achieve better throughput by using an asynchronous approach. Fortunately, C# has `async/await` built right in, and the Couchbase .NET SDK also has asynchronous support. If you aren't familiar with asynchronous programming in C#, I recommend you check out link:https://docs.microsoft.com/en-us/dotnet/csharp/async[Microsoft's documentation] first.
+
+In our small use case, we will only need two methods:
+
+* *AddEventsAsync:* Store new events asynchronously.
+* *FindLatestUserEventsAsync:* Return the latest N events by type.
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/Models/UserRepository.cs[tag=AddEventsAsync]
+----
+
+This method can take one or more events as input (being able to take a collection of events is useful if you're doing any kind of batching). The use of `_bucket.InsertAsync` should look fairly familiar, as it's very similar to `_bucket.Insert` that was used earlier in this tutorial. But there are two things to note:
+
+* It is an `async` method. This means it returns a `Task`.
+* Since we are handling a collection, I'm gathering up all the `Task`s using a `Select` and then `await`ing all of them with a `Task.WhenAll`.
+
+In the link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/profile-store/examples/dotnet/UserProfileExample[sample code (available on GitHub)], I use `AddEventsSync` primarily to populate sample data. However, for `FindLatestUserEventsAsync`, I created an HTTP endpoint:
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/Controllers/ValuesController.cs[tag=FindLatestUserEvents]
+----
+
+Note that endpoint is also `async` and also returns a `Task`. From the very start, as the HTTP request comes in, the entire process is asynchronous. The `FindLatestUserEventsAsync` method is using N1QL directly:
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/Models/UserRepository.cs[tag=FindLatestUserEvents]
+----
+
+
+Again, note that the method is `async` and returns a `Task`. Unlike the previous example of using N1QL, this method is using `_bucket.QueryAsync`.
+
+With the asynchronous architecture we have explained in this session, your application won't need to wait for a response from the database. This approach can improve significantly your read/write throughput at scale.
 
 
 
@@ -429,15 +476,6 @@ Lastly, let's add a new item to our list of non-functional requirements:
 
 
 
-
-
-==== Health Care
-
-
-==== E-Commerce
-
-
-==== Finance
 
 
 == How to configure Cross Data Center Replication (XDCR)

@@ -38,7 +38,7 @@ namespace UserProfileExample.Models
         public List<Preference> Preferences { get; set; }
         public List<Address> Addresses { get; set; }
         public List<string> SecurityRoles { get; set; }
-        public string Type { get; private set;}
+        public string Type { get; }
     }
     // end::User2[]
 

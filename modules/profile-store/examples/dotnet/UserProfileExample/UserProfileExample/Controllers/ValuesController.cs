@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using UserProfileExample.Models;
@@ -40,18 +39,29 @@ namespace UserProfileExample.Controllers
 
         [HttpGet]
         [Route("api/populate")]
-        public IActionResult Populate()
+        public async Task<IActionResult> Populate()
         {
             // this method will populate the Couchbase bucket with a bunch of randomish user profiles
+            var users = new List<User>();
             for(var i=0;i<100;i++)
             {
-                _userRepository.Save(FakeUser.Create());
+                var user = FakeUser.Create();
+                _userRepository.Save(user);
+                users.Add(user);
             }
 
             // also add some Alex, Allex, and Alec users
             _userRepository.Save(FakeUser.Create(firstName: "Alex", enabled: true, countryCode: "US"));
             _userRepository.Save(FakeUser.Create(firstName: "Allex", enabled: true, countryCode: "US"));
             _userRepository.Save(FakeUser.Create(firstName: "Alec", enabled: true, countryCode: "US"));
+
+            // also add some randomish User Events
+            for (var i = 0; i < 100; i++)
+            {
+                // I'm only pulling from the first 10 users just to increase event density
+                var randomUser = users[Faker.RandomNumber.Next(0, 10)];
+                await _userRepository.AddEventAsync(FakeUserEvent.Create(randomUser.Id));
+            }
 
             return Ok();
         }
@@ -80,7 +90,7 @@ namespace UserProfileExample.Controllers
             if (string.IsNullOrEmpty(countryCode))
                 return BadRequest("countryCode is required");
 
-            var result =
+            var result = 
                 _userRepository.FindActiveUsersByFirstName(firstName, enabled.Value, countryCode, limit, offset);
 
             return Ok(result);
@@ -102,5 +112,21 @@ namespace UserProfileExample.Controllers
 
             return Ok(result);
         }
+
+        // tag::FindLatestUserEvents[]
+        [HttpGet]
+        [Route("api/findLatestUserEvents")]
+        public async Task<IActionResult> FindLatestUserEvents(string userId, EventType? eventType, int limit = 50, int offset = 0)
+        {
+            if(string.IsNullOrEmpty(userId))
+                return BadRequest("userId is required");
+            if(!eventType.HasValue)
+                return BadRequest("eventType is required");
+
+            var result = await _userRepository.FindLatestUserEvents(userId, eventType.Value, limit, offset);
+
+            return Ok(result);
+        }
+        // end::FindLatestUserEvents[]
     }
 }
