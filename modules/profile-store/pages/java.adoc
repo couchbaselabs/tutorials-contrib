@@ -49,7 +49,7 @@ Some of the key non-functional requirements of a successful system are:
 
 * *A flexible data model*: User data can vary a lot depending on the needs of different roles, levels, etc.
 
-* *Easy and fast querying*: with link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL] you can query all your data with a powerfull SQL-like language. In addition, you can also keep your indexes in memory with link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/storage-modes.html[Memory Optimized Indexes (MOI)]
+* *Easy and fast querying*: with link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL] you can query all your data with a powerful SQL-like language. In addition, you can also keep your indexes in memory with link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/storage-modes.html[Memory Optimized Indexes (MOI)]
 
 * *Natural-Language matching*: with link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] you can easily implement advanced searches on natural-language texts.
 
@@ -91,23 +91,23 @@ Note that you can also set up Couchbase by using link:https://docs.couchbase.com
 
 === Creating a bucket
 
-Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[buckets], which are a collection of documents. Let’s create a new bucket called *user_profile*:
+Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[buckets], which are a collection of documents. Let's create a new bucket called *user_profile*:
 
 * Go to http://localhost:8091 and log in with user and password
-* Go to “Buckets” and click on “ADD BUCKET” in the top left corner of the page
+* Go to "Buckets" and click on "ADD BUCKET" in the top left corner of the page
 * Add the bucket name and memory quota:
 
 image:00101-add-bucket.png[Add Bucket Pop up]
 
 
-* Click on “Add Bucket”;
-* Go to “Query” and create the following primary index:
+* Click on "Add Bucket";
+* Go to "Query" and create the following primary index:
 [source,]
 ----
 create primary index `primary_user_profile_index` on `user_profile` using GSI;
 ----
 
-* Then, go to “Security” and click on “ADD USER” 
+* Then, go to "Security" and click on "ADD USER" 
 * Fill out the form with the following data:
 
 image:00102-create-user.png[Add Bucket Pop up]
@@ -116,11 +116,11 @@ image:00102-create-user.png[Add Bucket Pop up]
 *Full Name:* user_profile  +
 *Password:* password  +
 *Verify Password:* password +
-*Roles:* under “user_profile”, select “Application Access”
+*Roles:* under "user_profile", select "Application Access"
 
 
 
-* Finally, click on “Add User”.
+* Finally, click on "Add User".
 
 
 For more details on how to create a bucket and all of the advanced settings, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-buckets/create-bucket.html[Create Bucket] documentation.
@@ -141,7 +141,7 @@ For more details on how to create a bucket and all of the advanced settings, che
 image:00201-spring-initializr.png[Spring Initalizr]
 
 
-*	Click on “Generate Project”
+*	Click on "Generate Project"
 *	Open the project on Intellij or Eclipse.
 
 
@@ -156,7 +156,7 @@ spring.couchbase.bucket.password=password
 spring.data.couchbase.auto-index=true
 ----
 
-Then, let’s create a simple entity called User:
+Then, let's create a simple entity called User:
 
 
 [source,Java,indent=0]
@@ -167,7 +167,7 @@ include::../examples/Java/v1/UserEntity.java[tag=basicUserEntity]
 
 * *@Data:* Lombok annotation responsible to generate getter and setters.
 * *@Document:* Couchbase annotation which defines that this entity is a top-level document
-* *@Id:* Spring Data annotation which defines the attribute called “id” as the document id.
+* *@Id:* Spring Data annotation which defines the attribute called "id" as the document id.
 
 Here is the respective repository for the entity that we just created:
 
@@ -182,7 +182,7 @@ include::../examples/Java/v1/UserEntityRepository.java[tag=code]
 
 * Check out the documentation about each annotation link:https://docs.spring.io/spring-data/couchbase/docs/current/reference/html/#couchbase.repository.indexing[here]
 
-Finally, let’s see our code in action:
+Finally, let's see our code in action:
 
 [source,Java,indent=0]
 ----
@@ -196,7 +196,7 @@ The code above might look trivial for you, especially if you are coming from the
 * The document is automaticaly cached.
 * Operations like findById, save, delete and upsert, use internally the Key-Value Store Engine, which is, from a 10 000 feet view, a big distributed hash map.  This kind of structure is fast for reads and writes and as Couchbase already has a totally transparent manage cache internally, you will get a very good performance without any extra effort.
 
-Even though we haven’t written a lot of code yet, we already achieved 3 of our initial Non-functional requirements:
+Even though we haven't written a lot of code yet, we already achieved 3 of our initial Non-functional requirements:
 
 ****
 *  *Strong Consistenncy:* - Core operations like Updates/Save/getById are strong consistent.
@@ -211,7 +211,7 @@ Even though we haven’t written a lot of code yet, we already achieved 3 of our
 == Querying the Database
 
 
-Let’s first expand our example to something closer to the real world by adding a few extra attributes (firstName, middleName, lastName and securityRoles) and also a few entities (PreferenceEntity and AddressEntity) . Here is the respective code:
+Let's first expand our example to something closer to the real world by adding a few extra attributes (firstName, middleName, lastName and securityRoles) and also a few entities (PreferenceEntity and AddressEntity) . Here is the respective code:
 
 [source,Java,indent=0]
 ----
@@ -237,7 +237,7 @@ Couchbase has no concept similar to tables in an RDBMS, all documents are analog
 
 Couchbase has a SQL-like language called link:https://query-tutorial.couchbase.com/tutorial/#1[N1QL] which you can use to query the database. However, you can also use the Spring Data SDK to make your code even simpler.
 
-link:https://docs.spring.io/spring-data/couchbase/docs/current/reference/html/[Spring Data] allows you to easily query your database while reducing significantly the amount of code needed. You can retrieve data with it by simply naming your method according to link:https://docs.spring.io/spring-data/couchbase/docs/current/reference/html/[Spring Data’s syntax]. 
+link:https://docs.spring.io/spring-data/couchbase/docs/current/reference/html/[Spring Data] allows you to easily query your database while reducing significantly the amount of code needed. You can retrieve data with it by simply naming your method according to link:https://docs.spring.io/spring-data/couchbase/docs/current/reference/html/[Spring Data's syntax]. 
 
 
 [source,Java,indent=0]
@@ -272,7 +272,7 @@ List<SimpleUserVO> findByTenantIdOrderByFirstNameAsc(Integer tenantId, Pageable 
 
 ==== Maximizing Schema Flexibility
 
-Although we do not need to change anything in the database when we add a new attribute to our entity, in the example above the schema of your data is limited to the schema described in your class. Therefore, if you need to be even more flexible, the standard link:https://docs.couchbase.com/java-sdk/2.7/start-using-sdk.html[Couchbase Java SDK] might be a better solution for you as it takes a more generoc approach.
+Although we do not need to change anything in the database when we add a new attribute to our entity, in the example above the schema of your data is limited to the schema described in your class. Therefore, if you need to be even more flexible, the standard link:https://docs.couchbase.com/java-sdk/2.7/start-using-sdk.html[Couchbase Java SDK] might be a better solution for you as it takes a more generic approach.
 
 
 Now that you know how to query your user profile store, let's revisit our list of non-functional requirements:
@@ -299,19 +299,18 @@ One of the important requirements in a User profile Store is to quickly search f
 For many years developers have been using pure SQL to implement these types of functionalities. However, this type of technology has proven to be inefficient to deal with language nuances and
  limited in terms of performance.
 
-Searching for people’s name, for instance,  is a tricky scenario, where the same name might have dozens of variations. In this session, let’s try to solve this issue by enhancing our users listing using Couchbase Full-Text Search on it. The goal is to implement a simple search that is able to return users called *Allex* or *Alec* when we search for *Alex*.
+Searching for people's name, for instance,  is a tricky scenario, where the same name might have dozens of variations. In this session, let's try to solve this issue by enhancing our users listing using Couchbase Full-Text Search on it. The goal is to implement a simple search that is able to return users called *Allex* or *Alec* when we search for *Alex*.
 
 The first step is to create a Full-Text Search index via Search → Add Index, with the following parameters:
-
 
 image:00301-create-index.png[Create Index]
 
 * *Name:* the name of the index;
 * *Bucket:* The target bucket where your documents are stored;
-* *JSON type field:* As we are using Spring Data, our object type is the attribute called “_class”
-* *Advanced → Store Dynamic Fields:* Let’s also store our documents in the index.
+* *JSON type field:* As we are using Spring Data, our object type is the attribute called "_class"
+* *Advanced → Store Dynamic Fields:* Let's also store our documents in the index.
 
-Click on your index, type “Alex” and hit Search to check if your index was created correctly:
+Click on your index, type "Alex" and hit Search to check if your index was created correctly:
 
 image:00302-show-index-results.png[Index results]
 
@@ -321,15 +320,14 @@ image:00303-index-results-listing.png[Index results Listing]
 
 You can read more about link:https://docs.couchbase.com/server/6.0/fts/fts-creating-indexes.html#specifying-fields[how to index only specific fields here].
 
-Now that we already have our index in place, let’s see how we can make the same US users query using Couchbase FTS Engine:
-
+Now that we already have our index in place, let's see how we can make the same US users query using Couchbase FTS Engine:
 
 [source,Java,indent=0]
 ----
 include::../examples/Java/v2/src/main/java/com/cb/demo/userProfile/service/UserServiceImpl.java[tag=code]
 ----
 
-In the code above, we start by creating a disjunction query using the user’s first name. The disjunction query is something similar to an “OR” operator in SQL.
+In the code above, we start by creating a disjunction query using the user's first name. The disjunction query is something similar to an "OR" operator in SQL.
 
 [source,Java,indent=0]
 ----
@@ -345,7 +343,7 @@ Then, we filter by country and if the user is active:
 include::../examples/Java/v2/src/main/java/com/cb/demo/userProfile/service/UserServiceImpl.java[tag=filter]
 ----
 
-And join all filters using a *conjunction query*, something similar to an “AND” operator in SQL.
+And join all filters using a *conjunction query*, something similar to an "AND" operator in SQL.
 
 [source,Java,indent=0]
 ----
@@ -402,34 +400,31 @@ Lastly, let's add a new item to our list of non-functional requirements:
 
 * *A flexible data model* – No need to specify a schema, no need to change the database when a new column is added.
 
-* *Natural-Language matching*: link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] is a powerfull search engine framework which allows you to query natural-language text at scale.
+* *Natural-Language matching*: link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] is a powerful search engine framework which allows you to query natural-language text at scale.
 
 ****
 
 == Storing User Events
 
+So far, in our User Profile Store, we discussed about how to store basic data about our users without targeting any specific scenario. Just as a quick exercise, let's imagine what else we could store in our application according to each use case:
 
-So far, in our User Profile Store, we discussed about how to store basic data about our users without targeting any specific scenario. Just as a quick exercise, let’s imagine what else we could store in our application according to each use case:
-
-
-==== Health Care
+=== Health Care
 * Results and images of medical exams.
 * History of previous diseases
 
-==== E-Commerce
+=== E-Commerce
 * Credit Cards
 * Recommendations
 * Alerts
 * Customer 360 data
 
-==== Finance
+=== Finance
 
-* User’s transactions history
+* User's transactions history
 
+Even though the requirements of a User Profile Store might be very specific for each vertical, they all can benefit from a common use case: storing user events.
 
-Even though the requirements of a User Profile Stores might be very specific for each vertical, they all can benefit from a common use case: storing user events.
-
-Events are essential to understand how the user behaves and might feed several AI/Analytics systems to build predictions or recommendations. However, it will usually demands a high write/read throughput architecture.
+Events are essential to understand how the user behaves and might feed several AI/Analytics systems to build predictions or recommendations. However, it will usually demand a high write/read throughput architecture.
 
 One of well-known strategies to improve throughput of a system is to use a non-blocking programming approach. As Couchbase itself was internally designed to be reactive, you can develop a true end-to-end non-blocking system.
 
@@ -437,7 +432,7 @@ Both Java and Spring SDK can be used reactively, the he main difference between 
 
 If you are not familiar with reactive programming, I highly recommend you to link:http://reactivex.io/tutorials.html[check this out first].
 
-Let’s start by adding two new dependencies to our repository: *rxjava-reactive-streams* and *spring-boot-starter-webflux*.
+Let's start by adding two new dependencies to our repository: *rxjava-reactive-streams* and *spring-boot-starter-webflux*.
 
 
 [source,XML,indent=0]
@@ -455,7 +450,7 @@ Let’s start by adding two new dependencies to our repository: *rxjava-reactive
 
 ----
 
-Then, let’s enable reactive repositories with the annotation *@EnableReactiveCouchbaseRepositories*:
+Then, let's enable reactive repositories with the annotation *@EnableReactiveCouchbaseRepositories*:
 
 
 [source,Java,indent=0]
@@ -474,7 +469,7 @@ public interface ReactiveUserEventRepository extends ReactiveCouchbaseSortingRep
 
 As you might guess, this repository already contains by default the save, delete, get, and many other methods. However, they return Flux<T> and Mono<T> instead of returning directly your entity type.
 
-*Mono* e *Flux* are the two main return types when you are working with reactor (the reactive library chosen by Spring Webflux). In a rough summary, *Flux* allows you to emit zero or more items while *Mono* can only emit one item at the most.
+*Mono* and *Flux* are the two main return types when you are working with reactor (the reactive library chosen by Spring Webflux). In a rough summary, *Flux* allows you to emit zero or more items while *Mono* can only emit one item at the most.
 
 In our small use case, we will only need two methods:
 
@@ -502,12 +497,12 @@ Now, if you also want to create a reactive rest endpoint, all you need to do is 
 include::../examples/Java/v2/src/main/java/com/cb/demo/userProfile/controllers/UserEventController.java[tag=code]
 ----
 
-With the event-driven architecture we have explained in this session, your application won't need to wait for a response from the database. This approach can improve significantly your read/write throuput at scale.
+With the event-driven architecture we have explained in this session, your application won't need to wait for a response from the database. This approach can improve significantly your read/write throughput at scale.
 
 
 == How to configure Cross Data Center Replication (XDCR)
 
-link::https://docs.couchbase.com/server/6.0/manage/manage-xdcr/xdcr-management-overview.html[Cross Data Center Replication] is one of the most appealing features in Couchbase, with it you can easily distribute and replicate your data globally using a secure and reliable protocols that can be paused and resumed at any time.
+link:https://docs.couchbase.com/server/6.0/manage/manage-xdcr/xdcr-management-overview.html[Cross Data Center Replication] is one of the most appealing features in Couchbase, with it you can easily distribute and replicate your data globally using a secure and reliable protocols that can be paused and resumed at any time.
 
 image:00501-xdcr.png[XDCR]
 
@@ -515,11 +510,11 @@ XDCR supports replication between clusters of different sizes, and it is configu
 
 In our User Profile Store example, we will have 2 datacenters: one in the US and the other in Europe. Therefore, if a user living in the USA travels to Europe, he will connect to our European Datacenter.
 
-The user should be able to log in and access his profile, but we won’t leverage his previous events/recommendations, as EU is a different market with different products, regulations, taxes, currencies, etc.
+The user should be able to log in and access his profile, but we won't leverage his previous events/recommendations, as EU is a different market with different products, regulations, taxes, currencies, etc.
 
 In practice, we will need to replicate only the *UserEntity* to achieve this behavior. the rest of entities will be local to each cluster. To simulate this scenario, we will use two Couchbase instances, one running local and the second on docker, here is how to set up them:
 
-* Let’s start by setting up a second Couchbase instance. Feel free to choose where you want to run it, but the two machines should be able to talk to each other.
+* Let's start by setting up a second Couchbase instance. Feel free to choose where you want to run it, but the two machines should be able to talk to each other.
 
 * Once you have created your new instance, go to *Buckets→ ADD BUCKET*, and then create a new bucket called *user_profile*
 
@@ -527,7 +522,7 @@ In practice, we will need to replicate only the *UserEntity* to achieve this beh
 image:00502-create-bucket.png[Create Bucket]
 
 
-* Now let’s connect our EU cluster with our US one. Click on *XDCR→ Add Remote Cluster*:
+* Now let's connect our EU cluster with our US one. Click on *XDCR→ Add Remote Cluster*:
 
 image:00503-remote-cluster.png[Remote Cluster]
 
@@ -542,7 +537,7 @@ image:00503-remote-cluster.png[Remote Cluster]
 
 image:00504-add-rep.png[Add replication]
 
-Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated by applying a regex on the document id. In the case above, only documents with ids starting with *“user::”* will be replicated. As in our User Profile store, only the *UserEntity* has this prefix, it will be the only document type which will be replicated to other clusters. You can read more about it link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-filtering.html[here].
+Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated by applying a regex on the document id. In the case above, only documents with ids starting with *"user::"* will be replicated. As in our User Profile store, only the *UserEntity* has this prefix, it will be the only document type which will be replicated to other clusters. You can read more about it link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-filtering.html[here].
 
 The final result should be similar to the following:
 
@@ -595,7 +590,7 @@ With XDCR, the MCA SDK and all Couchbase internal features, like replication and
 
 * *A flexible data model* – No need to specify a schema, no need to change the database when a new column is added.
 
-* *Natural-Language matching*: link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] is a powerfull search engine framework which allows you to query natural-language text at scale.
+* *Natural-Language matching*: link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] is a powerful search engine framework which allows you to query natural-language text at scale.
 
 * *High Availability* - XDCR, MCA and https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/vbuckets.html[No single point of failure]  
 
