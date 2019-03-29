@@ -1,0 +1,11 @@
+﻿/* tag::ix_listTenantUsers[] /*
+CREATE INDEX ix_listTenantUsers ON `user_profile`(`tenantId`) WHERE `type` = 'user';
+/* end::ix_listTenantUsers[] */
+
+/* tag::ix_findActiveUsersByFirstName[] */
+CREATE INDEX ix_findActiveUsersByFirstName ON `user_profile`(`countryCode`,`enabled`,lower(`firstName`)) WHERE `type` = 'user';
+/* end::ix_findActiveUsersByFirstName[] */
+
+/* tag::ix_findLatestUserEvents[] */
+CREATE INDEX ix_findLatestUserEvents ON `user_profile`(`userId`,`eventType`) WHERE `type` = 'userEvent'
+/* tag::ix_findLatestUserEvents[] */
