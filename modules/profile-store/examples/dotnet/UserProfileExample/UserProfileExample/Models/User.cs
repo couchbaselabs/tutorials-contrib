@@ -74,7 +74,7 @@ namespace UserProfileExample.Models
             user.CountryCode = countryCode ?? Faker.Address.Country().Substring(0,2).ToUpper();
             user.Enabled = enabled ?? (Faker.RandomNumber.Next(100,200) % 2) == 0;
             user.FirstName = firstName ?? Faker.Name.First();
-            user.Id = Guid.NewGuid().ToString();
+            user.Id = "user::" + Guid.NewGuid().ToString();
             user.LastName = Faker.Name.Last();
             user.MiddleName = Faker.Name.First();
             user.Password = Faker.Lorem.Words(1).First();

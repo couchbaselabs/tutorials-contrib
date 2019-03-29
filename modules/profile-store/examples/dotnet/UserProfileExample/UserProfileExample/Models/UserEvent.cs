@@ -27,7 +27,7 @@ namespace UserProfileExample.Models
         public static UserEvent Create(string userId)
         {
             var userEvent = new UserEvent();
-            userEvent.Id = Guid.NewGuid().ToString();
+            userEvent.Id = "userevent::" + Guid.NewGuid().ToString();
             userEvent.CreatedDate = DateTime.Now.AddSeconds(-1 * Faker.RandomNumber.Next(0, 300));
             userEvent.UserId = userId;
             switch (Faker.RandomNumber.Next(0,3))

@@ -214,7 +214,7 @@ include::../examples/dotnet/UserProfileExample/UserProfileExample/Models/User.cs
 
 Even though we added some new attributes, our code has barely changed:
 
-* No change is needed in our UserEntityRepository.
+* No change is needed in our UserRepository.
 * Arrays and nested entities will be handled automatically by Couchbase.
 * No need to implement a Lazy/Eager behavior. There is no extra cost on bringing the whole document other than the size of the document itself.
 
@@ -478,15 +478,102 @@ With the asynchronous architecture we have explained in this session, your appli
 
 
 
+
+
+
+
 == How to configure Cross Data Center Replication (XDCR)
+
+link:https://docs.couchbase.com/server/6.0/manage/manage-xdcr/xdcr-management-overview.html[Cross Data Center Replication] is one of the most appealing features in Couchbase, with it you can easily distribute and replicate your data globally using a secure and reliable protocols that can be paused and resumed at any time.
+
+image:00501-xdcr.png[XDCR]
+
+XDCR supports replication between clusters of different sizes, and it is configured on the bucket level (between buckets of two or more clusters). You can also configure the link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-overview.html#xdcr-direction-and-topology[direction of the replication].
+
+In our User Profile Store example, we will have 2 datacenters: one in the US and the other in Europe. Therefore, if a user living in the USA travels to Europe, he will connect to our European Datacenter.
+
+The user should be able to log in and access his profile, but we won't leverage his previous events/recommendations, as EU is a different market with different products, regulations, taxes, currencies, etc.
+
+In practice, we will need to replicate only the *User* to achieve this behavior. the rest of entities will be local to each cluster. To simulate this scenario, we will use two Couchbase instances, one running local and the second on docker, here is how to set up them:
+
+* Let's start by setting up a second Couchbase instance. Feel free to choose where you want to run it, but the two machines should be able to talk to each other.
+
+* Once you have created your new instance, go to *Buckets→ ADD BUCKET*, and then create a new bucket called *user_profile*
+
+
+image:00502-create-bucket.png[Create Bucket]
+
+
+* Now let's connect our EU cluster with our US one. Click on *XDCR→ Add Remote Cluster*:
+
+image:00503-remote-cluster.png[Remote Cluster]
+
+. *Cluster Name:* Name of the cluster you are connecting to
+
+. *IP/Hostname:* IP address of one of the nodes of the remote cluster
+
+. *Username/Password:* username and password of the remote cluster
+
+
+* Click on *XDCR → Add Replication*, and fill out the form like the following:
+
+image:00504-add-rep.png[Add replication]
+
+Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated by applying a regex on the document id. In the case above, only documents with ids starting with *"user::"* will be replicated. As in our User Profile store, only the *User* has this prefix, it will be the only document type which will be replicated to other clusters. You can read more about it link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-filtering.html[here].
+
+The final result should be similar to the following:
+
+image:00505-repl1.png[Replication 1]
+
+The replication will start automatically and in a few seconds you will be able to see documents appearing in the EU Cluster:
+
+image:005051-eu-cluster.png[EU Cluster]
+
+As we are filtering which documents should be replicated between clusters, the total number of documents will be different in both clusters:
+
+image:005052-us-cluster.png[US Cluster]
+
 
 
 === Configuring Bidirectional Replication
 
+In our current scenario, EU users also should be replicated to US. It will require us to do nearly the same configuration in our US cluster, but this time pointing the replication to the EU Cluster.
+
+As you might already guess, we need to first register our EU Cluster in our US Cluster:
+
+image:00506-remote-rep.png[Remote Repl]
+
+Finally, we can add the replication from EU to US:
+
+image:00507-eu-replication.png[EU Replication]
+
+Here is how your replication should look like:
+
+image:00508-repl-result2.png[Replication EU to US]
 
 
 
 === Disaster Recovery with XDCR
 
+XDCR is also commonly used in disaster recovery plans (DRP). In this scenario, all you need to do is to set up a new Couchbase cluster in your DRP environment, then create a replication from your maib cluster to your DRP. On the top of it, you could still use the link:https://blog.couchbase.com/couchbase-high-availability-disaster-recovery-java-multi-cluster-aware-client/[multi-cluster aware (MCA) SDK] which can automatically redirect traffic to a different cluster according to a set of rules.
+
+With XDCR, the MCA SDK and all Couchbase internal features, like replication and link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/automatic-failover.html[AutoFailover], we can update our list of non-functional requirements:
 
 
+
+****
+*  *Strong Consistency:* - Core operations like Updates/Save/getById are strong consistent.
+
+* *High read and write throughput* - Writes are asynchronous,reads by key uses internally the key value store, queries can use Memory Optimized Indexes (MOI)
+
+* *Caching* - Documents are automatically cached.
+
+* *Easy to query* – via N1QL or Linq2Couchbase;
+
+* *A flexible data model* – No need to specify a schema, no need to change the database when a new column is added.
+
+* *Natural-Language matching*: link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] is a powerful search engine framework which allows you to query natural-language text at scale.
+
+* *High Availability* - XDCR, MCA and https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/vbuckets.html[No single point of failure]  
+
+****
