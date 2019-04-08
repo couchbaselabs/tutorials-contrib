@@ -1,2 +1,3 @@
 ** xref:session-storage:install.adoc[Configure Couchbase Cluster]
 ** xref:session-storage:aspnet.adoc[ASP.NET Core]
+** xref:session-storage:java.adoc[Java]

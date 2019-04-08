@@ -1,0 +1,520 @@
+= Using Couchbase Server as a Session Store
+:page-aliases: tutorials:session-storage-tutorial:java
+
+== Overview
+
+This tutorial contains four main sections:
+
+* <<What is a session store?>> If you're new to session stores, this section discusses the how/why of sessions.
+* <<Installing Couchbase>> Start here if you've never setup Couchbase before.
+* <<Web server integration>>. Once you have a Couchbase Cluster set up, this tutorial will show how to integrate it with Java.
+* <<Exploring Session Data>>. In contrast to many other session storage options, Couchbase has unique capabilities for exploring session data and gaining insights into your users and customers.
+
+== What is a session store?
+
+Web applications are session-oriented. When a user logs in to a site, for example, they start a "session". When the user logs out (or the session times out, more commonly), the session ends. The session and the user are correlated by giving a cookie to the user's web browser with a lookup  value that directly corresponds to session storage on the server side. (These details are generally behind the scenes when using a session storage framework). Sessions may be stored temporarily or indefinitely, depending on your use case.
+
+=== What is stored in session?
+
+Any state that a user needs can be stored in session. It could be as minimal as the user's name. User preferences can also be stored in session: language, preferred retail location, invitation/coupon codes, authorization, and more.
+
+Some more examples of data you might put in a session store:
+
+* Shopping carts / baskets (for ecommerce)
+* Ticket selections (for events/ticket sales)
+* Bet slips (as you build before you submit)
+* Cookie tracking
+* Browse-back (to keep track of where a user came from)
+* Site activity tracking (to watch a customer's journey on your site)
+
+=== Why do I need one?
+
+Because HTTP is "stateless", a web application needs to store session-related data somewhere. By default, session data is usually stored in memory on the web server. However, if the web server goes down or is restarted, that session information is wiped out. To prevent this, session data can be stored elsewhere.
+
+=== Session storage with web farms
+
+Another reason to store session data elsewhere is because of web farms. In the below diagram, an Java web application is being scaled horizontally. Incoming HTTP requests are routed through a load balancer which picks one of the instances to send the user's request.
+
+image:00101-session-diagram-java.png[Session storage diagram]
+
+If session data is stored on the application _itself_, then a single user can only interact with a single instance. The load balancer must send the user to the same server every time. This is known as "sticky sessions".
+
+Sticky sessions can be problematic (can result in unbalanced loads, and data still can be wiped out by a web server going down). Using a shared location for data avoids enabling sticky sessions.
+
+=== Why Couchbase is a good choice for a Session Store
+
+The bare minimum for a good session store should be:
+
+* Performance: Couchbase Server has a memory-first architecture. Data can be retrieved with very low latency. This is important because session data is often retrieved on every page.
+
+* Flexibility: Session data can vary a lot depending on the needs of different parts of the web site.
+
+* TTL: Data stored in Couchbase can be easily configured to expire after a set period of time with time-to-live (TTL).
+
+In addition, Couchbase Server has more capabilities that make it an ideal choice for a session store:
+
+* link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL querying] - the ability to easily query sessions with SQL for business insight
+* link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/storage-modes.html[Memory Optimized Indexes (MOI)] - enabling high-speed maintenance and scanning by keeping the indexes in memory
+* link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/services/services.html[Scaling] - not only does Couchbase make it easy to scale horizontally, but it makes it easy to scale individual services vertically with multi-dimensional scaling (MDS)
+* Couchbase's memory-first architecture with real-time disk-based persistance makes it a good choice for both short- and long-term session storage.
+
+== Session Store Step-by-step
+
+The rest of ths tutorial will walk you through the steps of using Couchbase as a session store:
+
+****
+☐ Installing and setting up Couchbase
+
+☐ Configuring Couchbase for session storage
+
+☐ Creating an Java application
+
+☐ Integrating Java with Couchbase
+
+☐ Reading/Writing session data
+
+☐ Querying session data with N1QL for business insights
+****
+
+=== Installing Couchbase
+
+There are a number of different ways to get started with Couchbase. Choose the method that's easiest for you. Check out link:http://docs.couchbase.com/tutorials/session-storage-tutorial/install.html[How to Setup and Configure a Couchbase Cluster] to review the options.
+
+=== Setting up Couchbase Server
+
+You will need to start by accessing the Couchbase Server Console with a web browser on port 8091 (for example, \http://localhost:8091). Once there, you will see a "Welcome" screen that will start to walk you through the process of setting up a new cluster. For complete details, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-nodes/create-cluster.html[Create Cluster] documentation.
+
+Note that you can also set up Couchbase by using link:https://docs.couchbase.com/server/6.0/cli/cli-intro.html[command line tools] and/or link:https://docs.couchbase.com/server/6.0/rest-api/rest-intro.html[a REST API] instead of the UI. Using the UI for this tutorial will help you get comfortable with Couchbase, but in the long run you may want to script/automate cluster management using CLI/REST. If you are using the Kubernetes Operator, these settings can also be configured in a YAML file.
+
+=== Creating a bucket
+
+Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[buckets], which are a collection of key/value pairs.
+
+To store session data, you need at least one bucket. In the Couchbase Server Console, navigate to "Buckets" and then "Add Bucket". Give it whatever name you'd like, for example "sessionstore".
+
+image:00105-create-bucket-dialog.png[Create session store bucket]
+
+* Then, go to "Security" and click on "ADD USER" 
+* Fill out the form with the following data:
+
+*Username:* sessionstore  +
+*Full Name:* sessionstore  +
+*Password:* password  +
+*Verify Password:* password +
+*Roles:* under "sessionstore", select "Application Access"
+
+
+
+* Finally, click on "Add User".
+
+Two important factors that this tutorial will touch on is bucket types: "Ephemeral vs Couchbase". This tutorial will also touch on replication, briefly.
+
+For more details on how to create a bucket and all of the advanced settings, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-buckets/create-bucket.html[Create Bucket] documentation.
+
+==== Couchbase vs Ephemeral
+
+There are two kinds of buckets you can use for a session store:
+
+* Couchbase: this is the default bucket type. Data is stored in memory as well as disk. If memory is full, items are ejected from RAM, but can still be accessed from disk when needed.
+* Ephemeral: this is a memory-only bucket. You can avoid the overhead of disk access, but if memory is full, then there is nowhere else to store data. You can configure items to be ejected or you can forbid additional data being added.
+
+There's actually a third kind of bucket: Memcached. These are also memory-only buckets. If memory is full, items will be ejected to make room as new items are added. Unless you need Memcached compatibility, you are better off using Couchbase or Ephemeral buckets.
+
+For more details about the different bucket types, check out link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[Buckets] in the Couchbase documentation.
+
+==== Replication
+
+To start with, your Couchbase Server cluster may only consist of a single instance of Couchbase Server. One of Couchbase Server's strengths is its ability to horizontally scale to accomodate large scale applications. As you add more "nodes" to a cluster, you gain the ability to *replicate* data across the cluster. This means that if a single node goes down, you can (automatically) recover data from replicas.
+
+When creating a bucket, if you enable replicas, then you will need to select how many total replicas you want: "1", "2", or "3". Note that you will need to have at least that many servers for replication to work properly.
+
+At this point, Couchbase should be ready to go. We'll look at a Java application next.
+
+****
+🗹 Installing and setting up Couchbase
+
+🗹 Configuring Couchbase for session storage
+
+☐ Creating a Java application
+
+☐ Integrating Java with Couchbase
+
+☐ Reading/Writing session data
+
+☐ Querying session data with N1QL for business insights
+****
+
+== Web server integration
+
+Session stores can take several different forms. Most commonly, it's an integration between a persistence tool (a database like Couchbase) and web framework software (like Spring, ASP.NET, Express, etc).
+
+=== Web frameworks
+
+Web frameworks are the tools that developers typically use to create web sites. They may serve up dynamically generated content (e.g. HTML), static content (e.g. CSS/JS/images), or they may directly serve data (e.g. JSON over HTTP/REST).
+
+In this tutorial, we'll look at how to use Couchbase as a session store for an Thymeleaf + Spring Boot application.
+
+=== Spring Session Integration
+
+The complete source code for this example is link:https://github.com/couchbaselabs/session-store-java[available on GitHub] if you'd like to follow along. Assuming you've got Couchbase, the JDK and Maven installed, there are four steps to get the example running:
+
+1. `git clone` the repository
+2. Add you Couchbase credentials to the *application.properties* file
+3. Run `mvn spring-boot:run` in the project folder
+4. Open your browser at http://localhost:8080 
+
+IMPORTANT: If you run into any dependency issues, checkout and then build link:https://github.com/couchbaselabs/spring-session-data-couchbase[this project] with `mvn package`  
+
+Once you've done that, you'll be able to use the finished sample application. The rest of this tutorial walks through the steps in building the application. You can follow along by browsing the source code or trying to recreate the sample application yourself.
+
+To start with, let's create a brand new project using Spring Initialzr:
+
+*	Go to Spring Initialzr at https://start.spring.io/
+*	Fill out the for with the following data:
+**	Group: com.cb
+**	Artifact: session-store
+**  Dependencies:
+***	Couchbase
+***	Lombok
+
+image:java-001001-spring-initialzr.png[Spring Initalizr]
+
+
+*	Click on "Generate Project"
+*	Open the project on Intellij or Eclipse.
+
+
+
+Then, add the following dependency in your *pom.xml* file:
+
+[source,XML]
+----
+<dependency>
+	<groupId>org.springframework.session</groupId>
+	<artifactId>spring-session-data-couchbase</artifactId>
+	<version>1.0.BUILD-SNAPSHOT</version>
+</dependency>
+----
+
+IMPORTANT: If you run into any dependency issues, checkout and then build link:https://github.com/couchbaselabs/spring-session-data-couchbase[this project] with `mvn package`  
+
+
+Then, we need connect our new application to our database by defining the following configuration in the *application.properties* file:
+
+
+[source,]
+----
+spring.couchbase.bootstrap-hosts=localhost
+spring.couchbase.bucket.name=sessiostore
+spring.couchbase.bucket.password=password
+spring.data.couchbase.auto-index=true
+----
+
+Finally, in *SessionStoreApplication.java*, add the *@EnableCouchbaseHttpSession* annotation
+
+[source,Java,indent=0]
+----
+@SpringBootApplication
+@EnableCouchbaseHttpSession
+public class SessionStoreApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SessionStoreApplication.class, args);
+	}
+
+}
+----
+
+Now, the HttpSession will automatically be saved in Couchbase. You can view all the *@EnableCouchbaseHttpSession* attributes link:https://github.com/couchbaselabs/spring-session-data-couchbase[here].
+
+
+
+****
+🗹 Installing and setting up Couchbase
+
+🗹 Configuring Couchbase for session storage
+
+🗹 Creating a Java application
+
+🗹 Integrating Java with Couchbase
+
+☐ Reading/Writing session data
+
+☐ Querying session data with N1QL for business insights
+****
+
+
+=== Reading/writing from session
+
+Let's start by writing to session.
+
+In the sample application, there are three different types of session objects that a given user may store: User, Shopping Cart, Location. `User` stores username as well as phone number. `Shopping Cart` stores items, prices, and quantities of items that a user will purchase. `Location` stores address and latitude/longitude. In your application, you may want to break up different areas of session, as not all users will need every session object. For instance, a customer who is visiting your site may need browse-back and site activity tracking data, but may not need any shopping cart data until they put the first item into their cart.
+
+To store an item in session, use the `HttpSession` instance received as a parameter. Here's an example of the "User" session data being stored:
+
+[source,Java,indent=0]
+----
+@GetMapping("/AddUserDataToSession")
+public String addUserDataToSession(Model model, HttpSession session) throws Exception {
+    SessionCart sc = new SessionCart();
+    sc.setUser(DataGenerator.getRandomUser());
+    session.setAttribute(SESSION_CART, sc);
+    return "welcome";
+}
+----
+
+To retrieve an item from session, use `HttpSession.getAttribute` method. Here's an example of the "User" session data being retrieved:
+
+[source,Java,indent=0]
+----
+SessionCart sc = session.getAttribute(SESSION_CART);
+User user = sc.getUser();
+----
+
+_Note:_
+
+* link:https://github.com/couchbaselabs/session-store-java/blob/master/src/main/java/com/cb/sessionstore/controller/DataGenerator.java[DataGenerator] is being used to set random data to these session objects for example purposes.
+
+Finally, the session data will be erased automatically after 30 minutes (you can change this behavior via the attribute *maxInactiveIntervalInSeconds* in the *@EnableCouchbaseHttpSession* annotation ), you can also reset the session at any time using the `invalidate` method:
+
+[source,Java,indent=0]
+----
+ @GetMapping("/newSession")
+public String newSession(HttpServletRequest request, Model model) throws Exception {
+
+    request.getSession().invalidate();//invalidade the current session
+    HttpSession newSession = request.getSession(); //create a new session
+    ...
+}
+----
+
+Putting these all together, the example application is able to create objects, read objects, and remove objects from session storage:
+
+image:java-session-store-demo.gif[Session storage example in action]
+
+To simulate multiple users, you can use different browsers, clear your cookies, etc. There's also a link in the sample application to "Start a new session". Before proceeding into exploring session data, it would be helpful to have a bunch of sessions created already in your session store bucket.
+
+****
+🗹 Installing and setting up Couchbase
+
+🗹 Configuring Couchbase for session storage
+
+🗹 Creating a Java application
+
+🗹 Integrating Java with Couchbase
+
+🗹 Reading/Writing session data
+
+☐ Querying session data with N1QL for business insights
+****
+
+== Exploring Session Data
+
+Using Couchbase for session storage so far has been primarily based in fundamental key/value operations. However, Couchbase can do far more than perform operations based on document keys. Couchbase has SQL query capabilities (known as N1QL) that can be used to perform queries against _all_ the sessions stored in Couchbase. This can be useful to gain valuable insights about your customers and users.
+
+In the above example, note that a session could contain a shopping cart. Suppose there are hundreds and thousands of sessions being stored at any given time. It would be useful to query all of this data to gain insights such as:
+
+* Most/least popular items in shopping carts
+* Average age of a shopping cart
+* Average value of all the items in a shopping cart.
+* Much more, the sky's the limit.
+
+Let's explore a couple of simple examples of how N1QL could be used to explore the session data.
+
+=== How session data is stored
+
+Before we begin, let's look at what a session storage document actually looks like.
+
+[source,JavaScript,indent=0]
+----
+//key : 5b357ade-6059-4d16-aea3-6f784765e7b5
+
+
+{
+  "_principal": null,
+  "_interval": 1800,
+  "_expireAt": 1554743279889,
+  "_created": 1554741479889,
+  "_accessed": 1554741479889,
+  "_type": "sessions",
+  "_attr": "\"rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAx3CAAAABAAAAABdAADZm9vc3IAHWNvbS5jYi5zZXNzaW9uc3RvcmUubW9kZWwuRm9vO5F+XaK9pV0CAAJMAAphdHRyaWJ1dGUxdAASTGphdmEvbGFuZy9TdHJpbmc7TAAKYXR0cmlidXRlMnEAfgAEeHB0AAZ2YWx1ZTF0AAZ2YWx1ZTJ4\""
+}
+----
+
+Note that, all session's data is binary stored in an attribute called *_attr*. Spring doesn't know which objects types are in the session, so there is no easy way to convert it to human-readable format. You can overcome this limitation by setting the attribute *keepStringAsLiteral* as true in the *EnableCouchbaseHttpSession* annotation:
+
+
+[source,Java,indent=0]
+----
+@SpringBootApplication
+@EnableCouchbaseHttpSession(keepStringAsLiteral = true)
+public class SessionStoreApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SessionStoreApplication.class, args);
+	}
+
+}
+----
+
+*keepStringAsLiteral* will tell Couchbase Spring Session to store all session's String attributes as top-level properties within the document. For instance, instead of adding a link:https://github.com/couchbaselabs/session-store-java/blob/master/src/main/java/com/cb/sessionstore/controller/SessionCart.java[SessionCart] instance directly to the session, we could convert the object to a JSON-encoded String format using Jackson's `ObjectMapper`:
+
+[source,Java,indent=0]
+----
+ObjectMapper mapper = new ObjectMapper();
+session.setAttribute(SESSION_CART, mapper.writeValueAsString(sessionCartInstance))
+
+----
+
+And then, when you need to read the session cart, convert it back to an object:
+
+
+[source,Java,indent=0]
+----
+ObjectMapper mapper = new ObjectMapper();
+mapper.readValue( session.getAttribute(SESSION_CART).toString(), SessionCart.class);
+----
+
+In our example, we have two methods responsible for reading/writting the session cart:
+
+[source,Java,indent=0]
+----
+
+@Controller
+public class MainController {
+    ...
+    
+    private SessionCart getSessionCart(HttpSession session) throws IOException {
+        if(session.getAttribute("sessionCart") != null) {
+            return mapper.readValue( session.getAttribute("sessionCart").toString(), SessionCart.class);
+        } else {
+            return new SessionCart();
+        }
+    }
+    
+    private void putSessionCart(SessionCart cart, HttpSession session) throws JsonProcessingException {
+        session.setAttribute("sessionCart", mapper.writeValueAsString(cart));
+    }
+}
+----
+
+
+As *sessionCart* is a String, it will be stored as it is in the database:
+
+
+[source,JavaScript,indent=0]
+----
+//key : 5b2a2487-4825-43de-b089-1b61703556b2
+
+{
+  "_principal": null,
+  "_interval": 1800,
+  "_expireAt": 1554746972015,
+  "_created": 1554745163803,
+  "_accessed": 1554745172015,
+  "sessionCart": "{\"shoppingCart\":{\"created\":1554745170784,\"items\":[{\"itemName\":\"Tennis Shoes\",\"price\":38.25186017511709,\"quantity\":3}]},\"user\":{\"username\":\"robertst\",\"phoneNumber\":\"(500)-383-1668\"},\"location\":{\"address\":\"90 Arrowhead Avenue Jonesboro, GA 30236\",\"country\":\"USA\",\"coordinates\":{\"lat\":10,\"lon\":37}}}",
+  "_type": "sessions",
+  "_attr": "\"rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAB3CAAAABAAAAAAeA==\""
+}
+----
+
+
+link:https://www.couchbase.com/products/n1ql[N1QL] has a function called link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/jsonfun.html[DECODE_JSON], which can function can unmarshal a JSON-encoded String to an object, so whenever you need to filter a query by the sessionCart, all you have to do is to use `DECODE_JSON(sessionCart).someAttribute`. Let's see some examples:
+
+
+
+=== Most recent shopping carts
+
+We will start with a simple case. Suppose we want a snapshot of the 10 most recent shopping carts. This might be useful for a dashboard or for just looking at what's going on with the site right now. Here's a N1QL query to find those shopping carts:
+
+[source,SQL,indent=0]
+----
+SELECT 
+    meta().id as id, _created, ARRAY_COUNT(DECODE_JSON(sessionCart).shoppingCart.items) 
+FROM sessionstore 
+ORDER BY _created DESC 
+LIMIT 10
+----
+
+To make this query work, we'll need appropriate indexing. The `IndexConfigRunner` automatically create a primary index for you during the startup:
+
+[source,Java,indent=0]
+----
+@Component
+public class IndexConfigRunner implements CommandLineRunner {
+    @Autowired
+    private Bucket bucket;
+
+    @Override
+    public void run(String... strings) throws Exception {
+        bucket.bucketManager().createN1qlPrimaryIndex(true, true);
+    }
+}
+----
+
+But you can also create it manually via N1QL:
+
+[source,SQL,indent=0]
+----
+`CREATE PRIMARY INDEX sessionstore_idx ON sessionstore
+----
+
+
+After that index is created, the above `SELECT` query will function, and it will return the 10 most recent shopping carts. The sample application (available on Github) uses this query to generate a report that looks like this:
+
+image:00103-recent-shopping-carts.png[10 Most Recent Shopping Cart report]
+
+TIP: In a production environment you should create a proper secondary index for the query above instead of relying on the primary index.
+
+=== Most common items
+
+Another insight we could gather is the most popular item that has been added to shopping carts. 
+
+[source,SQL,indent=0]
+----
+SELECT 
+    i.itemName as itemName, 
+    SUM(i.quantity) AS totalQuantity 
+FROM sessionstore s 
+UNNEST DECODE_JSON(s.sessionCart).shoppingCart.items i 
+WHERE s.sessionCart IS NOT MISSING 
+GROUP BY i.itemName 
+ORDER BY SUM(i.quantity) DESC 
+LIMIT 10
+----
+
+Again, DECODE_JSON needs to be used here. This query uses the link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/from.html#unnest[`UNNEST` keyword] to break down the nested objects in each shopping cart to the root level.
+
+Fortunately, the primary index that was created in the above example also works for this query, so no additional index is needed. Here's an example of a report that uses the above query (also included in the sample project on GitHub):
+
+image:00104-most-popular-items.png[Most popular items]
+
+These examples just scratch the surface of the analysis that can be done on the session data that Couchbase is storing.
+
+== Conclusion and Resources
+
+The step-by-step instructions for using Couchbase Server for session storage with ASP.NET Core is now complete. 
+
+****
+🗹 Installing and setting up Couchbase
+
+🗹 Configuring Couchbase for session storage
+
+🗹 Creating a Java application
+
+🗹 Integrating Java with Couchbase
+
+🗹 Reading/Writing session data
+
+🗹 Querying session data with N1QL for business insights
+****
+
+But your journey with Couchbase is just beginning. Depending on your requirements, you may also want to look into link:https://docs.couchbase.com/server/6.0/eventing/eventing-overview.html[Couchbase Eventing], to respond to data changes on the cluster directly. link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[Full Text Search] may also be useful for searching through any text that is being stored in your sessions. link:https://docs.couchbase.com/server/6.0/analytics/introduction.html[Analytics] can help with bigger sets and more complex queries against long-term/historical session store data. All of these services are available on a single platform: no extra integration is required.
+
+For more information about using Couchbase as a session store, check out these resources:
+
+* link:https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/session.md[Couchbase.Extensions.Session] - the Couchbase.Extension.Session package that was used for ASP.NET Core in this tutorial.
+* link:https://github.com/couchbaselabs/couchbase-aspnet/[Couchbase ASP.NET Integration] - if you haven't switched to ASP.NET Core yet, you can still use this library to store ASP.NET session in Couchbase
+* link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL documentation]
+* link:https://docs.couchbase.com/dotnet-sdk/2.7/start-using-sdk.html[Couchbase .NET SDK documentation]
+* Full source code of the example used in this tutorial is link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/session-storage/examples/AspNetCoreSession[available on GitHub]
