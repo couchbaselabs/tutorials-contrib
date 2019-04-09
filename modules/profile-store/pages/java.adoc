@@ -26,8 +26,8 @@ Any user-related data. The most common data stored in a User Profile Store are t
 
 Some more examples of data you might put in according to your use cases:
 
-* User's events
 * Orders (for ecommerce);
+* User's events
 * Medical history (for HealthCare);
 * Transactions history (for Finance);
 * Grades, certifications (for Education);
@@ -49,7 +49,7 @@ Some of the key non-functional requirements of a successful system are:
 
 * *A flexible data model*: User data can vary a lot depending on the needs of different roles, levels, etc.
 
-* *Easy and fast querying*: with link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL] you can query all your data with a powerful SQL-like language. In addition, you can also keep your indexes in memory with link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/storage-modes.html[Memory Optimized Indexes (MOI)]
+* *Easy and fast querying*: with link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL] you can query all your data with a powerful implementation of SQL++. In addition, you can also keep your indexes in memory with link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/storage-modes.html[Memory Optimized Indexes (MOI)]
 
 * *Natural-Language matching*: with link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] you can easily implement advanced searches on natural-language texts.
 
@@ -107,6 +107,8 @@ image:00101-add-bucket.png[Add Bucket Pop up]
 create primary index `primary_user_profile_index` on `user_profile` using GSI;
 ----
 
+TIP: In a production environment you should create proper link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/global-secondary-indexes.html[secondary indexes] for your data instead of relying on a the primary index.
+
 * Then, go to "Security" and click on "ADD USER" 
 * Fill out the form with the following data:
 
@@ -128,6 +130,16 @@ For more details on how to create a bucket and all of the advanced settings, che
 
 
 == How to Create a Simple User Profile Store
+
+
+The complete source code for this example is link:https://github.com/couchbaselabs/userProfileStore[available on GitHub] if you'd like to follow along. Assuming you've got Couchbase, the JDK and Maven installed, there are three steps to get the example running:
+
+1. `git clone` the repository
+2. Add you Couchbase credentials to the *application.properties* file
+3. Run `mvn spring-boot:run`
+
+
+To start with, let's create a brand new project using Spring Initialzr:
  
 *	Go to Spring Initialzr at https://start.spring.io/
 *	Fill out the for with the following data:
@@ -408,15 +420,15 @@ Lastly, let's add a new item to our list of non-functional requirements:
 
 So far, in our User Profile Store, we discussed about how to store basic data about our users without targeting any specific scenario. Just as a quick exercise, let's imagine what else we could store in our application according to each use case:
 
-=== Health Care
-* Results and images of medical exams.
-* History of previous diseases
-
 === E-Commerce
 * Credit Cards
 * Recommendations
 * Alerts
 * Customer 360 data
+
+=== Health Care
+* Results and images of medical exams.
+* History of previous diseases
 
 === Finance
 
