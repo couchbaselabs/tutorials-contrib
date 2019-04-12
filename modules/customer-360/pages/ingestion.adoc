@@ -1,0 +1,80 @@
+:imagesdir: images
+
+= Customer 360
+
+There are 5 main parts:
+
+1. MySQL (database for home delivery)
+2. PostgreSQL (database for loyalty program)
+3. Simulator (puts simulated data into MySQL, puts simulated data into PostgreSQL, provides simulated data via HTTP API, creates and consumes CSV)
+4. Kafka (streams data out of MySQL database)
+5. Couchbase (staging, event sourcing, functions, also acts as a Kafka sink via connector)
+
+image:dataingestiondiagram.jpg[]
+
+== Home Delivery Data Ingestion
+
+TODO: describe home delivery data (it live in MySQL, we're interested only in the customer table, etc)
+
+TODO: describe flow from mysql to kafka to couchbase via connectors
+
+TODO: link to debezium tutorial, one short paragraph of description
+
+To extend the Debezium MySQL tutorial and introduce the Couchbase connector, one approach is to use the Debezium connect docker base image and supplement it with the link://[Couchbase Kafka Connector]. The Dockerfile simply adds the jar file to the connect folder and makes the connector available to Kafka:
+
+[source,Docker,indent=0]
+----
+include::docker-connect-couchbase/Dockerfile[]
+----
+
+Build this Docker image and give it a name of couchbasedebezium in your local image repository:
+
+[source,PowerShell,indent=0]
+----
+docker build . --tag couchbasedebezium
+----
+
+So instead of starting Kafka Connect with the debezium/connect image, use the couchbasedebezium image:
+
+[source,PowerShell,indent=0]
+----
+docker run -it --rm --name connect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_statuses --link zookeeper:zookeeper --link kafka:kafka --link mysql:mysql --link db:db couchbasedebezium
+----
+
+The only other difference in this example is the addition of `--link db:db`, which refers to the Couchbase docker image that I started.
+
+Debezium stores not only the data, but also schema information about each MySQL field, information about the Kafka journey, etc. To focus on just the raw data, try running this N1QL query in Couchbase:
+
+[source,SQL,indent=0]
+----
+SELECT s.payload.after AS record
+FROM staging s;
+----
+
+The results of which will look similar to:
+
+[source,JavaScript,indent=0]
+----
+[
+  {
+    "record": {
+      "email": "sally.thomas@acme.com",
+      "first_name": "Sally",
+      "id": 1001,
+      "last_name": "Thomas"
+    }
+  },
+  ... etc ...
+  {
+    "record": {
+      "email": "badabing@badaboom.gov",
+      "first_name": "Calvin",
+      "id": 1005,
+      "last_name": "Allen"
+    }
+  }
+]
+----
+
+At this point, any data mutations that happen in MySQL will be picked up through Kafka and make their way into Couchbase for further processing.
+
