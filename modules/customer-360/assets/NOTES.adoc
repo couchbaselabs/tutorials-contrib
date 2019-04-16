@@ -44,6 +44,11 @@ TODO
 
 == Install Postgress
 
+`docker run -it --rm --name loyaltydb -p 5432:5432 -e POSTGRES_PASSWORD=password postgres`
+
+
+=== Or use Chocolatey:
+
 `choco install postgresql`
 
 https://www.enterprisedb.com/downloads/postgres-postgresql-downloads

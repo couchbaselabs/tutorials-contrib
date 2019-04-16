@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MySql.Data.MySqlClient;
+using Npgsql;
 
 namespace Cust360Simulator.Web
 {
@@ -25,13 +26,19 @@ namespace Cust360Simulator.Web
             services.AddMvc()
                 .AddNewtonsoftJson();
 
-            services.AddSingleton<IDbConnection>(x =>
+            services.AddSingleton<MySqlConnection>(x =>
             {
                 var mysqlConnectionString = "server=localhost;port=3306;database=inventory;user=root;password=debezium";
                 return new MySqlConnection(mysqlConnectionString);
             });
+            services.AddSingleton<NpgsqlConnection>(x =>
+            {
+                var postgresConnectionString = "User ID=postgres;Password=password;Host=localhost;Port=5432;";
+                return new NpgsqlConnection(postgresConnectionString);
+            });
 
             services.AddTransient<HomeDeliveryRepository>();
+            services.AddTransient<LoyaltyRepository>();
 
             services.AddSwaggerGen(c =>
             {
