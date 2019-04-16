@@ -8,11 +8,13 @@ namespace Cust360Simulator.Web.Controllers
     {
         private readonly HomeDeliveryRepository _homeDeliveryRepository;
         private readonly LoyaltyRepository _loyaltyRepository;
+        private readonly LoyaltyCsvExportService _loyaltyCsvService;
 
-        public Customer360Controller(HomeDeliveryRepository homeDeliveryRepository, LoyaltyRepository loyaltyRepository)
+        public Customer360Controller(HomeDeliveryRepository homeDeliveryRepository, LoyaltyRepository loyaltyRepository, LoyaltyCsvExportService loyaltyCsvService)
         {
             _homeDeliveryRepository = homeDeliveryRepository;
             _loyaltyRepository = loyaltyRepository;
+            _loyaltyCsvService = loyaltyCsvService;
         }
 
         [HttpGet]
@@ -44,6 +46,15 @@ namespace Cust360Simulator.Web.Controllers
         public IActionResult UpdateLoyaltyMember()
         {
             _loyaltyRepository.UpdateLoyaltyMember();
+            return Ok("Success");
+        }
+
+        [HttpGet]
+        [Route("api/loyalty/produceCsv")]
+        public IActionResult ProduceLoyaltyCsv()
+        {
+            _loyaltyCsvService.ExportCsv();
+
             return Ok("Success");
         }
     }

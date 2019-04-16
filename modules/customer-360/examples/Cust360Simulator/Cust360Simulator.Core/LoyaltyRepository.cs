@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Dapper;
 using Npgsql;
@@ -35,6 +36,15 @@ namespace Cust360Simulator.Core
 
             _dbConnection.Execute("UPDATE members SET points = @Points WHERE id = @Id",
                 new {member.Points, member.Id});
+        }
+
+        public List<LoyaltyMember> GetAllMembersForExport()
+        {
+            // NOTE: there might be a better way to export data from postgres
+            // ultimately into a CSV file
+            var sql = "SELECT *, fname AS FirstName, lname AS LastName FROM members";
+            var members = _dbConnection.Query<LoyaltyMember>(sql);
+            return members.ToList();
         }
     }
 }

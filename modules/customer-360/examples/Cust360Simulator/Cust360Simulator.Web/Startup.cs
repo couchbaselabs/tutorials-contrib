@@ -1,4 +1,3 @@
-using System.Data;
 using Cust360Simulator.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -39,6 +38,7 @@ namespace Cust360Simulator.Web
 
             services.AddTransient<HomeDeliveryRepository>();
             services.AddTransient<LoyaltyRepository>();
+            services.AddTransient<LoyaltyCsvExportService>();
 
             services.AddSwaggerGen(c =>
             {
