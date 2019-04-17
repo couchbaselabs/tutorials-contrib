@@ -1,4 +1,5 @@
-﻿using Cust360Simulator.Core;
+﻿using System.Threading.Tasks;
+using Cust360Simulator.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cust360Simulator.Web.Controllers
@@ -8,13 +9,19 @@ namespace Cust360Simulator.Web.Controllers
     {
         private readonly HomeDeliveryRepository _homeDeliveryRepository;
         private readonly LoyaltyRepository _loyaltyRepository;
-        private readonly LoyaltyCsvExportService _loyaltyCsvService;
+        private readonly LoyaltyCsvExportService _loyaltyCsvExportService;
+        private readonly LoyaltyCsvImportService _loyaltyCsvImportService;
 
-        public Customer360Controller(HomeDeliveryRepository homeDeliveryRepository, LoyaltyRepository loyaltyRepository, LoyaltyCsvExportService loyaltyCsvService)
+        public Customer360Controller(
+            HomeDeliveryRepository homeDeliveryRepository,
+            LoyaltyRepository loyaltyRepository,
+            LoyaltyCsvExportService loyaltyCsvExportService,
+            LoyaltyCsvImportService loyaltyCsvImportService)
         {
             _homeDeliveryRepository = homeDeliveryRepository;
             _loyaltyRepository = loyaltyRepository;
-            _loyaltyCsvService = loyaltyCsvService;
+            _loyaltyCsvExportService = loyaltyCsvExportService;
+            _loyaltyCsvImportService = loyaltyCsvImportService;
         }
 
         [HttpGet]
@@ -53,7 +60,16 @@ namespace Cust360Simulator.Web.Controllers
         [Route("api/loyalty/produceCsv")]
         public IActionResult ProduceLoyaltyCsv()
         {
-            _loyaltyCsvService.ExportCsv();
+            _loyaltyCsvExportService.ExportCsv();
+
+            return Ok("Success");
+        }
+
+        [HttpGet]
+        [Route("api/loyalty/consumeCsv")]
+        public async Task<IActionResult> ConsumeLoyaltyCsv()
+        {
+            await _loyaltyCsvImportService.ImportCsv();
 
             return Ok("Success");
         }

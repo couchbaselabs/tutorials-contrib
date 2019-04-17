@@ -4,6 +4,11 @@ using CsvHelper;
 
 namespace Cust360Simulator.Core
 {
+    /// <summary>
+    /// This class is used to produce a CSV export
+    /// Which is meant to run on a nightly basis
+    /// To export all the membership data from the loyalty database
+    /// </summary>
     public class LoyaltyCsvExportService
     {
         private readonly LoyaltyRepository _loyaltyRepository;

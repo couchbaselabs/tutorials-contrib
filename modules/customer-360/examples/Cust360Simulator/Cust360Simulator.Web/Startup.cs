@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using Couchbase.Configuration.Client;
+using Couchbase.Extensions.DependencyInjection;
 using Cust360Simulator.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,10 +39,21 @@ namespace Cust360Simulator.Web
                 var postgresConnectionString = "User ID=postgres;Password=password;Host=localhost;Port=5432;";
                 return new NpgsqlConnection(postgresConnectionString);
             });
+            services.AddCouchbase(x =>
+            {
+                x.Servers = new List<Uri> {new Uri("http://localhost:8091")};
+                x.Username = "Administrator";
+                x.Password = "password";
+                x.ConnectionPool = new ConnectionPoolDefinition
+                {
+                    MaxSize = 10
+                };
+            });
 
             services.AddTransient<HomeDeliveryRepository>();
             services.AddTransient<LoyaltyRepository>();
             services.AddTransient<LoyaltyCsvExportService>();
+            services.AddTransient<LoyaltyCsvImportService>();
 
             services.AddSwaggerGen(c =>
             {
