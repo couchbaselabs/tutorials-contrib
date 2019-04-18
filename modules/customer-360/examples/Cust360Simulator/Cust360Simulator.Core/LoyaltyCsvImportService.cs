@@ -44,10 +44,8 @@ namespace Cust360Simulator.Core
             {
                 using (var csv = new CsvReader(reader))
                 {
-                    // TODO: okay to use dynamic here?
                     var records = csv.GetRecords<dynamic>();
 
-                    // TODO: consider pool size / muxing
                     var documents = new List<IDocument<dynamic>>();
                     foreach (var record in records)
                     {
@@ -56,13 +54,14 @@ namespace Cust360Simulator.Core
                         {
                             Id = $"loyalty-member-{record.Id}",
                             Content = record,
-                            Expiry = 90000    // TODO: milliseconds? should these even be TTL'd?
+                            Expiry = 90000
                         };
                         documents.Add(document);
                     }
 
                     // TODO: batch insert
                     // TODO: break this up into multiple batches?
+                    // TODO: consider pool size / muxing
                     await _bucket.InsertAsync(documents);
                 }
             }
@@ -89,13 +88,13 @@ namespace Cust360Simulator.Core
         private string GetNewestCsvPath()
         {
             var directory = new DirectoryInfo("CsvExports");
-            var csvFiles = directory.GetFiles("*.csv")
+            var csvFile = directory.GetFiles("*.csv")
                 .OrderByDescending(f => f.LastWriteTime)
                 .FirstOrDefault();
 
             // TODO: if a file was found, log it?
 
-            return csvFiles?.FullName;
+            return csvFile?.FullName;
         }
     }
 }

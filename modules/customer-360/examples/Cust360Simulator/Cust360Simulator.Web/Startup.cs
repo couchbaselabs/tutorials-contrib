@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Couchbase.Authentication;
 using Couchbase.Configuration.Client;
 using Couchbase.Extensions.DependencyInjection;
 using Cust360Simulator.Core;
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -49,6 +51,12 @@ namespace Cust360Simulator.Web
                     MaxSize = 10
                 };
             });
+            var clientConfiguration = new ClientConfiguration
+            {
+                Servers = new List<Uri> {new Uri("http://localhost:8091")}
+            };
+            clientConfiguration.SetAuthenticator(new PasswordAuthenticator("Administrator", "password"));
+            services.AddHangfire(x => x.UseCouchbaseStorage(clientConfiguration, "customer360_hangfire"));
 
             services.AddTransient<HomeDeliveryRepository>();
             services.AddTransient<LoyaltyRepository>();
@@ -59,10 +67,13 @@ namespace Cust360Simulator.Web
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "Customer 360 API", Version = "v1"});
             });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
+            LoyaltyCsvExportService loyaltyCsvExportService,
+            LoyaltyCsvImportService loyaltyCsvImportService)
         {
             if (env.IsDevelopment())
             {
@@ -84,7 +95,16 @@ namespace Cust360Simulator.Web
                 routes.MapControllers();
             });
 
+            app.UseHangfireDashboard("/hangfire");
+            app.UseHangfireServer();
+
             app.UseAuthorization();
+
+            // ****** recurring jobs *********
+            RecurringJob.AddOrUpdate("nightlyCsvExport", () => loyaltyCsvExportService.ExportCsv(), Cron.Daily(2, 0));
+
+            RecurringJob.AddOrUpdate("nightlyCsvImport", () => loyaltyCsvImportService.ImportCsv(), Cron.Daily(3, 0));
+            // *******************************
         }
     }
 }
