@@ -12,7 +12,7 @@ This tutorial contains seven main sections:
 
 * <<Searching Users with Full-Text Search>> You don't need to push all your data to a third party tool just to implement an advanced search in your system. With CB FTS you can implement complex string matchings on natural-language texts directly from database.
 
-* <<Storing User Events>> Storing events is essential to understand how users behave, in this section we will discuss one strategy to maximize the write/read througput of your application.
+* <<Storing User Events>> Storing events is essential to understand how users behave, in this section we will discuss one strategy to maximize the write/read throughput of your application.
 
 * <<How to configure Cross Data Center Replication (XDCR)>> In this section, we will show how to replicate your database in multiple datacenters.
 
