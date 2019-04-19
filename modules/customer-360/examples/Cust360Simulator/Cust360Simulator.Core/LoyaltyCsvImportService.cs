@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Couchbase;
 using Couchbase.Core;
 using Couchbase.Extensions.DependencyInjection;
 using CsvHelper;
+using Microsoft.Extensions.Logging;
 
 namespace Cust360Simulator.Core
 {
@@ -16,26 +18,26 @@ namespace Cust360Simulator.Core
     /// </summary>
     public class LoyaltyCsvImportService
     {
+        private readonly ILogger<LoyaltyCsvImportService> _logger;
         private readonly IBucket _bucket;
 
-        public LoyaltyCsvImportService(IBucketProvider bucketProvider)
+        public LoyaltyCsvImportService(IBucketProvider bucketProvider, ILogger<LoyaltyCsvImportService> logger)
         {
+            _logger = logger;
             _bucket = bucketProvider.GetBucket("staging");
         }
 
         public async Task ImportCsv()
         {
-            // TODO: find the newest created CSV file in the target folder
-            // TODO: if it exists!
             var csvFilePath = GetNewestCsvPath();
             if (csvFilePath == null)
                 return;
 
-            // TODO: check to make sure it's newer than the file that was imported last time
-            // TODO: if not, then bail out
+            // check to make sure it's newer than the file that was imported last time
+            // if not, then bail out
             if (!ThisFileIsNewerThanTheLastImport(csvFilePath))
             {
-                // TODO: log this?
+                _logger.LogInformation($"Not importing {csvFilePath}");
                 return;
             }
 
@@ -49,7 +51,6 @@ namespace Cust360Simulator.Core
                     var documents = new List<IDocument<dynamic>>();
                     foreach (var record in records)
                     {
-                        // TODO: insert a document into Couchbase staging bucket
                         var document = new Document<dynamic>
                         {
                             Id = $"loyalty-member-{record.Id}",
@@ -59,29 +60,45 @@ namespace Cust360Simulator.Core
                         documents.Add(document);
                     }
 
-                    // TODO: batch insert
-                    // TODO: break this up into multiple batches?
-                    // TODO: consider pool size / muxing
+                    // consider breaking this up into multiple batches
                     await _bucket.InsertAsync(documents);
                 }
             }
 
-            // TODO: keep track of the latest CSV file that has been imported and when it was imported
             TrackImportComplete(csvFilePath);
         }
 
+        // store the filename that was used as well as the current datetime
+        // so that we can check next time
         private void TrackImportComplete(string csvFilePath)
         {
-            // TODO: store the filename that was used as well as the current datetime
-            // TODO: so that we can check next time
+            var lastCsvImportInfo = new CsvImportTrackingInfo();
+            lastCsvImportInfo.Filename = csvFilePath;
+            lastCsvImportInfo.ImportedDateTime = DateTime.Now;
 
-            // TODO: another approach would be just to delete the CSV file?
+            _bucket.Upsert("csvImportTrackingInfo", lastCsvImportInfo);
         }
 
+        // check both the date and the filename
+        // to ensure we don't import a file that's already been imported
         private bool ThisFileIsNewerThanTheLastImport(string csvFilePath)
         {
-            // TODO: check the data stored by TrackImportComplete
+            if (!_bucket.Exists("csvImportTrackingInfo"))
+                return true;
 
+            var lastCsvImportInfo = _bucket.Get<CsvImportTrackingInfo>("csvImportTrackingInfo").Value;
+            var fileInfo = new FileInfo(csvFilePath);
+            if (fileInfo.LastWriteTime <= lastCsvImportInfo.ImportedDateTime)
+            {
+                _logger.LogInformation($"{csvFilePath} is older than the last import.");
+                return false;
+            }
+
+            if (fileInfo.Name == Path.GetFileName(csvFilePath))
+            {
+                _logger.LogInformation($"{csvFilePath} has already been imported.");
+                return false;
+            }
             return true;
         }
 
@@ -92,7 +109,8 @@ namespace Cust360Simulator.Core
                 .OrderByDescending(f => f.LastWriteTime)
                 .FirstOrDefault();
 
-            // TODO: if a file was found, log it?
+            if(csvFile != null)
+                _logger.LogInformation($"Trying to import from {csvFile.FullName}");
 
             return csvFile?.FullName;
         }

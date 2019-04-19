@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using MySql.Data.MySqlClient;
 using Npgsql;
@@ -73,7 +74,8 @@ namespace Cust360Simulator.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             LoyaltyCsvExportService loyaltyCsvExportService,
-            LoyaltyCsvImportService loyaltyCsvImportService)
+            LoyaltyCsvImportService loyaltyCsvImportService,
+            ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -99,6 +101,8 @@ namespace Cust360Simulator.Web
             app.UseHangfireServer();
 
             app.UseAuthorization();
+
+            loggerFactory.AddLog4Net();
 
             // ****** recurring jobs *********
             RecurringJob.AddOrUpdate("nightlyCsvExport", () => loyaltyCsvExportService.ExportCsv(), Cron.Daily(2, 0));

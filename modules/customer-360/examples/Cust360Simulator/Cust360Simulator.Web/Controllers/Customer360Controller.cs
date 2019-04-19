@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Cust360Simulator.Core;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Cust360Simulator.Web.Controllers
 {
@@ -11,17 +12,20 @@ namespace Cust360Simulator.Web.Controllers
         private readonly LoyaltyRepository _loyaltyRepository;
         private readonly LoyaltyCsvExportService _loyaltyCsvExportService;
         private readonly LoyaltyCsvImportService _loyaltyCsvImportService;
+        private readonly ILogger _logger;
 
         public Customer360Controller(
             HomeDeliveryRepository homeDeliveryRepository,
             LoyaltyRepository loyaltyRepository,
             LoyaltyCsvExportService loyaltyCsvExportService,
-            LoyaltyCsvImportService loyaltyCsvImportService)
+            LoyaltyCsvImportService loyaltyCsvImportService,
+            ILogger<Customer360Controller> logger)
         {
             _homeDeliveryRepository = homeDeliveryRepository;
             _loyaltyRepository = loyaltyRepository;
             _loyaltyCsvExportService = loyaltyCsvExportService;
             _loyaltyCsvImportService = loyaltyCsvImportService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -72,6 +76,15 @@ namespace Cust360Simulator.Web.Controllers
             await _loyaltyCsvImportService.ImportCsv();
 
             return Ok("Success");
+        }
+
+        [HttpGet]
+        [Route("api/testlogging")]
+        public IActionResult TestLogging()
+        {
+            _logger.Log(LogLevel.Information, "Hello, world!");
+            _logger.Log(LogLevel.Error, "This is an error!");
+            return Ok();
         }
     }
 }
