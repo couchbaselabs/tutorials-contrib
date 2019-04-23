@@ -12,5 +12,6 @@
         public string State { get; set; }
         public string ZipCode { get; set; }
         public string PhoneNumber { get; set; }
+
     }
 }

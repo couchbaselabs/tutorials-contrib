@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using Couchbase.Authentication;
 using Couchbase.Configuration.Client;
 using Couchbase.Extensions.DependencyInjection;
@@ -42,6 +43,11 @@ namespace Cust360Simulator.Web
                 var postgresConnectionString = "User ID=postgres;Password=password;Host=localhost;Port=5432;";
                 return new NpgsqlConnection(postgresConnectionString);
             });
+            services.AddSingleton<SQLiteConnection>(x =>
+            {
+                var sqliteConnectionString = "Data Source=onlineStore.db";
+                return new SQLiteConnection(sqliteConnectionString);
+            });
             services.AddCouchbase(x =>
             {
                 x.Servers = new List<Uri> {new Uri("http://localhost:8091")};
@@ -63,6 +69,8 @@ namespace Cust360Simulator.Web
             services.AddTransient<LoyaltyRepository>();
             services.AddTransient<LoyaltyCsvExportService>();
             services.AddTransient<LoyaltyCsvImportService>();
+            services.AddTransient<EnterpriseData>();
+            services.AddTransient<OnlineStoreRepository>();
 
             services.AddSwaggerGen(c =>
             {

@@ -5,6 +5,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Cust360Simulator.Web.Controllers
 {
+    /// <summary>
+    /// This controller class serves as a kind of 'test harness'
+    /// For controlling all the pieces manually and individually
+    /// Automated simulation should be done by automated/scheduled jobs
+    /// </summary>
     [ApiController]
     public class Customer360Controller : ControllerBase
     {
@@ -13,27 +18,36 @@ namespace Cust360Simulator.Web.Controllers
         private readonly LoyaltyCsvExportService _loyaltyCsvExportService;
         private readonly LoyaltyCsvImportService _loyaltyCsvImportService;
         private readonly ILogger _logger;
+        private readonly EnterpriseData _enterpriseData;
+        private readonly OnlineStoreRepository _onlineStoreRepository;
 
         public Customer360Controller(
             HomeDeliveryRepository homeDeliveryRepository,
             LoyaltyRepository loyaltyRepository,
             LoyaltyCsvExportService loyaltyCsvExportService,
             LoyaltyCsvImportService loyaltyCsvImportService,
-            ILogger<Customer360Controller> logger)
+            ILogger<Customer360Controller> logger,
+            EnterpriseData enterpriseData,
+            OnlineStoreRepository onlineStoreRepository)
         {
             _homeDeliveryRepository = homeDeliveryRepository;
             _loyaltyRepository = loyaltyRepository;
             _loyaltyCsvExportService = loyaltyCsvExportService;
             _loyaltyCsvImportService = loyaltyCsvImportService;
             _logger = logger;
+            _enterpriseData = enterpriseData;
+            _onlineStoreRepository = onlineStoreRepository;
+
+            // make sure all the appropriate tables/databases exist
+            _enterpriseData.EnsureSchemas();
         }
 
         [HttpGet]
-        [Route("api/homedelivery/create")]
-        public IActionResult CreateHomeDeliveryUser()
+        [Route("api/populate")]
+        public IActionResult Populate()
         {
-            _homeDeliveryRepository.CreateNewCustomer();
-            return Ok("Success");
+            _enterpriseData.PopulateAPersonAcrossEnterprise();
+            return Ok("Done");
         }
 
         [HttpGet]
@@ -41,14 +55,6 @@ namespace Cust360Simulator.Web.Controllers
         public IActionResult UpdateHomeDeliveryUser()
         {
             _homeDeliveryRepository.UpdateExistingCustomer();
-            return Ok("Success");
-        }
-
-        [HttpGet]
-        [Route("api/loyalty/create")]
-        public IActionResult CreateLoyaltyMember()
-        {
-            _loyaltyRepository.CreateNewMember();
             return Ok("Success");
         }
 
@@ -85,6 +91,14 @@ namespace Cust360Simulator.Web.Controllers
             _logger.Log(LogLevel.Information, "Hello, world!");
             _logger.Log(LogLevel.Error, "This is an error!");
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("api/onlineStore/update")]
+        public IActionResult UpdateOnlineStoreCustomer()
+        {
+            _onlineStoreRepository.UpdateExisting();
+            return Ok("Success");
         }
     }
 }

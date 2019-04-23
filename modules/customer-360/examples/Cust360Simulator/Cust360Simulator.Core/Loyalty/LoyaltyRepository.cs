@@ -15,18 +15,6 @@ namespace Cust360Simulator.Core
             _dbConnection = dbConnection;
         }
 
-        public void CreateNewMember()
-        {
-            var member = new LoyaltyMember();
-            member.Password = Path.GetRandomFileName();
-            member.FirstName = Faker.Name.First();
-            member.LastName = Faker.Name.Last();
-            member.Points = Faker.RandomNumber.Next(1, 100);
-
-            _dbConnection.Execute(@"
-                INSERT INTO members (password, fname, lname, points) VALUES (@Password,@FirstName,@LastName,@Points);", member);
-        }
-
         public void UpdateLoyaltyMember()
         {
             var sql = "SELECT * FROM members ORDER BY RANDOM() LIMIT 1;";

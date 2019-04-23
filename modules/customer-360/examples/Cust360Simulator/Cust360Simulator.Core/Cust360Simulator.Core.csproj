@@ -12,6 +12,7 @@
     <PackageReference Include="Faker.Net" Version="1.1.1" />
     <PackageReference Include="MySql.Data" Version="8.0.15" />
     <PackageReference Include="Npgsql" Version="4.0.6" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.110" />
   </ItemGroup>
 
 </Project>
