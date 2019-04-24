@@ -1,5 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Cust360Simulator.Core;
+using Cust360Simulator.Core.HomeDelivery;
+using Cust360Simulator.Core.Loyalty;
+using Cust360Simulator.Core.OnlineStore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 

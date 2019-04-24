@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Cust360Simulator.Core
+namespace Cust360Simulator.Core.Loyalty
 {
     public class CsvImportTrackingInfo
     {

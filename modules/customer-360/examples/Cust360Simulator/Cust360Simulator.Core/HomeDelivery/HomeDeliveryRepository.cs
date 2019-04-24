@@ -2,7 +2,7 @@
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace Cust360Simulator.Core
+namespace Cust360Simulator.Core.HomeDelivery
 {
     public class HomeDeliveryRepository
     {

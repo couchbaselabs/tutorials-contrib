@@ -2,8 +2,8 @@
 -----------------------
 
 mysql:
-docker run -it --rm --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=debezium -e MYSQL_USER=mysqluser -e MYSQL_PASSWORD=mysqlpw debezium/example-mysql:0.9
-(then run homeDeliveryDdl.ddl on it)
+docker run --rm --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=debezium -e MYSQL_USER=mysqluser -e MYSQL_PASSWORD=mysqlpw debezium/example-mysql:0.9
+(then run homeDeliveryDdl.ddl on it, or EnsureSchemas)
 
 kafka+connect:
 	zookeeper:
@@ -20,7 +20,7 @@ To start Postgres:
 
 docker run -it --rm --name loyaltydb -p 5432:5432 -e POSTGRES_PASSWORD=password postgres
 
-then run loyaltyDdl.ddl on it
+then run loyaltyDdl.ddl on it (or EnsureSchemas)
 
 To start Couchbase:
 -------------------

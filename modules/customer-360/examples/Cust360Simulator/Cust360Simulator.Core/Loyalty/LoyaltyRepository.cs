@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Dapper;
 using Npgsql;
 
-namespace Cust360Simulator.Core
+namespace Cust360Simulator.Core.Loyalty
 {
     public class LoyaltyRepository
     {

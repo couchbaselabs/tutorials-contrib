@@ -9,7 +9,7 @@ using Couchbase.Extensions.DependencyInjection;
 using CsvHelper;
 using Microsoft.Extensions.Logging;
 
-namespace Cust360Simulator.Core
+namespace Cust360Simulator.Core.Loyalty
 {
     /// <summary>
     /// This class is meant to run on a nightly basis

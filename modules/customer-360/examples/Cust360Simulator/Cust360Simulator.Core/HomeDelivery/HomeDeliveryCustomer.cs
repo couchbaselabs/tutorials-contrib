@@ -1,4 +1,4 @@
-﻿namespace Cust360Simulator.Core
+﻿namespace Cust360Simulator.Core.HomeDelivery
 {
     public class HomeDeliveryCustomer
     {

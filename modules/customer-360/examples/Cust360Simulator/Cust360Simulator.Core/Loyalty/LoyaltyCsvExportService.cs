@@ -2,7 +2,7 @@
 using System.IO;
 using CsvHelper;
 
-namespace Cust360Simulator.Core
+namespace Cust360Simulator.Core.Loyalty
 {
     /// <summary>
     /// This class is used to produce a CSV export
