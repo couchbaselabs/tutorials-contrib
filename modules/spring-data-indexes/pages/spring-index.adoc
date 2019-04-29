@@ -333,7 +333,7 @@ List<SimpleUserVO> findByName(String name);
 
 === TL/DR
 
-In summary, if you are not having a satisfactory performance, we recommend two basic optimizations:
+In summary, if you are not having a satisfactory performance, we recommend three basic optimizations:
 
 . Check the generated query and make sure that it is using an index (via Query Planner or *EXPLAIN*)
 . Check if you can create a more optimized index for your query. Sorting and array search, for instance, are common scenarios where you might need to create a proper index.
