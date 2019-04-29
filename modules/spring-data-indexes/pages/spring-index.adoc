@@ -11,14 +11,14 @@ However, developers quite often run into performance issues while using it, this
 
 The most common issue with any *Object-relational mapping framework (ORM)* is the excessive amount of joins needed to bring an object back to memory.  The relational model requires you to map relationships between tables and define them as link:https://docs.oracle.com/javaee/7/api/javax/persistence/FetchType.html[EAGER or LAZY]. The problem is that developers quite often map relationships as *EAGER* and as the system and data grows, the overall performance starts to decrease rapidly. 
 
-The It generally forces developers to revisit these entities and set most of the relationships as *LAZY*. However, this small change requires a significant refactor, as you have not to also change all the code that handles these new lazy entities.
+It generally forces developers to revisit these entities and set most of the relationships as *LAZY*. However, this small change requires a significant refactor, as you have also to change all the code that handles these new lazy entities.
 
-One of the advantages of using Couchbase with Spring Data is that in a document database we typically store multiple related entities in a single document, therefore most of the time you don’t need to create any link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/join.html[JOINs] to bring an entity back to memory. This will make your application naturally perform better while compared to the performance in an *RDBMS*.
+One of the advantages of using Couchbase with Spring Data is that in a *document database* we typically store multiple related entities in a single document, therefore most of the time you don’t need to create any link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/join.html[JOINs] to bring an entity back to memory. This will make your application naturally perform better while compared to any *RDBMS*.
 
  
 === How to create indexes for Spring Data
 
-The second key thing to have a good performance at scale is to create the right indexes, and although Couchbase with Spring Data behaves very similar to a Relational Database at first glance, it works completely different under the hood. For instance, there is no concept similar to a table, all documents are analogous from the database point-of-view.
+The second key thing to have a good performance at scale is to create the right indexes for your data, and although Couchbase with Spring Data behaves very similar to a Relational Database at first glance, it works completely different under the hood. For instance, there is no concept similar to a table, all documents are analogous from the database point-of-view.
 
 Therefore, if you have +100 000 documents in your bucket, and you execute a query like the following:
 
@@ -37,7 +37,7 @@ The total number of documents scanned during the query:
 
 image:002-total-bucket-scan.png[Bucket Scan]
 
-The obvious question then is how do I optimize queries in order to reduce the number of documents scanned? Well, the short answer is: just create the right indexes.
+The obvious question then is how do I optimize queries in order to reduce the number of documents scanned? Well, the short answer is: just *create the right indexes for your data*.
 Creating indexes for a Spring Data application is not much different than creating indexes for any other application which uses Couchbase. There are, however, some small details that you should be aware of.
 
 Couchbase’s implementation of Spring Data automatically adds the _class attribute into your document. This property works as the document type. Therefore, a query like the following:
@@ -63,7 +63,9 @@ Note that the expression `_class= “com.cb.demo.userProfile.model.UserEntity”
 CREATE INDEX `userEntity` ON `user_profile`(`_class`) WHERE (`_class` = "com.cb.demo.userProfile.model.UserEntity")
 ----
 
-This is the most basic optimization for a Spring Data app: create at least one index for each document type. With our new index, the databases will only scan documents  with `_class = "com.cb.demo.userProfile.model.UserEntity"` now, which is still better than scanning the whole database.
+This is the most basic optimization you can do for a Spring Data app: *create at least one index for each document type*. 
+
+With our new index in place, the databases will scan only documents  with `_class = "com.cb.demo.userProfile.model.UserEntity"` now, which is still better than scanning the whole database.
 
 This basic index can be automatically generated via the *@N1qlSecondaryIndexed* annotation:
 
@@ -79,14 +81,14 @@ public interface UserEntityRepository extends CouchbaseRepository<UserEntity, St
 TIP: The *@N1qlSecondaryIndexed* will create a basic index for the entity if it does not exist yet. However, if the node containing the index fails and you restart your application, the index will be recreated, which might not be the desired behavior.
 
 
-The index we just created is a good start, but it is far from optimal as most of the time in an application we won’t simply query all users and all documents in this database are of the `com.cb.demo.userProfile.model.UserEntity` type.
+The index we just created is a good start, but it is far from optimal, as all documents in this database have the `com.cb.demo.userProfile.model.UserEntity` type. Even if we had other document types, most of the time we won’t simply query users with no filters and no sorting.
 
-Let’s say we only care about active users and most of the time we sort them by first name, the Spring Data method would look like the following:
+Let’s say, in our application, we mostly care about active users living in US, and we usually sort them by first name. A Spring Data implementation of this query would look like the following:
 
 
 [source,Java,indent=0]
 ----
-List<UserEntity> findByEnabledAndCountryCodeOrderByName(boolean enabled, String countryCode);
+List<UserEntity> findByEnabledAndCountryCodeOrderByFirstName(boolean enabled, String countryCode);
 ----
 
 and the N1QL query generated will look like the following:
@@ -108,7 +110,7 @@ Analyzing the *filter* part of our query, we will notice that Couchbase has scan
 image:004-filter-sort-active-users.png[Filter]
 
 
-If our application commonly searches for users using these same three filters, we could create an index for it:
+As our application commonly searches for users using these same three filters, we could create an index for it:
 
 [source,SQL,indent=0]
 ----
