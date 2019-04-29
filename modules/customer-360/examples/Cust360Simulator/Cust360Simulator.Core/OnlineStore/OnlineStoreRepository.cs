@@ -105,7 +105,8 @@ namespace Cust360Simulator.Core.OnlineStore
         public OnlineStoreProduct GetProductDetailsByProductId(int productId)
         {
             return _sqlLiteConnection.Query<OnlineStoreProduct>(@"
-                SELECT *, product_id AS ProductId FROM product WHERE product_id = @ProductId", new { ProductId = productId}).First();
+                SELECT *, product_id AS ProductId FROM product WHERE product_id = @ProductId",
+                new { ProductId = productId}).First();
         }
     }
 }

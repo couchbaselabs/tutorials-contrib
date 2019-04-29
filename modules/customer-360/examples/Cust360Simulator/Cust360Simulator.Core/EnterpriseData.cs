@@ -144,13 +144,15 @@ FOREIGN KEY(order_id) REFERENCES [order](order_id)
                 @"INSERT INTO product (product_id, name, category, description) VALUES (410, 'Earrings','Jewelry','Excepteur sint occaecat cupidatat non proident')");
         }
 
+
         /// <summary>
         /// Create a person and split their data up amongst the enterprise
         /// This data will be joined together in the Customer 360 system
         /// Not every person will necessarily be in all three systems
         /// But they should be in at least the loyalty system OR the home delivery system
         /// </summary>
-        public void PopulateAPersonAcrossEnterprise()
+        /// <returns>email address of the person created</returns>
+        public string PopulateAPersonAcrossEnterprise()
         {
             // base data to be shared/matched across enterprise
             var firstName = Faker.Name.First();
@@ -210,7 +212,7 @@ FOREIGN KEY(order_id) REFERENCES [order](order_id)
 
             if (isInLoyaltySystem)
             {
-                _loyaltyDb.Execute(@"INSERT INTO members (password, fname, lname, points) VALUES (@Password,@FirstName,@LastName,@Points);", member);
+                _loyaltyDb.Execute(@"INSERT INTO members (password, fname, lname, email, points) VALUES (@Password,@FirstName,@LastName,@Email,@Points);", member);
             }
 
             if (isInHomeDeliverySystem)
@@ -229,6 +231,8 @@ FOREIGN KEY(order_id) REFERENCES [order](order_id)
 
                 CreateOrders(customerDetailsId);
             }
+
+            return email;
         }
 
         /// <summary>

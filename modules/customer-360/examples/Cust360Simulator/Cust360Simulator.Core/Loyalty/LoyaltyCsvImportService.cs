@@ -94,7 +94,7 @@ namespace Cust360Simulator.Core.Loyalty
                 return false;
             }
 
-            if (fileInfo.Name == Path.GetFileName(csvFilePath))
+            if (fileInfo.Name == Path.GetFileName(lastCsvImportInfo.Filename))
             {
                 _logger.LogInformation($"{csvFilePath} has already been imported.");
                 return false;

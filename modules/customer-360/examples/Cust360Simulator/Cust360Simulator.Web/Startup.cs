@@ -9,6 +9,7 @@ using Cust360Simulator.Core.HomeDelivery;
 using Cust360Simulator.Core.Loyalty;
 using Cust360Simulator.Core.OnlineStore;
 using Hangfire;
+using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -38,12 +39,12 @@ namespace Cust360Simulator.Web
 
             services.AddSingleton<MySqlConnection>(x =>
             {
-                var mysqlConnectionString = "server=localhost;port=3306;database=inventory;user=root;password=debezium";
+                var mysqlConnectionString = "server=mysql;port=3306;database=inventory;user=root;password=debezium";
                 return new MySqlConnection(mysqlConnectionString);
             });
             services.AddSingleton<NpgsqlConnection>(x =>
             {
-                var postgresConnectionString = "User ID=postgres;Password=password;Host=localhost;Port=5432;";
+                var postgresConnectionString = "User ID=postgres;Password=password;Server=loyaltydb;Port=5432;";
                 return new NpgsqlConnection(postgresConnectionString);
             });
             services.AddSingleton<SQLiteConnection>(x =>
@@ -53,7 +54,7 @@ namespace Cust360Simulator.Web
             });
             services.AddCouchbase(x =>
             {
-                x.Servers = new List<Uri> {new Uri("http://localhost:8091")};
+                x.Servers = new List<Uri> {new Uri("http://db:8091")};
                 x.Username = "Administrator";
                 x.Password = "password";
                 x.ConnectionPool = new ConnectionPoolDefinition
@@ -63,7 +64,7 @@ namespace Cust360Simulator.Web
             });
             var clientConfiguration = new ClientConfiguration
             {
-                Servers = new List<Uri> {new Uri("http://localhost:8091")}
+                Servers = new List<Uri> {new Uri("http://db:8091")}
             };
             clientConfiguration.SetAuthenticator(new PasswordAuthenticator("Administrator", "password"));
             services.AddHangfire(x => x.UseCouchbaseStorage(clientConfiguration, "customer360_hangfire"));
@@ -99,27 +100,45 @@ namespace Cust360Simulator.Web
             }
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Customer 360 API v1"); });
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Customer 360 API v1");
+            });
 
             app.UseHttpsRedirection();
 
-            app.UseRouting(routes =>
-            {
-                routes.MapControllers();
-            });
+            app.UseRouting();
 
-            app.UseHangfireDashboard("/hangfire");
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new [] { new AllowAnyoneAuthorization()}
+            });
             app.UseHangfireServer();
 
             app.UseAuthorization();
 
+            app.UseStaticFiles();
+
             loggerFactory.AddLog4Net();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
 
             // ****** recurring jobs *********
             RecurringJob.AddOrUpdate("nightlyCsvExport", () => loyaltyCsvExportService.ExportCsv(), Cron.Daily(2, 0));
 
             RecurringJob.AddOrUpdate("nightlyCsvImport", () => loyaltyCsvImportService.ImportCsv(), Cron.Daily(3, 0));
             // *******************************
+        }
+
+        public class AllowAnyoneAuthorization : IDashboardAuthorizationFilter
+        {
+            public bool Authorize(DashboardContext context)
+            {
+                return true;
+            }
         }
     }
 }

@@ -15,6 +15,44 @@ kafka+connect:
 	debezium+couchbase connect (assuming you've created image couchbasedebezium):
 	docker run -it --rm --name connect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_statuses --link zookeeper:zookeeper --link kafka:kafka --link mysql:mysql --link db:db couchbasedebezium
 
+	POST http://localhost:8083/connectors/
+	{
+    "name": "inventory-connector",
+    "config": {
+        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        "tasks.max": "1",
+        "database.hostname": "mysql",
+        "database.port": "3306",
+        "database.user": "debezium",
+        "database.password": "dbz",
+        "database.server.id": "184054",
+        "database.server.name": "dbserver1",
+        "database.whitelist": "inventory",
+        "database.history.kafka.bootstrap.servers": "kafka:9092",
+        "database.history.kafka.topic": "dbhistory.inventory"
+    }
+
+	POST http://localhost:8083/connectors/
+	{
+	  "name": "home-delivery-sink",
+	  "config": {
+		"connector.class": "com.couchbase.connect.kafka.CouchbaseSinkConnector",
+		"tasks.max": "2",
+		"topics" : "dbserver1.inventory.customers",
+		"connection.cluster_address" : "db",
+		"connection.timeout.ms" : "2000",
+		"connection.bucket" : "staging",
+		"connection.username" : "Administrator",
+		"connection.password" : "password",
+		"couchbase.durability.persist_to" : "NONE",
+		"couchbase.durability.replicate_to" : "NONE",
+		"key.converter" : "org.apache.kafka.connect.storage.StringConverter",
+		"value.converter" : "org.apache.kafka.connect.json.JsonConverter",
+		"value.converter.schemas.enable" : "false"
+	  }
+}
+}
+
 To start Postgres:
 ------------------
 
@@ -26,5 +64,11 @@ To start Couchbase:
 -------------------
 
 docker run -it --rm --name db -p 8091-8094:8091-8094 -p 11210:11210 --link kafka:kafka couchbase:enterprise-6.0.1 
+or
+docker run -d --name db -m 4gb -p 8091-8096:8091-8096 -p 9140:9140 -p 11210:11210 --link kafka:kafka couchbase:enterprise-6.0.1 
 
 then create 'staging' bucket on it
+
+To start simulator:
+-------------------
+docker run -it --rm --name simulator --link db:db --link loyaltydb:loyaltydb --link mysql:mysql -p 8080:80 cust360simulatorweb

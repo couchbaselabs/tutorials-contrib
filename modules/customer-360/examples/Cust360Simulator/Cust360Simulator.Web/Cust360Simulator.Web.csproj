@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="customer360.log" />
+    <None Remove="customer360.log.1" />
+    <None Remove="customer360.log.2" />
+    <None Remove="customer360.log.3" />
+    <None Remove="customer360.log.4" />
+    <None Remove="customer360.log.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Couchbase.Extensions.DependencyInjection" Version="2.0.2" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.1" />
     <PackageReference Include="Hangfire.Core" Version="1.7.1" />
@@ -28,6 +37,10 @@
     <Content Update="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\js\" />
   </ItemGroup>
 
 </Project>

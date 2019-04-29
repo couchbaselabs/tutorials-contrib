@@ -49,8 +49,8 @@ namespace Cust360Simulator.Web.Controllers
         [Route("api/populate")]
         public IActionResult Populate()
         {
-            _enterpriseData.PopulateAPersonAcrossEnterprise();
-            return Ok("Done");
+            var email = _enterpriseData.PopulateAPersonAcrossEnterprise();
+            return Ok($"Created person: {email}");
         }
 
         [HttpGet]
