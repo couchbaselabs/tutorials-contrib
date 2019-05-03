@@ -276,6 +276,94 @@ Since the _staging_ bucket is meant to be a place for the initial ingestion of d
 
 == Data Ingestion with HTTP REST API polling
 
+Finally, we have one more system to ingest data from. In the previous two examples, we set up data pipelines that *push* the data from their respective systems *to* Couchbase. The data comes to us.
+
+For this next system, the only way to get data out of it is through a REST HTTP API. Additionally, we have to get data out of it piecemeal. That is, it won't simply be one request to ingest all the data at once. We can only make requests for one person at a time.
+
+For this tutorial, I've constructed a "mock" REST API with the following endpoints:
+
+[source,indent=0]
+----
+GET ​/api​/onlineStore​/getCustomerDetailsByEmail
+GET ​/api​/onlineStore​/getOrdersByCustomerId
+GET ​/api​/onlineStore​/getProductDetailsByProductId
+----
+
+In reality, a REST API will have a much larger suite of endpoints, including POST, DELETE, PUT, etc, as well as a variety of difference resources. But for the purposes of this tutorial, these three endpoints are all we have available that allow us to retrieve data from the Online Store system.
+
+=== getCustomerDetailsByEmail endpoint
+
+This endpoint expects an email address to identify the customer you want to get details about. It returns some information about the customer:
+
+[source,JavaScript,indent=0]
+----
+GET /api/onlineStore/getCustomerDetailsByEmail?customerEmail=gia_kutch%40oconnell.biz
+
+{
+  "Id": 1,
+  "Name": "Matt Groves",
+  "Email": "matthew.groves@couchbase.com",
+  "Password": "edzchzmatv5"
+}
+----
+
+There's not much here about the customer, but it's certainly worth ingesting to start with.
+
+=== getOrdersByCustomerId
+
+This endpoint expects a customer ID (which can be obtained using the previous endpoint). It returns information about all the orders this customer has made:
+
+[source,JavaScript,indent=0]
+----
+GET /api/onlineStore/getOrdersByCustomerId?customerId=1
+
+[
+  {
+    "OrderId": 1,
+    "PurchaseDate": "2019-04-25T15:15:5800838522",
+    "CustomerId": 1,
+    "Items": [
+      { "OrderId": 1, "ProductId": 200, "Quantity": 2, "Price": 87.81 },
+      { "OrderId": 1, "ProductId": 400, "Quantity": 4, "Price": 129.86 },
+      { "OrderId": 1, "ProductId": 410, "Quantity": 1, "Price": 78.64 },
+      { "OrderId": 1, "ProductId": 300, "Quantity": 2, "Price": 25.03 },
+      { "OrderId": 1, "ProductId": 110, "Quantity": 2, "Price": 191.92 }
+    ]
+  },
+  {
+    "OrderId": 2,
+    "PurchaseDate": "2019-04-13T16:15:5801361975",
+    "CustomerId": 1,
+    "Items": [
+      { "OrderId": 2, "ProductId": 100, "Quantity": 2, "Price": 219.74       }
+    ]
+  }
+]
+----
+
+The way this data is being returned indicates that a relational database of some sort is being used behind the scenes. However, much like the Loyalty system, *we don't have any direct access to that database*. We must make do with the REST endpoints for now.
+
+There's a third endpoint, `getProductDetailsByProductId`, which will return details about a product, given a product ID. For this tutorial, I'm going to ignore this endpoint. However, it will likely become critical to ingest this information efficiently as the Customer 360 system starts to mature (in a future tutorial).
+
+=== Ingesting this data
+
+One approach to ingesting this data is to again use a Couchbase SDK and write a program. This program could examine our Customer 360 documents, make requests to the API, and update the Customer 360 documents (in the _customer360_ bucket) with the details that are returned. At the same time, it could gather the order information and put those into the Customer 360 bucket. In psuedo-code:
+
+[source,indent=0]
+----
+for each document X in the customer360 bucket B
+  email = X.email
+  details = HTTP request to getCustomerDetailsByEmail
+  orders = HTTP request to getOrdersByCustomerId
+  update X.details
+  create order document(s) in B
+next X
+----
+
+This could be run on a regular basis, much like the CSV task earlier.
+
+This is a valid approach. However, since we'll be writing code anyway, this seems like a good opportunity to write a Couchbase Eventing Function. We'll need this function to consolidate all the other data in staging anyway. Since Functions can make HTTP requests on their own, we can put all this functionality inside of the Couchbase Data Platform, together with the data.
+
 == Data Integration with Couchbase Eventing Functions
 
 == Summary
