@@ -1,80 +1,244 @@
-:imagesdir: images
+:imagesdir: ../assets/images
 
-= Customer 360
+= Customer 360 Data Ingestion
 
-There are 5 main parts:
+This tutorial contains 7 main sectins:
 
-1. MySQL (database for home delivery)
-2. PostgreSQL (database for loyalty program)
-3. Simulator (puts simulated data into MySQL, puts simulated data into PostgreSQL, provides simulated data via HTTP API, creates and consumes CSV)
-4. Kafka (streams data out of MySQL database)
-5. Couchbase (staging, event sourcing, functions, also acts as a Kafka sink via connector)
+* <<Customer 360 Introduction>>: What does it mean? What is the use case?
+* <<Data Ingestion Overview>>: How and why are we ingesting data?
+* <<Data Ingestion example with Kafka>>: Using Kafka and Kafka Connect to setup a real-time data pipeline
+* <<Data Ingestion example with CSV>>: Creating a (nightly) job to import data from a CSV file
+* <<Data Ingestion with HTTP REST API polling>>: Planning to use CURL/HTTP to ingest data
+* <<Data Integration with Couchbase Eventing Functions>>: putting all the pieces together
+* <<Summary>> and next steps: Once you have the data ingested, where do you go from there?
 
-image:dataingestiondiagram.jpg[]
+*Prerequisities*: this is a tutorial about a data ingestion architecture. It is not necessarily a step-by-step guide on creating everything from start to finish. There are so many variables to take into account, that it would be impossible to cover all of them. But, generally speaking, the prerequisites are:
 
-== Home Delivery Data Ingestion
+* An enterprise with multiple data-backed systems.
+* Some way for data to be copied/piped/streamed from those systems (this tutorial covers Kafka, CSV, and HTTP, but there are a myriad of other ways to move data around).
+* A Couchbase Server cluster with (at least) one node that has the link:https://docs.couchbase.com/server/current/eventing/eventing-overview.html[Eventing service] enabled.
+* Optional: Docker. If you plan on building an entire "toy" environment and following this tutorial exactly, Docker will help you. However, Docker is not necessary to the most crucial parts of this tutorial.
 
-TODO: describe home delivery data (it live in MySQL, we're interested only in the customer table, etc)
+== Customer 360 Introduction
 
-TODO: describe flow from mysql to kafka to couchbase via connectors
+The goal of a link:https://www.couchbase.com/solutions/customer-360[Customer 360 system] is to deliver a single, consistent view of all your data in one platform within an enterprise where that data is split up between many different systems. This tutorial will be focusing mainly on getting a complete view of a customer/person.
 
-TODO: link to debezium tutorial, one short paragraph of description
+=== Retail as an example
 
-To extend the Debezium MySQL tutorial and introduce the Couchbase connector, one approach is to use the Debezium connect docker base image and supplement it with the link://[Couchbase Kafka Connector]. The Dockerfile simply adds the jar file to the connect folder and makes the connector available to Kafka:
+Let's assume our enterprise is a retail organization. Within this organization, there can be many separate components:
 
-[source,Docker,indent=0]
+* Home Delivery - a system dedicated to received delivery orders from a customer and making sure they get delivered to their homes.
+* Loyalty Program - a system dedicated to tracking and rewarding your most loyal customers with incentives.
+* Online Store - a system which allows the users to place orders from their browser/phone/etc. A customer cam pick them up, have them shipped, etc.
+
+There are many more systems, especially as your retail organization grows. Perhaps another system is acquired via acquisition, another is created by a successful hackathon project, and perhaps there are even 3rd party systems that are business critical. Some of these systems *may* even communicate with each other.
+
+=== What do the parts have in common?
+
+But what these systems all have in common is that they are separated in some way, and typically have their own data store.
+
+image:00201-enterprise.png[Diagram of the enterprise in current state]
+
+In this example, the home delivery system is backed by a MySQL database, the loyalty system is backed by Postgres, and we're not even sure what the online store is backed by.
+
+What we do know is that an individual may interact with any of these systems. That is, a person might only use the home delivery system, they might only use the online store, or they might use 2 or 3 them. 
+
+From the person's external point of view, they are all part of the same business. From an internal technology point of view, they are all separate parts. BUT, to best serve a customer and/or gather insights about our customers on the whole, we'd have to piece together data from these 3+ systems.
+
+This is where Customer 360 comes in. We'll build a system to get as many pieces of the whole customer as we can, and put them together into one system.
+
+== Data Ingestion Overview
+
+The first step with data ingestion is to answer the question: "how can we get the data?" The answer to this question is going to vary wildly. But for purposes of this tutorial, let's assume that we've researched each system and discovered the most optimal method currently available:
+
+image:00202-getting-data.png[Getting data out]
+
+In this diagram, we've made the following determinations about the most optimal way to get data:
+
+* *Home Delivery*: We're in luck! The Home Delivery team has agreed to (or already has) connected their MySQL database as a "source" to Kafka via Kafka Connect. We can setup Couchbase as a Kafka "sink" and start ingesting data in real time.
+* *Loyalty System*: The situation is less ideal here, but the Loyalty System team has agreed to (or previously has) created a nightly job that exports all of their customer data to a CSV file. This means that the loyalty data could be as old as 24 hours, but it's a start!
+* *Online Store*: Making things more tricky, the only way to access data externally in this system is via a REST API. We can ask for a data about one customer at a time. So instead of data coming to our Customer 360 system, our Custoemr 360 system has to poll for the data.
+
+There are many other ways that data can flow or be accessed, but this tutorial is going to focus on these three. _In an ideal world, we could use a single method (like Kafka) to move data from all systems through the enterprise, but few enterprises exist in such a world._
+
+== Data Ingestion example with Kafka
+
+The Home Delivery team is using a MySQL database. We want to get customer data from that system into a Couchbase "staging" bucket. A simple view of this architecture will look like this:
+
+image:00203-kafka-mysql.png[MySQL to Couchbase Kafka data pipeline]
+
+Let's break down each of these parts:
+
+* *MySQL*. This is a popular relational database. In the Home Delivery system, there may be many _tables_ containing data. Our Customer 360 system is only interested (for now) in the data that's in a _customer_ table. The Home Delivery system will make updates and inserts to this table on a regular basis as part of day-to-day business.
+* *Kafka*. link:http://kafka.apache.org/[Kafka] is a streaming platform. It's similar to a queue: _sources_ put messages into a topic, and _sinks_ read the messages from those topics. Kafka has a distributed architecture, meaning that it can be scaled up as necessary.
+* *Kafka Connect*. link:https://docs.confluent.io/current/connect/index.html[Kafka Connect] is a framework for connecting _data sources_ and _data sinks_ to Kafka. There are many Kafka Connect plugins available, including link:https://debezium.io/[Debezium for MySQL] and a link:https://docs.couchbase.com/kafka-connector/current/quickstart.html[Couchbase Kafka Connector].
+* *Couchbase*. This is the data platform that will hold all the Customer 360 data. To start with, we'll just put data into a _bucket_ called _staging_. Later, we'll integrate this data into a _customer360_ bucket. Couchbase, like Kafka, has a distributed architecture, which provides excellent scaling capabilities.
+
+For this tutorial, I used some basic Docker commands to get all the pieces working. In your enterprise, you may or may not be using some combinatino of containers, VMs, Kubernetes, bare metal, cloud services, etc. This tutorial will not go into all those details.
+
+In your organization, you may already have Kafka running. If so, skip to <<MySQL to Kafka Connect>>. If you already have MySQL and Kafka Connect talking, you can skip to <<Kafka Connect to Couchbase>>.
+
+=== Installing Couchbase
+
+There are multiple ways to install Couchbase. I'm using basic Docker commands in this tutorial to keep it simple. However, for a more robust deployment, you may want to take a look at the link:https://docs.couchbase.com/operator/current/overview.html[Couchbase Kubernetes Autonomous Operator].
+
+I executed the following Docker command to start Couchbase:
+
+[source,PowerShell,indent=0]
 ----
-include::docker-connect-couchbase/Dockerfile[]
+docker run -d --name db -m 4gb -p 8091-8096:8091-8096 -p 9140:9140 -p 11210:11210 --link kafka:kafka couchbase:enterprise-6.0.1 
 ----
 
-Build this Docker image and give it a name of couchbasedebezium in your local image repository:
+Once it was installed, I went through the link:https://docs.couchbase.com/server/current/manage/manage-nodes/create-cluster.html[normal setup process] (make sure that Eventing is selected) and created a bucket called _staging_. You will also need two other buckets later, so you may as well create them now: _customer360_ and _customer360_metadata_.
+
+=== Kafka
+
+For this tutorial, I relied heavily on Kafka and Debezium documentation. Debezium has published a link:https://debezium.io/docs/tutorial/[quick start tutorial] on setting up Kafka and Kafka connect (including Zookeeper). It's a great tutorial, and since I'll be using Debezium's MySQL connector anyway, it's a great place to start.
+
+To get started with Kafka, I ran Docker images like so:
+
+[source,PowerShell,indent=0]
+----
+docker run -it --rm --name zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 debezium/zookeeper:0.9
+
+docker run -it --rm --name kafka -p 9092:9092 --link zookeeper:zookeeper debezium/kafka:0.9
+----
+
+Zookeeper is required for Kafka, so I executed that first. After that started, I ran the Kafka image. In your enterprise, I'm assuming that a MySQL database already exists, but if you want to create one just to follow along with this tutorial, you can use a Debezium provided MySQL database that already contains sample data:
+
+[source,PowerShell,indent=0]
+----
+docker run -it --rm --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=debezium -e MYSQL_USER=mysqluser -e MYSQL_PASSWORD=mysqlpw debezium/example-mysql:0.9
+----
+
+At this point, you have Kafka (+Zookeeper) and MySQL running.
+
+=== MySQL to Kafka Connect
+
+For this tutorial, we'll be relying on the link:https://debezium.io/docs/connectors/mysql/[Debezium MySQL connector]. There are other options for using MySQL with Kafka Connect. I have chosen Debezium because of how easy it was for me to get started with it, but depending on your situation, you may want to link:https://www.confluent.io/hub/[check out other connectors].
+
+Getting started with the Debezium MySQL connector is as easy as running another Docker image:
+
+[source,PowerShell,indent=0]
+----
+docker run -it --rm --name connect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_statuses --link zookeeper:zookeeper --link kafka:kafka --link mysql:mysql debezium/connect:0.9
+----
+
+*However, before you do that, I would recommend reading the next step about using the Couchbase Kafka Connector.*
+
+Once the above Connect image is running, you can configure and start the connector with a single call to Kafka Connect's REST API. Specifically, you can make a call like this:
+
+[source,JavaScript,indent=0]
+----
+POST http://localhost:8083/connectors/
+
+{
+  "name": "inventory-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1",
+    "database.hostname": "mysql",
+    "database.port": "3306",
+    "database.user": "debezium",
+    "database.password": "dbz",
+    "database.server.id": "184054",
+    "database.server.name": "dbserver1",
+    "database.whitelist": "inventory",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.inventory"
+  }
+}
+----
+
+Take special note of `database.server.name` and `database.whitelist`. After you POST this (see link:https://docs.confluent.io/current/connect/references/restapi.html#post--connectors[more about the Kafka Connect REST API here]), data will immediately start flowing from MySQL into Kafka.
+
+=== Kafka Connect to Couchbase
+
+At this point, data is flowing into Kafka whenever it's added or updated in MySQL. The last step is to get Couchbase to listen to this flow of data and ingest it into the _staging_ bucket.
+
+Couchbase has created and supports a link:https://docs.couchbase.com/kafka-connector/current/quickstart.html[Kafka Connector]. Be sure to read that documentation and quick start guide. For this tutorial, we're going to put the Couchbase Kafka Connector inside the same image as used in the above step.
+
+==== Custom Docker Image
+
+Once again, Docker is not a prerequisite for using Couchbase Kafka Connect (or anything in this tutorial). But for convenience sake, I created a customer Docker image that has both the MySQL connector and the Couchbase connector in it:
+
+[source,Dockerfile,indent=0]
+----
+include::../examples/docker-connect-couchbase/Dockerfile[]
+----
+
+To build this custom docker image on your machine, start by downloading the link:https://docs.couchbase.com/kafka-connector/current/quickstart.html#download[kafka-connect-couchbase-X.X.X.jar] file and placing in the same directory as the above Dockerfile. Then execute this Docker command:
 
 [source,PowerShell,indent=0]
 ----
 docker build . --tag couchbasedebezium
 ----
 
-So instead of starting Kafka Connect with the debezium/connect image, use the couchbasedebezium image:
+(I used `couchbasedebezium` but you're free to name it whatever you'd like).
+
+==== Running the Custom Connect Image
+
+Once that custom image is created, execute it like so:
 
 [source,PowerShell,indent=0]
 ----
 docker run -it --rm --name connect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_statuses --link zookeeper:zookeeper --link kafka:kafka --link mysql:mysql --link db:db couchbasedebezium
 ----
 
-The only other difference in this example is the addition of `--link db:db`, which refers to the Couchbase docker image that I started.
+Notice that this is identical to running the debezium image as in the last section, except for two things:
 
-Debezium stores not only the data, but also schema information about each MySQL field, information about the Kafka journey, etc. To focus on just the raw data, try running this N1QL query in Couchbase:
+* It's linking to db (which is where I'm running Couchbase)
+* It's running my `couchbasedebezium` image
 
-[source,SQL,indent=0]
-----
-SELECT s.payload.after AS record
-FROM staging s;
-----
+==== Starting the Connector(s)
 
-The results of which will look similar to:
+When this image starts, you can again make REST requests to start data flowing. To start the Couchbase connector:
 
 [source,JavaScript,indent=0]
 ----
-[
-  {
-    "record": {
-      "email": "sally.thomas@acme.com",
-      "first_name": "Sally",
-      "id": 1001,
-      "last_name": "Thomas"
-    }
-  },
-  ... etc ...
-  {
-    "record": {
-      "email": "badabing@badaboom.gov",
-      "first_name": "Calvin",
-      "id": 1005,
-      "last_name": "Allen"
-    }
+POST http://localhost:8083/connectors/ 
+
+{
+  "name": "home-delivery-sink",
+  "config": {
+    "connector.class": "com.couchbase.connect.kafka.CouchbaseSinkConnector",
+    "tasks.max": "2",
+	"topics" : "dbserver1.inventory.customers",
+	"connection.cluster_address" : "db",
+	"connection.timeout.ms" : "2000",
+	"connection.bucket" : "staging",
+	"connection.username" : "Administrator",
+	"connection.password" : "password",
+	"couchbase.durability.persist_to" : "NONE",
+	"couchbase.durability.replicate_to" : "NONE",
+	"key.converter" : "org.apache.kafka.connect.storage.StringConverter",
+	"value.converter" : "org.apache.kafka.connect.json.JsonConverter",
+	"value.converter.schemas.enable" : "false"
   }
-]
+}
 ----
 
-At this point, any data mutations that happen in MySQL will be picked up through Kafka and make their way into Couchbase for further processing.
+This configuration is largely pulled from the link:https://docs.couchbase.com/kafka-connector/3.4/quickstart.html[Couchbase Quickstart]. Instead of being a text file for the command line, it’s an HTTP POST. Take special note of:
 
+* `connector.class` – This is the connector class that lives in the JAR file
+* `topics` – The topics that Couchbase will sink from.
+* `connection.cluster_address` – When I started Couchbase in Docker, I gave it a name of "db"
+* `connection.bucket, connection.username, connection.password` – These are all settings I created when setting up Couchbase.
+
+At this point, data should be flowing into your Couchbase staging bucket, and it will look similar to this:
+
+image:00204-staging-delivery.png[Home Delivery data flowing into Couchbase]
+
+Those documents contain a lot of information about the data flow. Some of which you might need, some of which you can ignore. But for now, the data is being ingested, and will continue to be ingested in real time as changes are made to the data in MySQL.
+
+== Data Ingestion example with CSV
+
+
+
+== Data Ingestion with HTTP REST API polling
+
+== Data Integration with Couchbase Eventing Functions
+
+== Summary
+
+Ultimately, our goal may be just to build a customer 360 system while keeping the individual pieces intact. Or we may want to start to move/replace/transform these systems to use Couchbase as a primary data store. Either way, the first step is to start ingesting data into Couchbase.
