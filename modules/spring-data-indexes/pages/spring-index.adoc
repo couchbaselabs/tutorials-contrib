@@ -71,17 +71,29 @@ This basic index can be automatically generated via the *@N1qlSecondaryIndexed* 
 
 [source,Java,indent=0]
 ----
-@N1qlPrimaryIndexed
 @N1qlSecondaryIndexed(indexName = "userEntity")
 public interface UserEntityRepository extends CouchbaseRepository<UserEntity, String> {
 
 }
 ----
 
+This annotation will generate the following index in the database:
+
+[source,SQL,indent=0]
+----
+CREATE INDEX `userEntity` ON `myBucket`(`_class`) 
+    WHERE (`_class` = "com.cb.demo.userProfile.model.UserEntity")
+
+----
+
+In most scenarios, this basic index can help to slightly improve the performace of some queries. Although, in our specific scenario, as all documents in the database have the same type (`com.cb.demo.userProfile.model.UserEntity`) it won't be effective.
+
 TIP: The *@N1qlSecondaryIndexed* will create a basic index for the entity if it does not exist yet. However, if the node containing the index fails and you restart your application, the index will be recreated, which might not be the desired behavior.
 
+IMPORTANT: Use *@N1qlPrimaryIndexed* only in development environments
 
-The index we just created is a good start, but it is far from optimal, as all documents in this database have the `com.cb.demo.userProfile.model.UserEntity` type. Even if we had other document types, most of the time we won’t simply query users with no filters and no sorting.
+The index we just created is a good start, but it is far from optimal, as we are pushing only the *_class* to the index. As your data grows, *we recommend you to remove both the @N1qlSecondaryIndexed annotation and the auto-generated index from the database, they could be replaced by a similar but more effective indexes*, we will discuss more about it later in this tutorial.
+
 
 Let’s say, in our application, we mostly care about active users living in US, and we usually sort them by first name. A Spring Data implementation of this query would look like the following:
 
@@ -219,6 +231,8 @@ image:0008-query-time-output.png[Code Runtime]
 
 The code took *114ms* to run, which means that ~90% of the time was spent in the application side (preparing the query, converting the results to Java objects) and most importantly, network latency. 
 
+TIP: At scale, the order of the filters matter, you should put first the attribute which will filter out most documents .
+
 
 == Performance at Scale
 
@@ -272,7 +286,7 @@ Here is how the code of a simple projection looks like:
 [source,Java,indent=0]
 ----
 public List<SimpleUserVO> listActiveUsers( String firstName, boolean enabled, String countryCode,  Integer limit, Integer offset ) {
-    String query = "Select meta().id as id, username, tenantId, firstName, lastname from "
+    String query = "Select meta().id as id, firstName, lastname from "
             + bucket.bucketManager().info().name()
             + " where type = '"+UserEntity.TYPE+"'"
             + " and firstName like '"+firstName+"%' "
@@ -331,10 +345,38 @@ Note that you can return Value Objects (VOs) directly from Spring Data, but the 
 List<SimpleUserVO> findByName(String name);
 ----
 
+
+TIP: If you decide to use projections in your code, spend some time link:http://blog.couchbase.com/wp-content/uploads/2017/03/N1QL-A-Practical-Guide-v2.pdf[learning about how indexing works in Couchbase], it will give you some valuable tips to extract max performance out of it.
+
+
+At this point we could also revisit your repositories to remove some of the *@N1qlSecondaryIndexed* annotations and drop the respective indexes from the database. The auto-generated index would look like the following:
+
+[source,SQL,indent=0]
+----
+CREATE INDEX `userEntity` ON `test`(`_class`) WHERE (`_class` = "com.cb.demo.userProfile.model.UserEntity")
+----
+
+Those indexes could be replaced by similar but more optmized new indexes with fields which are commonly returned and/or filtered in the queries. This change can considerably speed up queries that doesn't match a more specific index:
+
+
+[source,SQL,indent=0]
+----
+CREATE INDEX `userEntity` ON `test`(`countryCode`, `firstName`, `enabled`, `lastName`  ) 
+    WHERE (`_class` = "com.cb.demo.userProfile.model.UserEntity")
+----
+
+Note that, as we are using projections, there is no need to store the *_class* attribute in the index, as it won't be returned anyway. Try to avoid storing unecessary fields in the index, with smaller indexes Couchbase can keep more things in the memory.
+
+
+
 === TL/DR
 
-In summary, if you are not having a satisfactory performance, we recommend three basic optimizations:
+In summary, if you are not having a satisfactory performance, we recommend a few basic optimizations:
 
+
+. Spend some time learning about how N1Ql indexing works, link:http://blog.couchbase.com/wp-content/uploads/2017/03/N1QL-A-Practical-Guide-v2.pdf[this book is a good starting point]
+. Remove the primary index and create proper indexes for each of your document types
+. Remove the *@N1qlSecondaryIndexed* and the generated index in the database, you could replace it with a similar but more effective one.
 . Check the generated query and make sure that it is using an index (via Query Planner or *EXPLAIN*)
 . Check if you can create a more optimized index for your query. Sorting and array search, for instance, are common scenarios where you might need to create a proper index.
 . In scenarios where you need a high read throughput, choose projections over the standard Spring Data syntax to avoid as much *fetch* as possible. 
