@@ -12,6 +12,7 @@ module.exports = {
 // bindings:
 //	Alias, customer360, cust
 
+// tag::OnUpdate[]
 function OnUpdate(doc, meta) {
 	// when an email comes along, save it here for later
 	// to poll the Online CRM API
@@ -29,7 +30,9 @@ function OnUpdate(doc, meta) {
         PollOnlineCrm(doc, emailToPollOnlineCRM, cust, curl, log);
 	}
 }
+// end::OnUpdate[]
 
+// tag::IngestUserDelivery[]
 function IngestUserDelivery(doc, cust, log)
 {
     log('INGEST', 'User Delivery System');
@@ -46,6 +49,7 @@ function IngestUserDelivery(doc, cust, log)
 
     return email;
 }
+// end::IngestUserDelivery[]
 
 function IngestLoyaltyMember(doc, cust, log)
 {
@@ -64,25 +68,28 @@ function IngestLoyaltyMember(doc, cust, log)
     return email;
 }
 
+// tag::PollOnlineCrm[]
 function PollOnlineCrm(doc, email, cust, curl, log)
 {
     var customerDoc = GetCustomer360DocIfItExists(cust, email);
     
     customerDoc = UpdateCustomerDocFromOnlineStore(customerDoc, email, cust, curl, log);
-
-//	ImportNewOrders(cust, customerDoc.Id, curl, log);
 }
+// end::PollOnlineCrm[]
 
 // this function will examine a document
 // and determine if it's being ingested from
 // the user delivery system
+// tag::IsUserDelivery[]
 function IsUserDelivery(doc) {
     if(doc.payload)
       if(doc.payload.source)
         if(doc.payload.source.name)
             return doc.payload.source.name === 'dbserver1';
     return false;
-  }
+}
+// end::IsUserDelivery[]
+
 
 // get a customer 360 document
 // if it exists
@@ -185,8 +192,10 @@ function UpdateCustomerDocFromLoyalty(customerDoc, loyaltyMemberDoc) {
 
 function UpdateCustomerDocFromOnlineStore(customerDoc, email, cust, curl, log)
 {
+	// tag::curl[]
 	var onlineStoreCustomerDetailsUrl = "http://172.17.0.8/api/onlineStore/getCustomerDetailsByEmail?customerEmail=" + email;
 	var onlineStoreCustomerDetails = curl(onlineStoreCustomerDetailsUrl, { "method" : "GET"});
+	// end::curl[]
 
 	customerDoc.profile.name = onlineStoreCustomerDetails.Name;
 	if(!customerDoc.xrefs)

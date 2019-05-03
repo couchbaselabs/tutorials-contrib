@@ -362,10 +362,230 @@ next X
 
 This could be run on a regular basis, much like the CSV task earlier.
 
-This is a valid approach. However, since we'll be writing code anyway, this seems like a good opportunity to write a Couchbase Eventing Function. We'll need this function to consolidate all the other data in staging anyway. Since Functions can make HTTP requests on their own, we can put all this functionality inside of the Couchbase Data Platform, together with the data.
+This is a valid approach. However, since we'll be writing code anyway, this seems like a good opportunity to write a Couchbase Eventing Function. We'll need this function to consolidate all the other data in staging anyway. And since Functions can make HTTP requests on their own, we can put all this functionality inside of the Couchbase Data Platform, together with the data.
 
 == Data Integration with Couchbase Eventing Functions
 
+Everything in this tutorial has lead to this point. There is a _staging_ bucket that contains, for each person, at most two documents: one with data from the home delivery system, one with data from the loyalty system. (Your enterprise may, of course, have dozens of documents, depending on how many systems you're pulling from). There is also data in the Online Store, waiting to be queries.
+
+Now, it's time to consolidate information into the _customer360_ bucket. Let's manually walk through an example of how the consolidation should look.
+
+=== Review of available data
+
+In the _staging_ bucket, there are two documents for Matthew Groves. Here is (a truncated version of) the home delivery document:
+
+[source,JavaScript,indent=0]
+----
+{
+    "schema": { ... },
+    "payload": {
+      "after": { 
+        "zipcode": "04006",
+        "password": "5owhiy1j.isq",
+        "city": "West Evertchester",
+        "name": "Matthew Groves",
+        "address_line_1": "600 Sporer Curve",
+        "phonenumber": "811.128.4320 x4808",
+        "id": 1029,
+        "address_line_2": "Suite 528",
+        "state": "NH",
+        "email": "matthew.groves@couchbase.com"
+      },
+      "source": {
+        "name": "dbserver1", ...
+      },
+      ...
+    }
+  }
+----
+
+And here is a loyalty member document:
+
+[source,JavaScript,indent=0]
+----
+{
+    "id": "27",
+    "password": "xrinn5xp.swd",
+    "firstName": "Matthew",
+    "lastName": "Groves",
+    "email": "matthew.groves@couchbase.com",
+    "points": "47"
+  }
+----
+
+Finally, though it doesn't exist in the staging bucket, here is what we can expect to find when making a REST API request for Matthew Groves:
+
+[source,JavaScript,indent=0]
+[source,JavaScript,indent=0]
+----
+GET /api/onlineStore/getCustomerDetailsByEmail?customerEmail=gia_kutch%40oconnell.biz
+
+{
+  "Id": 1,
+  "Name": "Matthew Groves",
+  "Email": "matthew.groves@couchbase.com",
+  "Password": "edzchzmatv5"
+}
+
+GET /api/onlineStore/getOrdersByCustomerId?customerId=1
+
+[
+  {
+    "OrderId": 1,
+    "Items": [ ... ], ...
+  },
+  {
+    "OrderId": 2,
+    "Items": [ ... ], ...
+    ]
+  }
+]
+----
+
+=== Customer 360 Data end state
+
+Based on the data available in staging and the REST API, we want to consolidate all of the above into 3 total documents: 1 for the customer and 2 for that customer's orders. We want the customer to look like this:
+
+[source,JavaScript,indent=0]
+----
+KEY: matthew.groves@couchbase.com
+{
+	"type": "user",
+	"profile": {
+		"name": "Matthew Groves",
+		"address1": "600 Sporer Curve",
+		"address2": "Suite 528",
+    ...
+    "loyaltyPoints": "47"
+	},
+	"xrefs": [{
+			"external_system": "online_store",
+			"external_ID": 1,
+			"pass": "edzchzmatv5"
+		},
+		{
+			"external_system": "home_delivery",
+			"external_ID": 1029,
+			"pass": "5owhiy1j.isq"
+		},
+		{
+			"external_system": "loyalty",
+			"external_ID": "27",
+			"pass": "xrinn5xp.swd"
+		}
+	]
+}
+----
+
+There is only *one* customer document, with consolidated fields like `name`, but it has *three* cross-references in which to store system specific data like `external_ID` and `pass`.
+
+Since the order data is unbounded (a given customer could have hundreds of orders), the orders are stored in separate documents:
+
+[source,JavaScript,indent=0]
+----
+KEY order::1
+{
+  "PurchaseDate": "2019-04-25T15:15:5800838522",
+  "CustomerId": 1,
+  "Items": [
+    { "OrderId": 1, "ProductId": 200, "Quantity": 2, "Price": 87.81 },
+    ...
+  ]
+}
+
+KEY order::2
+{
+  "OrderId": 2,
+  "PurchaseDate": "2019-04-13T16:15:5801361975",
+  "CustomerId": 1,
+  "Items": [
+    { "OrderId": 2, "ProductId": 100, "Quantity": 2, "Price": 219.74 }
+  ]
+}
+----
+
+To recap, we expect 1 customer document to be created/updated out of 3+ total pieces of enterprise data. We expect all order documents to be copied over from the online store for a given customer.
+
+=== Create an Integration Function
+
+This tutorial assumes you have some familiarity with how to create, deploy, and debug link:https://docs.couchbase.com/server/current/eventing/eventing-overview.html[Eventing Functions in Couchbase]. If not, please take the time to look through the fundamentals and work through some of the link:https://docs.couchbase.com/server/6.0/eventing/eventing-examples.html[eventing service examples].
+
+Since this will be a relatively complicated function, I decided to start by writing it as a plain link:https://nodejs.org[Node.JS] application, and test it with a series of link:https://mochajs.org/[Mocha] unit tests. If you elect to do this, make sure to keep the link:https://docs.couchbase.com/server/6.0/eventing/eventing-language-constructs.html[limitations of the Couchbase Eventing JavaScript engine] in mind.
+
+The full link://[source code is available on GitHub]. To start with, let's create a function in the eventing service. Note that creating a function requires the use of a Metadata Bucket, which was mentioned earlier in this tutorial. If you didn't create it then, it will need to be created now.
+
+image:00205-eventing-function.png[Create an eventing function]
+
+*Important note*: _This tutorial was written with Couchbase Server 6.0 in mind. In Couchbase Server 6.5, CURL functionality will be changing. Be sure to check out the blog post link:https://blog.couchbase.com/using-curl-eventing-service-update/[Using cURL with the Eventing Service: Update] for more details. This tutorial will be (slightly) updated after a Couchbase Server 6.5 release._
+
+=== OnUpdate Function
+
+The next step is to write the JavaScript that will go into the `OnUpdate` function. This is the function that will be called for every document that appears in the staging bucket. Hypothetically, the code for the entire integration could live in this function. I've elected to break up the functionality into testable functions as much as possible:
+
+[source,JavaScript,indent=0]
+----
+include::../examples/Cust360Simulator/Cust360Eventing/eventingFunctions.js[tag=OnUpdate]
+----
+
+The functions `IsUserDelivery` and `IsLoyaltyMember` make the determination as to what kind of document is being examined.
+
+=== IsUserDelivery/IsLoyaltyMember
+
+For example, `IsUserDelivery` looks for payload source name, which was supplied by the Debezium connector:
+
+[source,JavaScript,indent=0]
+----
+include::../examples/Cust360Simulator/Cust360Eventing/eventingFunctions.js[tag=IsUserDelivery]
+----
+
+`IsLoyaltyMember` is similar. Next, `IngestUserDelivery` performs the actual creation or update of a Customer 360 document, using the User Delivery information:
+
+[source,JavaScript,indent=0]
+----
+include::../examples/Cust360Simulator/Cust360Eventing/eventingFunctions.js[tag=IngestUserDelivery]
+----
+
+It's a good idea to keep these functions small so that they are readable and testable. In fact, this function has `cust` and `log` as parameters, even though they are technically available without being parameters. However, if I'm testing this with Mocha, I can inject fakes/mocks into those parameters. An example of a Mocha unit test:
+
+[source,JavaScript,indent=0]
+----
+include::../examples/Cust360Simulator/Cust360Eventing/test.js[tag=MochaTestExample]
+----
+
+Use caution when developing with Node/Mocha. It can help speed up your development, but be sure not to use any NPM packages or any functionality that is not available to the https://docs.couchbase.com/server/6.0/eventing/eventing-language-constructs.html[Couchbase Eventing JavaScript engine]. Additionally, there are link:https://docs.couchbase.com/server/6.0/eventing/eventing-language-constructs.html#added-lang-features[some features that have been added] that are not typically available with most JavaScript engines. Proceed with caution.
+
+=== Integrating with REST
+
+The last step of the function involves making REST requests to the Online Store API.
+
+[source,JavaScript,indent=0]
+----
+include::../examples/Cust360Simulator/Cust360Eventing/eventingFunctions.js[tag=PollOnlineCrm]
+----
+
+*Again, note that CURL functionality is changing in Couchbase Server 6.5*, but here is the relevant portion of `UpdateCustomerDocFromOnlineStore` for Couchbase Server 6.0 with the unsupported developer preview functionality:
+
+[source,JavaScript,indent=0]
+----
+include::../examples/Cust360Simulator/Cust360Eventing/eventingFunctions.js[tag=curl]
+----
+
+In this case, the base URL is hard-coded. With Couchbase Server 6.5, the URL will be a binding that you specify when creating the function. The result of curl in this case is a JavaScript object that can be ingested into the customer 360 document in the same manor as the other integrations.
+
+After the function is deployed, it will immediately go to work on the documents in the _staging_ bucket, and documents will start to appear in the _customer360_ bucket.
+
 == Summary
 
-Ultimately, our goal may be just to build a customer 360 system while keeping the individual pieces intact. Or we may want to start to move/replace/transform these systems to use Couchbase as a primary data store. Either way, the first step is to start ingesting data into Couchbase.
+At this point, the data ingestion process is well underway. The _customer360_ bucket will start to be populated with information from our customers. If you're using nightly CSV imports, it may take that long for *all* of the data to show, but at least you have a head start.
+
+So now that we have a bucket containing complete pictures of our customers, what do we do next?
+
+The initial goals may be just to use this Customer 360 data in a "read-only" fashion:
+
+* Build a customer dashboard to view all the details of a specific customer
+* Build an enterprise dashboard to view aggregate information about the entire customer base
+* Use the customer 360 data as input to machine learning or recommendation algorithms (e.g. "customers who bought the same items as you were also interested in X").
+
+However, the longer term goal may be to transition/move/replace/transform some or all of these individual systems to use Couchbase as a primary data store.
+
+Either way, the first step is to start ingesting data into Couchbase. Now that we have this solid foundation in place, future tutorials will explore all the options that the Couchbase Data Platform can provide.

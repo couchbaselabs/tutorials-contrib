@@ -51,6 +51,7 @@ describe('given a user delivery doc', function() {
         cust = {};
     });
 
+    // tag::MochaTestExample[]
     it('should create a new customer 360 doc if one doesnt exist', function() {
         var expectedDocKey = doc.payload.after.email;
 
@@ -58,6 +59,7 @@ describe('given a user delivery doc', function() {
 
         assert.notStrictEqual(cust[expectedDocKey], undefined);
     });
+    // end::MochaTestExample[]
 
     it('should map the appropriate fields to the customer 360 doc', function() {
         var k = doc.payload.after.email;
