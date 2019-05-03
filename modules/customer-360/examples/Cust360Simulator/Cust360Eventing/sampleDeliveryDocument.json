@@ -1,0 +1,40 @@
+{
+    "schema": {
+      "name": "dbserver1.inventory.customers.Envelope",
+      "optional": false,
+      "type": "struct"
+    },
+    "payload": {
+      "op": "c",
+      "before": null,
+      "after": {
+        "zipcode": "04006",
+        "password": "5owhiy1j.isq",
+        "city": "West Evertchester",
+        "name": "Sabryna Kovacek",
+        "address_line_1": "600 Sporer Curve",
+        "phonenumber": "811.128.4320 x4808",
+        "id": 1029,
+        "address_line_2": "Suite 528",
+        "state": "NH",
+        "email": "sabryna_kovacek@farrell.co.uk"
+      },
+      "source": {
+        "ts_sec": 1556559563,
+        "query": null,
+        "thread": 28,
+        "server_id": 223344,
+        "version": "0.9.3.Final",
+        "file": "mysql-bin.000003",
+        "connector": "mysql",
+        "pos": 11971,
+        "name": "dbserver1",
+        "gtid": null,
+        "row": 0,
+        "snapshot": false,
+        "db": "inventory",
+        "table": "customers"
+      },
+      "ts_ms": 1556559563137
+    }
+  }
