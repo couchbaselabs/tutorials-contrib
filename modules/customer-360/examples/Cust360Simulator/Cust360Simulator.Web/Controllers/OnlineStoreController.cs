@@ -23,7 +23,7 @@ namespace Cust360Simulator.Web.Controllers
                 return BadRequest("You must specify customerEmail");
 
             if (!_onlineStoreRepository.DoesCustomerExistsByEmail(customerEmail))
-                return NotFound($"No customer with address '{customerEmail}' was found.");
+                return NotFound($"No customer with customerEmail '{customerEmail}' was found.");
 
             return Ok(_onlineStoreRepository.GetCustomerDetailsByEmail(customerEmail));
         }
