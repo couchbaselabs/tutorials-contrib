@@ -73,7 +73,7 @@ ALTER TABLE `customers`
             }
             catch { }
 
-            try
+            if (!SqliteTableAlreadyExist())
             {
                 _onlineStoreDb.Execute(@"CREATE TABLE [customer_details] (
 [id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -81,32 +81,24 @@ ALTER TABLE `customers`
 [email] VARCHAR(100)  NOT NULL,
 [name] VARCHAR(150)  NOT NULL
 );");
-            }
-            catch { }
 
-            try { 
-            _onlineStoreDb.Execute(@"CREATE TABLE [product] (
+                _onlineStoreDb.Execute(@"CREATE TABLE [product] (
 [product_id] INTEGER  NOT NULL PRIMARY KEY,
 [name] VARCHAR(50)  NOT NULL,
 [description] TEXT  NOT NULL,
 [category] VARCHAR(50)  NOT NULL
 );");
-            }
-            catch { }
 
-            try { 
-            _onlineStoreDb.Execute(@"CREATE TABLE [order] (
+                _onlineStoreDb.Execute(@"CREATE TABLE [order] (
 [order_id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
 [purchase_date] DATE  NOT NULL,
 [customer_id] INTEGER  NOT NULL,
 FOREIGN KEY(customer_id) REFERENCES customer_details(id)
 );");
-            }
-            catch { }
 
-            try
-            {
-                _onlineStoreDb.Execute(@"CREATE TABLE [order_item] (
+                try
+                {
+                    _onlineStoreDb.Execute(@"CREATE TABLE [order_item] (
 [order_id] INTEGER NOT NULL,
 [product_id] INTEGER NOT NULL,
 [quantity] INTEGER NOT NULL,
@@ -114,9 +106,23 @@ FOREIGN KEY(customer_id) REFERENCES customer_details(id)
 FOREIGN KEY(product_id) REFERENCES product(product_id),
 FOREIGN KEY(order_id) REFERENCES [order](order_id)
 );");
-            } catch { }
+                }
+                catch
+                {
+                }
 
-            PopulateProductTable();
+                PopulateProductTable();
+            }
+        }
+
+        private bool SqliteTableAlreadyExist()
+        {
+            var result = _onlineStoreDb.Query<long>(@"
+                select COUNT(1)
+                from sqlite_master m
+                    where m.type = 'table'
+                and m.name = 'customer_details'").FirstOrDefault();
+            return result > 0;
         }
 
         private void PopulateProductTable()

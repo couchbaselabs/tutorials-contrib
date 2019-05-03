@@ -56,10 +56,17 @@ namespace Cust360Simulator.Core.OnlineStore
 
         public bool DoesCustomerExistsByEmail(string customerEmail)
         {
-            var customerCount = _sqlLiteConnection.Query<int>(@"
+            try
+            {
+                var customerCount = _sqlLiteConnection.Query<int>(@"
                 SELECT COUNT(1) FROM customer_details WHERE email = @CustomerEmail",
-                new {CustomerEmail = customerEmail}).FirstOrDefault();
-            return customerCount > 0;
+                    new {CustomerEmail = customerEmail}).FirstOrDefault();
+                return customerCount > 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public OnlineCustomerDetails GetCustomerDetailsByEmail(string customerEmail)
