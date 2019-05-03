@@ -219,3 +219,4 @@ ModelManifest.xml
 /Groves/111RedsEventingTwilio/src/TicketVip/TicketVip/twiliocredentials.json
 /modules/customer-360/examples/docker-connect-couchbase/kafka-connect-couchbase-3.4.3.jar
 /modules/customer-360/examples/Cust360Simulator/Cust360Simulator.Web/CsvExports/*.csv
+/modules/customer-360/examples/Cust360Simulator/Cust360Simulator.Web/onlineStore.db
