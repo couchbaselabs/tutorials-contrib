@@ -27,6 +27,7 @@ namespace Cust360Simulator.Core.Loyalty
             _bucket = bucketProvider.GetBucket("staging");
         }
 
+        // tag::ImportCsv[]
         public async Task ImportCsv()
         {
             var csvFilePath = GetNewestCsvPath();
@@ -67,6 +68,7 @@ namespace Cust360Simulator.Core.Loyalty
 
             TrackImportComplete(csvFilePath);
         }
+        // end::ImportCsv[]
 
         // store the filename that was used as well as the current datetime
         // so that we can check next time

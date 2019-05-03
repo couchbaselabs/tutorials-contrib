@@ -233,7 +233,46 @@ Those documents contain a lot of information about the data flow. Some of which 
 
 == Data Ingestion example with CSV
 
+The next part of the enterprise to ingest data from is the Loyalty Program system. Since it's using Postgres, we could absolutely follow a similar procedure as was done with Kafka in the previous section. However, that's not always possible. Perhaps the Loyalty Program team doesn't want the database to connect to Kafka, perhaps they are interested in scrubbing their data first, etc.
 
+There could be any number of reasons, but the end result is that all we have to go on is a nightly CSV export of all the customer data. Well, that's okay, because we have a few options for ingesting data from a CSV file into the _staging_ bucket in Couchbase.
+
+=== Using cbimport
+
+The first option is a tool that comes with Couchbase called link:https://docs.couchbase.com/server/current/tools/cbimport.html[cbimport]. This command line utility is able to import data from link:https://docs.couchbase.com/server/current/tools/cbimport-csv.html[CSV] (as well as JSON).
+
+For example:
+
+[source,PowerShell,indent=0]
+----
+cbimport csv -c couchbase://127.0.0.1 -u Administrator -p password \
+ -b staging -d file:///data/loyalty_members.csv -g key::#MONO_INCR# -t 4
+----
+
+That command will import every record from loyalty_members.csv into the _staging_ bucket.
+
+To run this nightly, you could set up a link:https://en.wikipedia.org/wiki/Cron[cron] job (or similar) to run shortly after new CSV files appear. You could schedule it or trigger it to run when a new CSV is found. This requires cbimport to have read access to the CSV file, and it requires some understanding of scripting.
+
+Using *cbimport* is the simplest approach. It is a powerful, flexible tool that will work for you in many situations.
+
+=== Using a Couchbase SDK
+
+If scripting/cron/cbimport can't accomplish what you want, you can take the approach of writing your own CSV import tool. You can write a program using any of the link:https://docs.couchbase.com/server/6.0/sdk/overview.html[Couchbase Server SDKs], including C, .NET, Go, Java, Node, PHP, Python, or Scala (and there are other community supported options).
+
+For this tutorial, I created a small program using link:https://docs.couchbase.com/dotnet-sdk/current/start-using-sdk.html[.NET] and the link:https://joshclose.github.io/CsvHelper/[CsvHelper] library.
+
+[source,C#,indent=0]
+----
+include::../examples/Cust360Simulator/Cust360Simulator.Core/Loyalty/LoyaltyCsvImportService.cs[tag=ImportCsv]
+----
+
+This is a very straightforward approach: it loops through every CSV record, reads it into a C# object, and then sends it to Couchbase. It's using C#'s async/await functionality as well as the .NET SDK's batch insert capabilities. This code will also keep track of which CSV files have already been imported, so that no redundant importing happens. It also makes use of a logging library, just in case something goes wrong.
+
+=== Time-to-live
+
+It's also worth pointing out that this CSV import code is setting an `Expiry` of 90000 on each document. Since this is a nightly task, and *all* of the customers will be exported every day, it's important to clean up the old staging data. By setting an Expiry, Couchbase will automatically remove these temporary documents in staging after a certain period of time. link:https://docs.couchbase.com/dotnet-sdk/2.7/core-operations.html#expiry[Couchbase SDKs can set this Expiry (also know as time-to-live or TTL)] on a per document basis. You can also choose to set a TTL at the bucket level.
+
+Since the _staging_ bucket is meant to be a place for the initial ingestion of data to appear, but NOT a place for data to be stored long term, using TTL here will save you the headache of having to clean up data.
 
 == Data Ingestion with HTTP REST API polling
 
