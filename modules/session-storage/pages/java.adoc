@@ -163,7 +163,6 @@ The complete source code for this example is link:https://github.com/couchbasela
 3. Run `mvn spring-boot:run` in the project folder
 4. Open your browser at http://localhost:8080 
 
-IMPORTANT: If you run into any dependency issues, checkout and then build link:https://github.com/couchbaselabs/spring-session-data-couchbase[this project] with `mvn package`  
 
 Once you've done that, you'll be able to use the finished sample application. The rest of this tutorial walks through the steps in building the application. You can follow along by browsing the source code or trying to recreate the sample application yourself.
 
@@ -190,14 +189,11 @@ Then, add the following dependency in your *pom.xml* file:
 [source,XML]
 ----
 <dependency>
-	<groupId>org.springframework.session</groupId>
+	<groupId>io.github.couchbaselabs</groupId>
 	<artifactId>spring-session-data-couchbase</artifactId>
-	<version>1.0.BUILD-SNAPSHOT</version>
+	<version>1.1</version>
 </dependency>
 ----
-
-IMPORTANT: If you run into any dependency issues, checkout and then build link:https://github.com/couchbaselabs/spring-session-data-couchbase[this project] with `mvn package`  
-
 
 Then, we need connect our new application to our database by defining the following configuration in the *application.properties* file:
 
