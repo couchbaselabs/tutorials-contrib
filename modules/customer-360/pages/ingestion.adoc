@@ -2,7 +2,7 @@
 
 = Customer 360 Data Ingestion
 
-This tutorial contains 7 main sectins:
+This tutorial contains 7 main sections:
 
 * <<Customer 360 Introduction>>: What does it mean? What is the use case?
 * <<Data Ingestion Overview>>: How and why are we ingesting data?
