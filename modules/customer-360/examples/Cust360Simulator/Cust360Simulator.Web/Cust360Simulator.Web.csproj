@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <UserSecretsId>e100a1a4-9895-4b0c-9947-fd09e3753a6d</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="customer360.log" />
+    <None Remove="customer360.log.1" />
+    <None Remove="customer360.log.2" />
+    <None Remove="customer360.log.3" />
+    <None Remove="customer360.log.4" />
+    <None Remove="customer360.log.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Couchbase.Extensions.DependencyInjection" Version="2.0.2" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.1" />
+    <PackageReference Include="Hangfire.Core" Version="1.7.1" />
+    <PackageReference Include="Hangfire.Couchbase" Version="1.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview3-19153-02" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="2.2.10" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.4.10" />
+    <PackageReference Include="MySql.Data" Version="8.0.15" />
+    <PackageReference Include="Npgsql" Version="4.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc2" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.110" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cust360Simulator.Core\Cust360Simulator.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\js\" />
+  </ItemGroup>
+
+</Project>

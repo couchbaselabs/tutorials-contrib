@@ -1,0 +1,27 @@
+{
+	"id": "fe52295a-7fb7-46db-936f-dfcacbb197ae",
+	"type": "user",
+	"profile": {
+		"name": "Perry Krug",
+		"address1": "123 Mockingbird Ln",
+		"address2": "Apt A",
+		"phone": "555-555-5555",
+		"email": "perry@gmail.com"
+	},
+	"xrefs": [{
+			"external_system": "online_store",
+			"external_ID": "perry_krug",
+			"pass": "1xu5gv"
+		},
+		{
+			"external_system": "home_delivery",
+			"external_ID": "p_krug",
+			"pass": "8ds8f03"
+		},
+		{
+			"external_system": "loyalty",
+			"external_ID": "perry@gmail.com",
+			"pass": "319d0a31"
+		}
+	]
+}

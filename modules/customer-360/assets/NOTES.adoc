@@ -1,0 +1,155 @@
+= Customer 360 Orchestration
+
+There are 5 main parts:
+
+1. MySQL (database for home delivery)
+2. PostgreSQL (database for loyalty program)
+3. Simulator (puts simulated data into MySQL, puts simulated data into PostgreSQL, provides simulated data via HTTP API, creates and consumes CSV)
+4. Kafka (streams data out of MySQL database)
+5. Couchbase (staging, event sourcing, functions, also acts as a Kafka sink via connector)
+
+== Install MySQL
+
+`choco install mysql`
+
+root/<no password>
+
+create a 'homedelivery' database
+
+=== create table
+
+[source,SQL,indent=0]
+----
+CREATE TABLE `customer` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`password` VARCHAR(50) NOT NULL,
+	`name` VARCHAR(50) NOT NULL,
+	`email` VARCHAR(100) NOT NULL,
+	`address_line_1` VARCHAR(50) NOT NULL,
+	`address_line_2` VARCHAR(50) NULL DEFAULT NULL,
+	`city` VARCHAR(50) NULL DEFAULT NULL,
+	`state` VARCHAR(2) NULL DEFAULT NULL,
+	`zipcode` VARCHAR(5) NULL DEFAULT NULL,
+	`phonenumber` VARCHAR(10) NULL DEFAULT NULL,
+	PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+;
+----
+
+=== Insert some data into table
+
+TODO
+
+== Install Postgress
+
+`docker run -it --rm --name loyaltydb -p 5432:5432 -e POSTGRES_PASSWORD=password postgres`
+
+
+=== Or use Chocolatey:
+
+`choco install postgresql`
+
+https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+
+create database called 'loyaltyprogram'
+
+TODO: create tables
+
+== Install Kafka
+
+http://kafka.apache.org/quickstart
+
+1. Start zookeeper: `.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties`
+2. Start kafka: `.\bin\windows\kafka-server-start.bat .\config\server.properties`
+3. Create topic: `.\bin\windows\kafka-topics.bat --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic home-delivery`
+
+== Install Couchbase
+
+Just installed on my machine locally as normal
+
+or maybe:
+
+docker run -it --rm --name db -p 8091-8094:8091-8094 -p 11210:11210 --link kafka:kafka couchbase:enterprise-6.0.1 
+
+== Install Kafka Couchbase Connector
+
+https://docs.couchbase.com/kafka-connector/3.4/quickstart.html#sink
+
+Use the sink-homedelivery.properties
+    topic: home-delivery
+    couchbase bucket: staging (Administrator/password for auth)
+
+Start connector: `.\bin\windows\connect-standalone.bat .\config\connect-standalone.properties ..\kafka-connect-couchbase-3.4.3\config\sink-homedelivery.properties`
+
+Test that connector is sinking data into Couchbase:
+
+    Run `mvn compile exec:java` in the kafka-connect-couchbase-3.4.3/examples/json-producer folder
+
+    `.\bin\windows\kafka-console-producer.bat --broker-list localhost:9092 --topic home-delivery`
+    { "foo" : "bar" }
+    (key=foo-123) : { "baz" : "qux" }
+
+Delete a topic:
+
+    `.\bin\windows\kafka-topics.bat --delete --zookeeper localhost:2181 --topic home-delivery`
+
+=== or
+
+`docker cp kafka-connect-couchbase-3.4.3.jar kafka:/kafka/libs/kafka-connect-couchbase-3.4.3.jar`
+`docker cp kafka-connect-couchbase-3.4.3.jar connect:/kafka/libs/kafka-connect-couchbase-3.4.3.jar`
+
+`docker cp sink-homedelivery.properties kafka:/kafka/config/sink-homedelivery.properties`
+
+`docker cp connect-standalone-sink.properties kafka:/kafka/config/connect-standalone-sink.properties`
+
+`docker exec -it kafka /bin/bash`
+`docker exec -it connect /bin/bash`
+
+inside docker bash: `bin/connect-standalone.sh /kafka/config/connect-standalone-sink.properties /kafka/config/sink-homedelivery.properties`
+
+=== or
+
+put jar file in docker image
+
+rest api (like in debezium example):
+
+[source,JavaScript,indent=0]
+----
+{
+  "name": "home-delivery-sink",
+  "config": {
+    "connector.class": "com.couchbase.connect.kafka.CouchbaseSinkConnector",
+    "tasks.max": "2",
+	"topics" : "dbserver1.inventory.customers",
+	"connection.cluster_address" : "db",
+	"connection.timeout.ms" : "2000",
+	"connection.bucket" : "staging",
+	"connection.username" : "Administrator",
+	"connection.password" : "password",
+	"couchbase.durability.persist_to" : "NONE",
+	"couchbase.durability.replicate_to" : "NONE",
+	"key.converter" : "org.apache.kafka.connect.storage.StringConverter",
+	"value.converter" : "org.apache.kafka.connect.json.JsonConverter",
+	"value.converter.schemas.enable" : "false",
+  }
+}
+----
+
+== Install MySQL Couchbase Connector
+
+http://maxwells-daemon.io/quickstart/
+
+https://debezium.io/
+
+docker run -it --rm --name zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 debezium/zookeeper:0.9
+
+docker run -it --rm --name debeziumconnect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_statuses --link zookeeper:zookeeper --link kafka:kafka --link mysql:mysql debezium/connect:0.9
+
+docker run -it --rm --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=debezium -e MYSQL_USER=mysqluser -e MYSQL_PASSWORD=mysqlpw debezium/example-mysql:0.9
+
+docker run -it --rm --name connect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_statuses --link zookeeper:zookeeper --link kafka:kafka --link mysql:mysql debezium/connect:0.9
+
+
+docker run -it --rm --name connect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_statuses --link zookeeper:zookeeper --link kafka:kafka --link mysql:mysql --link db:db couchbasedebezium

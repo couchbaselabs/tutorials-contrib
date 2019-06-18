@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Eventing Functions test harness</title>
+    <script src="/js/codemirror-5.46.0/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="/js/codemirror-5.46.0/lib/codemirror.css">
+    <script src="/js/codemirror-5.46.0/mode/javascript/javascript.js"></script>
+</head>
+<body>
+
+<h2>OnUpdate function</h2>
+<textarea id="OnUpdate" style="border: 1px black;">
+log('docId', meta.id);
+</textarea>
+    
+<button id="run">Run</button>
+    
+<h2>Console</h2>
+<textarea id="consoleOutput" readonly></textarea>
+
+<h2>Global objects (doc, meta, bindings):</h2>
+<p>Presets: <button id="presetHomeDelivery">Home Delivery</button> <button id="presetLoyalty">Loyalty</button></p>
+
+<textarea id="GlobalObjects">
+doc = {};
+meta = {};
+cust = {};
+log = function(x,y) { console.log(x + ' ' + y); };
+curl = function(x,y,z) { return JSON.parse("{ }"); };
+</textarea>
+
+<script type="text/javascript">
+    var onUpdateMirror = CodeMirror.fromTextArea(document.getElementById("OnUpdate"), { lineNumbers: true });
+    onUpdateMirror.setSize(800, 400);
+
+    var globalObjectsMirror = CodeMirror.fromTextArea(document.getElementById("GlobalObjects"), { lineNumbers: true });
+    globalObjectsMirror.setSize(600, 200);
+
+    var consoleOutputMirror = CodeMirror.fromTextArea(document.getElementById("consoleOutput"), { lineNumbers: true });
+    consoleOutputMirror.setSize(600, 200);
+
+//    document.getElementById("presetHomeDelivery").addEventListener("click", function() {
+//        var globalObject = document.getElementById("GlobalObjects");
+//        var text = globalObject.innerHTML;
+//        var json = JSON.parse(text);
+//        json.doc = { homeDelivery: "foo" };
+//        globalObjectsMirror.setValue(JSON.stringify(json, null, 2));
+//    });
+//    document.getElementById("presetLoyalty").addEventListener("click", function() {
+//        var globalObject = document.getElementById("GlobalObjects");
+//        var text = globalObject.innerHTML;
+//        var json = JSON.parse(text);
+//        json.doc = { };
+//        globalObjectsMirror.setValue(JSON.stringify(json, null, 2));
+//    });
+
+    document.getElementById("run").addEventListener("click", function() {
+        var code = onUpdateMirror.getValue();
+        //var globalObject = document.getElementById("GlobalObjects").innerHTML;
+        var globalObject = globalObjectsMirror.getValue();
+        eval(globalObject + " ;\n;\n;\n " + code);
+    });
+
+    // copy console output to textarea
+    (function(){
+        var oldLog = console.log;
+        console.log = function (message) {
+
+            var currentlog = consoleOutputMirror.getValue();
+            var newlog = currentlog + message + "\n";
+            consoleOutputMirror.setValue(newlog);
+
+            oldLog.apply(console, arguments);
+        };
+    })();
+</script>
+</body>
+</html>
