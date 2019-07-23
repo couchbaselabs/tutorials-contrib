@@ -164,6 +164,8 @@ include::../examples/AspNetCoreSession/AspNetCoreSession/Startup.cs[tag=usesessi
 
 Next, install the `Couchbase.Extensions.Session` package using NuGet. You can do this via the NuGet UI or simply enter `Install-Package Couchbase.Extensions.Session` in the Package Manager Console.
 
+NOTE: The `Couchbase.Extensions` library is central to this tutorial. It is an open-source project that is part of Couchbase Labs. However, paid support is not provided for this library by Couchbase Support. If you have questions or issues, please check out the link:https://github.com/couchbaselabs/Couchbase.Extensions[Couchbase.Extension GitHub repository].
+
 After that is installed, we'll use this extension to tell ASP.NET Core where and how to use Couchbase as a session store. Recall that I created a bucket named "sessionstore" earlier. You should also know the location and credentials for your Couchbase cluster. To tell ASP.NET Core about Couchbase, add this code to `ConfigureServices` in Startup.cs.
 
 [source,C#,indent=0]
