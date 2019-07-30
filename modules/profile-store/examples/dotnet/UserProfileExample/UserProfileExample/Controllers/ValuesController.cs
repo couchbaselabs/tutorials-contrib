@@ -60,7 +60,7 @@ namespace UserProfileExample.Controllers
             {
                 // I'm only pulling from the first 10 users just to increase event density
                 var randomUser = users[Faker.RandomNumber.Next(0, 10)];
-                var fakeUserActivity = FakeUserEvent.Create(randomUser.Id);
+                var fakeUserActivity = UserEventGenerator.Create(randomUser.Id);
                 await _userRepository.AddEventAsync(fakeUserActivity);
             }
 
