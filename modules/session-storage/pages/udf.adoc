@@ -3,18 +3,20 @@
 
 == Overview
 
-This tuturial is part of the main Session Store tutorial (both link:http://docs.couchbase.com/tutorials/session-storage/aspnet.html[ASP.NET] and link:http://docs.couchbase.com/tutorials/session-storage/java.html[Java]). You should be able to follow along if you haven't gone through those tutorials yet, but reading those tutorials first will give you more context.
+This tutorial is part of the main Session Store tutorial (both link:http://docs.couchbase.com/tutorials/session-storage/aspnet.html[ASP.NET] and link:http://docs.couchbase.com/tutorials/session-storage/java.html[Java]). You should be able to follow along if you haven't gone through those tutorials yet, but reading those tutorials first will give you more context.
 
 * <<Session Store Data Review>> How session data is stored and encoded by web frameworks like ASP.NET
-* <<Executing a Session Store Query>> How to query the session store data while it's encoded
-* <<Creating a Helpful User-Defined Function>> How to create a UDF that will make writing queries easier
+* <<Executing a Session Store Query>> How to query the session store data
+* <<Creating a User-Defined Function>> How to create a UDF that will make writing queries easier
 * <<Summary>> A quick summary of this tutorial and next steps
+
+NOTE: User-defined functions (UDFs) are only available in Couchbase Server 6.5 and newer.
 
 == Session Store Data Review
 
 When using a web framework, like ASP.NET or Spring, session data may be stored in an encoded format instead of raw JSON.
 
-For example: ASP.NET Core (as shown in the link:http://docs.couchbase.com/tutorials/session-storage/aspnet.html[ASP.NET session store tutorial]) encodes session data as BASE64.
+For example: ASP.NET (as shown in the link:http://docs.couchbase.com/tutorials/session-storage/aspnet.html[ASP.NET session store tutorial]) encodes session data as Base64.
 
 [source,JavaScript,indent=0]
 ----
@@ -26,9 +28,9 @@ key : c0077f11-401c-7a1d-72a3-a80b2f13084e
 }
 ----
 
-NOTE: Spring encodes session data different (see: link:http://docs.couchbase.com/tutorials/session-storage/java.html[Using Couchbase Server as a Session Store tutorial for Java/Spring]). The rest of this tutorial assumes ASP.NET, but the same principles can be applied to Java/Spring.
+NOTE: Spring encodes session data differently (see: link:http://docs.couchbase.com/tutorials/session-storage/java.html[Using Couchbase Server as a Session Store tutorial for Java/Spring]). The rest of this tutorial assumes Base64, but the same principles can be applied to other decoding/encoding methods.
 
-This approach is adequate for the session store itself, but makes it more difficult to explore the data on its own. If we want to execute SQL queries against this data to gather insights and answer questions, we must decode the data in the query itself.
+This approach makes it difficult to explore the data on its own. If we want to execute SQL queries against this data to gather insights and answer questions, we must decode the data in the SQL query itself.
 
 == Executing a Session Store Query
 
@@ -46,7 +48,7 @@ ORDER BY STR_TO_UTC(BASE64_DECODE(s.shoppingcart).DateCreated) DESC
 LIMIT 10;
 ----
 
-Results look like this:
+Results of this query look like this:
 
 [source,JavaScript,indent=0]
 ----
@@ -67,15 +69,15 @@ Results look like this:
 ]
 ----
 
-BASE64_DECODE needs to be used in order to query individual properties of the encoded session data. For a complex query, this involves a lot of repetition and extra ceremony.
+`BASE64_DECODE` needs to be used in order to query individual properties of the encoded session data. For a complex query, this involves a lot of repetition.
 
-A User-Defined Function (UDF) is one way to make these type of queries read cleaner and use less repetition.
+A User-Defined Function (UDF) is can mitigate this repetition.
 
-== Creating a Helpful User-Defined Function
+== Creating a User-Defined Function
 
 To create user-defined functions, use `CREATE FUNCTION functionname() LANGUAGE INLINE AS ( ... );`.
 
-A N1QL query goes inside of the function. To better enable session storage queries, let's put the BASE64_DECODE inside of a function called `shoppingcarts`.
+The function can contain whatever N1QL you'd like. To better enable session storage queries, let's put the BASE64_DECODE inside of a function called `shoppingcarts`.
 
 [source,SQL,indent=0]
 ----
@@ -86,7 +88,7 @@ CREATE FUNCTION shoppingcarts() LANGUAGE INLINE AS (
 );
 ----
 
-The goal of this function is to return pre-decoded shopping cart data from the sessionstore bucket. Both VALUE and OBJECT_PUT are necessary in order to return a complete shopping cart document.
+The goal of this function is to return pre-decoded shopping cart data from the sessionstore bucket. Both `VALUE` and `OBJECT_PUT` are necessary in order to return a complete shopping cart document.
 
 More information about these keywords:
 
@@ -107,7 +109,7 @@ ORDER BY STR_TO_UTC(s.DateCreated) DESC
 LIMIT 10;
 ----
 
-Now the encoding is being handled by the shoppingcarts() function. the query is simpler and easier to read and modify, while the results stay the same:
+Now the encoding is being handled by the `shoppingcarts()` function. The query is simpler and easier to read and modify, while the results stay the same:
 
 [source,JavaScript,indent=0]
 ----
@@ -132,7 +134,7 @@ Now the encoding is being handled by the shoppingcarts() function. the query is 
 
 A user-defined function (UDF) made our queries easier to read and write. A UDF can encapsulate implementation details and reduce repetition.
 
-This tutorial showed how to specifically improve the query for finding recent shopping carts stored in session by ASP.NET, but you can apply the same principles to the Java/Spring tutorial as well (it uses DECODE_JSON in a similar fashion).
+This tutorial showed how to specifically improve the query for finding recent shopping carts stored in session by ASP.NET, but you can apply the same principles to the Java/Spring tutorial as well (it uses `DECODE_JSON` in a similar fashion).
 
 If you have more questions about UDFs, you can always get help from humans in the link:https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums].
 

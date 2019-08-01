@@ -303,11 +303,15 @@ LIMIT 10;
 
 First off, this N1QL query is using BASE64_DECODE to turn the base64 representations into a JSON object that can be more easily queried (see link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/metafun.html[more about BASE64_DECODE] in documentation).
 
+NOTE: If you are using Couchbase Server 6.5+, you can link:http://docs.couchbase.com/tutorials/session-storage/udf.html[create a User-Defined Function] to simplify this query and avoid the need to use `BASE64_DECODE` multiple times in every query. 
+
 Second, to make this query work, we'll need appropriate indexing. The `shoppingcart` field at least needs to be indexed. It's also a good idea to add `BASE64_DECODE(shoppingcart)` to make it a link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/covering-indexes.html[covering index]. Create an index like this:
 
 `CREATE INDEX ix_shoppingcart ON sessionstore (shoppingcart, BASE64_DECODE(shoppingcart));`
 
-After that index is created, the above `SELECT` query will function, and it will return the 10 most recent shopping carts. The sample application (available on Github) uses this query to generate a report that looks like this:
+After that index is created, the above `SELECT` query will function, and it will return the 10 most recent shopping carts.
+
+The sample application (available on Github) uses this query to generate a report that looks like this:
 
 image:00103-recent-shopping-carts.png[10 Most Recent Shopping Cart report]
 
