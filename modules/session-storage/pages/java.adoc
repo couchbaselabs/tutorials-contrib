@@ -432,6 +432,8 @@ ORDER BY _created DESC
 LIMIT 10
 ----
 
+NOTE: If you are using Couchbase Server 6.5+, you can link:http://docs.couchbase.com/tutorials/session-storage/udf.html[create a User-Defined Function] to simplify this query and avoid the need to use `DECODE_JSON` in every query.
+
 To make this query work, we'll need appropriate indexing. The `IndexConfigRunner` automatically create a primary index for you during the startup:
 
 [source,Java,indent=0]
