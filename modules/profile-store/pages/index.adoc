@@ -64,7 +64,7 @@ Start by https://github.com/couchbaselabs/tutorials-contrib/blob/master/modules/
 
 [NOTE]
 ====
-* This file should be saved to some location where you have cbimport installed or that can be accessed directly by a computer with cbimport installed. (cbimport comes with Couchbase Server)
+* This file should be saved to some location where you have cbimport installed or that can be accessed directly by a computer with cbimport installed. (cbimport comes with Couchbase Server).
 
 * The computer with the file must have network access to the Couchbase cluster you want to load the data into. If you've been running a local instance of Couchbase or a local Docker image, download this file to the same computer. Otherwise, you may need to adjust firewall settings.
 
