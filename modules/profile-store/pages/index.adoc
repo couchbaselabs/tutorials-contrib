@@ -71,7 +71,7 @@ Start by https://github.com/couchbaselabs/tutorials-contrib/blob/master/modules/
 * Finally, make sure you have a bucket ready in Couchbase. For the user profile tutorial, the bucket was called *user_profile*, so that's what this tutorial will also be using.
 ====
 
-Review the cbimport documentation, specifically the link:https://docs.couchbase.com/server/current/tools/cbimport-json.html[cbimport json] documentation.
+Review the cbimport documentation, specifically the https://docs.couchbase.com/server/current/tools/cbimport-json.html[cbimport json] documentation.
 
 To import the data into the user_profile bucket, execute a command like this:
 
