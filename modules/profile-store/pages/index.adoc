@@ -174,4 +174,4 @@ If you're still struggling with indexing, you can always get help from humans on
 Return to the parent User Profile tutorial:
 
 * xref:dotnet.adoc[.NET]
-* link:http://docs.couchbase.com/tutorials/profile-store/java.html[Java]
+* xref:java.adoc[Java]
