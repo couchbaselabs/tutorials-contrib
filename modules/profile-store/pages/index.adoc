@@ -1,4 +1,5 @@
 = Building the right indexes for querying a User Profile Store
+:imagesdir: ../assets/images
 
 == Overview
 
