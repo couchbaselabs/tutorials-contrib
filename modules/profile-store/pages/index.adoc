@@ -60,7 +60,7 @@ If you've been following along with the user profile tutorial, your Couchbase bu
 
 You can use those documents for this tutorial. Alternatively, you can import a sample data set that's been created for this tutorial.
 
-Start by link:https://github.com/couchbaselabs/tutorials-contrib/blob/master/modules/profile-store/examples/user-profile-sample.json?raw=true[downloading the user-profile-sample.json file (large JSON file)].
+Start by https://github.com/couchbaselabs/tutorials-contrib/blob/master/modules/profile-store/examples/user-profile-sample.json?raw=true[downloading the user-profile-sample.json file (large JSON file)].
 
 [NOTE]
 ====
