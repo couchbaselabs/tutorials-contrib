@@ -147,7 +147,7 @@ The advisor will show what index is currently being used (a primary index) and w
 CREATE INDEX adv_tenantId_type ON `user_profile`(`tenantId`) WHERE `type` = 'user'
 ----
 
-A quick sanity check shows that this suggestion makes sense. Our query is always examing `tenantId` and is always looking at `user` documents.
+A quick sanity check shows that this suggestion makes sense. Our query is always examining `tenantId` and is always looking at `user` documents.
 
 == Improved Performance
 
