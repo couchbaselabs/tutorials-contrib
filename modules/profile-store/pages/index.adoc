@@ -3,7 +3,7 @@
 
 == Overview
 
-This tuturial is part of the main User Profile tutorial (both link:http://docs.couchbase.com/tutorials/profile-store/dotnet.html[.NET] and link:http://docs.couchbase.com/tutorials/profile-store/java.html[Java]). You should be able to follow along if you haven't gone through those tutorials yet, but reading those tutorials first will give you more context.
+This tutorial is part of the main User Profile tutorial (both xref:dotnet.adoc[.NET] and xref:java.adoc[Java]). You should be able to follow along if you haven't gone through those tutorials yet, but reading those tutorials first will give you more context.
 
 This tutorial contains 5 parts:
 
