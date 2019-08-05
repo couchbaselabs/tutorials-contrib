@@ -92,7 +92,7 @@ The goal of this function is to return pre-decoded shopping cart data from the s
 
 More information about these keywords:
 
-* link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/metafun.html[BASE64_DECODE] decodes the session store object
+* link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/metafun.html[BASE64_DECODE] decodes the session store object
 * link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/selectclause.html#sec_Arguments[VALUE] will unwrap the object created by BASE64_DECODE
 * link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/objectfun.html#object_put[OBJECT_PUT] is needed to combine the document key with the document value
 
