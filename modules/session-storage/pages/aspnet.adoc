@@ -317,7 +317,7 @@ image:00103-recent-shopping-carts.png[10 Most Recent Shopping Cart report]
 
 === Most common items
 
-Another insight we could gather is the most popular item that has been added to shopping carts. 
+Another insight we could gather is the most popular item that has been added o shopping carts. 
 
 [source,SQL,indent=0]
 ----

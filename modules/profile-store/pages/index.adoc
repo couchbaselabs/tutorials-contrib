@@ -99,7 +99,7 @@ You are now ready to proceed with the rest of the tutorial.
 
 If you haven't already, create a primary index. The primary index will include every document in the bucket. Any query that uses this index will scan every document in the bucket. This means it is *NOT appropriate for production*. However, for development, it can be a helpful index to have.
 
-link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html[Create a primary index] by executing this N1QL in link:https://docs.couchbase.com/server/current/tools/query-workbench.html[Query Workbench]:
+https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html[Create a primary index] by executing this N1QL in https://docs.couchbase.com/server/current/tools/query-workbench.html[Query Workbench]:
 
 [source,SQL,indent=0]
 ----
@@ -159,7 +159,7 @@ image:00307-improved-execution-time.png[Improved execution time]
 
 This time, the query only takes 5.8 seconds to complete. Compared to the earlier benchmark of 39.6 seconds, that's almost a 700% improvement! (Your execution times may vary, but the magnitude of the impact is the important factor here).
 
-NOTE: 5.8 seconds is still a pretty long wait for a query result. It's important to understand that indexing is a process that involves continuous improvement and is never really "done". For instance, with this query, we could improve performance by slightly modifying the suggested index and creating a link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/covering-indexes.html[covering index].
+NOTE: 5.8 seconds is still a pretty long wait for a query result. It's important to understand that indexing is a process that involves continuous improvement and is never really "done". For instance, with this query, we could improve performance by slightly modifying the suggested index and creating a https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/covering-indexes.html[covering index].
 
 == Summary
 
@@ -167,9 +167,9 @@ In this mini-tutorial, we looked at how to go from a query using an inefficient 
 
 Indexing is an ongoing process of fine-tuning and continuous improvement, but the index advisor is a tool that can help get you started. Indexing is almost never "perfect" or "done", so keep tweaking until you're satisfied.
 
-For a complete overview of indexing in Couchbase, make sure to visit the link:https://docs.couchbase.com/server/current/learn/services-and-indexes/indexes/indexing-and-query-perf.html[Indexing] documentation.
+For a complete overview of indexing in Couchbase, make sure to visit the https://docs.couchbase.com/server/current/learn/services-and-indexes/indexes/indexing-and-query-perf.html[Indexing] documentation.
 
-If you're still struggling with indexing, you can always get help from humans on the link:https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums].
+If you're still struggling with indexing, you can always get help from humans on the https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums].
 
 Return to the parent User Profile tutorial:
 
