@@ -293,7 +293,7 @@ include::../examples/dotnet/UserProfileExample/UserProfileExample/Models/indexes
 
 Creating the right indexes can be difficult. If you are having trouble creating the right index, here are two paths you can take to get help:
 
-* Starting in Couchbase Server 6.5, there is an index advisor that can automatically make index recommendations for you. To learn more about this, read the xref:indexing.adoc[User Profile Indexing tutorial]. This tutorial uses the same type of data that you've already been creating if you've been following along with this User Profile Tutorial.
+* Starting in Couchbase Server 6.5, there is an index advisor that can automatically make index recommendations for you. To learn more about this, read the xref:building-indexes.adoc[User Profile Indexing tutorial]. This tutorial uses the same type of data that you've already been creating if you've been following along with this User Profile Tutorial.
 * Check out the https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums]. You can post a question about N1QL queries or indexes, and the community there can often help you.
 
 Now that you know how to query your user profile store, let's revisit our list of non-functional requirements:
