@@ -2,27 +2,7 @@
 
 namespace UserProfileExample.Models
 {
-    public class UserEvent
-    {
-        public UserEvent()
-        {
-            Type = "userEvent";
-        }
-        public string Id { get; set; }
-        public string UserId { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public EventType EventType { get; set; }
-        public string Type { get; }
-    }
-
-    public enum EventType
-    {
-        ProductViewed = 0,
-        ProductAddedToCart = 1,
-        ProfileUpdated = 2
-    }
-
-    public static class FakeUserEvent
+    public static class UserEventGenerator
     {
         public static UserEvent Create(string userId)
         {

@@ -1,3 +1,4 @@
 ** xref:profile-store:install.adoc[Configure Couchbase Cluster]
 ** xref:profile-store:java.adoc[Java]
 ** xref:profile-store:dotnet.adoc[.Net]
+** xref:profile-store:building-indexes.adoc[Indexing]

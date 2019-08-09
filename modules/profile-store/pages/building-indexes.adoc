@@ -1,0 +1,177 @@
+= Building the right indexes for querying a User Profile Store
+:imagesdir: ../assets/images
+
+== Overview
+
+This tutorial is part of the main User Profile tutorial (both xref:dotnet.adoc[.NET] and xref:java.adoc[Java]). You should be able to follow along if you haven't gone through those tutorials yet, but reading those tutorials first will give you more context.
+
+This tutorial contains 5 parts:
+
+* <<Loading User Profile Data>> (optional) If you've been creating user profile data already, you can skip this part.
+* <<Using a Primary Index>> The very basics of getting starting with querying.
+* <<Query Advisor>> This is a new beta preview feature as of Couchbase Server 6.5.
+* <<Improved Performance>> We'll analyze the improvement when using a better index.
+* <<Summary>> A quick summary of this tutorial and next steps.
+
+== Loading User Profile Data
+
+If you've been following along with the user profile tutorial, your Couchbase bucket will have at least one document that looks like this:
+
+[source,JavaScript,indent=0]
+----
+{
+  "firstName": "Denis",
+  "lastName": "Rosa",
+  "enabled": true,
+  "tenantId" : 4,
+  "countryCode": "DE",
+  "username": "someUser",
+  "password": "letMeIn",
+  "securityRoles": ["USER", "ADMIN"],
+  "preferences": [
+    {
+      "name": "lang",
+      "value": "en"
+    },
+    {
+      "name": "currency",
+      "value": "EUR"
+    }
+  ],
+  "addresses": [
+    {
+      "name": "Home",
+      "street": "Marienplatz",
+      "number": "1",
+      "zipCode": "80913",
+      "city": "Munich",
+      "state": "Bayern",
+      "countryCode": "DE"
+    }
+  ],
+  "telephones": [
+      {
+          "name": "cell",
+          "number": "111-222-3333"
+      }
+  ]
+}
+----
+
+You can use those documents for this tutorial. Alternatively, you can import a sample data set that's been created for this tutorial.
+
+Start by https://github.com/couchbaselabs/tutorials-contrib/blob/master/modules/profile-store/examples/user-profile-sample.json?raw=true[downloading the user-profile-sample.json file (large JSON file)].
+
+[NOTE]
+====
+* This file should be saved to some location where you have cbimport installed or that can be accessed directly by a computer with cbimport installed. (cbimport comes with Couchbase Server).
+
+* The computer with the file must have network access to the Couchbase cluster you want to load the data into. If you've been running a local instance of Couchbase or a local Docker image, download this file to the same computer. Otherwise, you may need to adjust firewall settings.
+
+* Finally, make sure you have a bucket ready in Couchbase. For the user profile tutorial, the bucket was called *user_profile*, so that's what this tutorial will also be using.
+====
+
+Review the cbimport documentation, specifically the https://docs.couchbase.com/server/current/tools/cbimport-json.html[cbimport json] documentation.
+
+To import the data into the user_profile bucket, execute a command like this:
+
+[source,PowerShell,indent=0]
+----
+cbimport json -c localhost -u Administrator -p
+password -b user_profile -d file://user-profile-sample.json -f list -g %id%
+----
+
+After this is complete, you should see a message like this:
+
+[source,PowerShell,indent=0]
+----
+Json `file://user-profile-sample.json` imported to `http://localhost:8091` successfully
+Documents imported: 25000 Documents failed: 0
+----
+
+You should have (at least) 25000 records in your *user_profile* bucket.
+
+image:00304-user-profile-bucket.png[User Profile bucket]
+
+You are now ready to proceed with the rest of the tutorial.
+
+== Using a Primary Index
+
+If you haven't already, create a primary index. The primary index will include every document in the bucket. Any query that uses this index will scan every document in the bucket. This means it is *NOT appropriate for production*. However, for development, it can be a helpful index to have.
+
+https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html[Create a primary index] by executing this N1QL statement in https://docs.couchbase.com/server/current/tools/query-workbench.html[Query Workbench]:
+
+[source,SQL,indent=0]
+----
+CREATE PRIMARY INDEX ON user_profile;
+----
+
+== Query Advisor
+
+Let's run one of the queries from the User Profile tutorial and see how it performs with only the primary index. Recall from the tutorial this query that is used to list a page of users with a given tenant ID:
+
+[source,C#,indent=0]
+----
+include::../examples/dotnet/UserProfileExample/UserProfileExample/Models/UserRepository.cs[tag=query]
+----
+
+Translating that from .NET, we could create a version of that query to run in Query Advisor:
+
+[source,SQL,indent=0]
+----
+SELECT META().id as id, username, tenantId, firstName, lastname
+FROM user_profile
+WHERE type = 'user'
+AND tenantId = 5
+ORDER BY firstName ASC
+LIMIT 50
+OFFSET 250
+----
+
+This query will take a long time to execute. Make a benchmark of the execution time (e.g. 39.6 seconds).
+
+image:00305-execution-time.png[Execution time using a primary index]
+
+If you have Couchbase Server 6.5 beta (or you've enabled developer preview features in Couchbase Server 6.5), you should notice an "Advise" button.
+
+NOTE: Query Advisor is only available starting in Couchbase Server 6.5 Beta, as a preview feature. As this tutorial was written, it is cutting edge. It is a very useful tool already, but please use it at your own risk.
+
+Click the *Advise* button to get advice about indexing that will improve execution time:
+
+image:00306-advise-results.png[Advise results]
+
+The advisor will show what index is currently being used (a primary index) and what index it recommends. It won't always have a suggestion, but in this case, it recommends an index:
+
+[source,SQL,indent=0]
+----
+CREATE INDEX adv_tenantId_type ON `user_profile`(`tenantId`) WHERE `type` = 'user'
+----
+
+A quick sanity check shows that this suggestion makes sense. Our query is always examining `tenantId` and is always looking at `user` documents.
+
+== Improved Performance
+
+Now that the Advisor has made a suggestion, click the *Create & Build Index* button to use its suggestion. This index will be created asynchronously, so it will take some time for the index to be completely available.
+
+After the index has been created (you can check in the "Indexes" section of the Couchbase Console), let's re-run the query and see if performance has improved.
+
+image:00307-improved-execution-time.png[Improved execution time]
+
+This time, the query only takes 5.8 seconds to complete. Compared to the earlier benchmark of 39.6 seconds, that's almost a 700% improvement! (Your execution times may vary, but the magnitude of the impact is the important factor here).
+
+NOTE: 5.8 seconds is still a pretty long wait for a query result. It's important to understand that indexing is a process that involves continuous improvement and is never really "done". For instance, with this query, we could improve performance by slightly modifying the suggested index and creating a https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/covering-indexes.html[covering index].
+
+== Summary
+
+In this mini-tutorial, we looked at how to go from a query using an inefficient primary index to using index advisor to create a more efficient index.
+
+Indexing is an ongoing process of fine-tuning and continuous improvement, but the index advisor is a tool that can help get you started. Indexing is almost never "perfect" or "done", so keep tweaking until you're satisfied.
+
+For a complete overview of indexing in Couchbase, make sure to visit the https://docs.couchbase.com/server/current/learn/services-and-indexes/indexes/indexing-and-query-perf.html[Indexing] documentation.
+
+If you're still struggling with indexing, you can always get help from humans on the https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums].
+
+Return to the parent User Profile tutorial:
+
+* xref:dotnet.adoc[.NET]
+* xref:java.adoc[Java]
