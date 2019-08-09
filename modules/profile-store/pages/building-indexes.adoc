@@ -89,7 +89,7 @@ Json `file://user-profile-sample.json` imported to `http://localhost:8091` succe
 Documents imported: 25000 Documents failed: 0
 ----
 
-You should have (at least) 25000 records in your user_profile bucket.
+You should have (at least) 25000 records in your *user_profile* bucket.
 
 image:00304-user-profile-bucket.png[User Profile bucket]
 
@@ -99,7 +99,7 @@ You are now ready to proceed with the rest of the tutorial.
 
 If you haven't already, create a primary index. The primary index will include every document in the bucket. Any query that uses this index will scan every document in the bucket. This means it is *NOT appropriate for production*. However, for development, it can be a helpful index to have.
 
-https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html[Create a primary index] by executing this N1QL in https://docs.couchbase.com/server/current/tools/query-workbench.html[Query Workbench]:
+https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/createprimaryindex.html[Create a primary index] by executing this N1QL statement in https://docs.couchbase.com/server/current/tools/query-workbench.html[Query Workbench]:
 
 [source,SQL,indent=0]
 ----
@@ -134,9 +134,9 @@ image:00305-execution-time.png[Execution time using a primary index]
 
 If you have Couchbase Server 6.5 beta (or you've enabled developer preview features in Couchbase Server 6.5), you should notice an "Advise" button.
 
-NOTE: Query Advisor is only available starting in Couchbase Server 6.5 Beta, as a preview feature. As this tutorial was written, it is cutting edge. It is a very useful tool already, but please use at your own risk.
+NOTE: Query Advisor is only available starting in Couchbase Server 6.5 Beta, as a preview feature. As this tutorial was written, it is cutting edge. It is a very useful tool already, but please use it at your own risk.
 
-Click the "Advise" button to get advise about indexing that will improve execution time:
+Click the *Advise* button to get advice about indexing that will improve execution time:
 
 image:00306-advise-results.png[Advise results]
 
@@ -151,7 +151,7 @@ A quick sanity check shows that this suggestion makes sense. Our query is always
 
 == Improved Performance
 
-Now that the Advisor has made a suggestion, click the "Create & Build Index" button to use its suggestion. This index will be created asynchronously, so it will take some time for the index to be completely available.
+Now that the Advisor has made a suggestion, click the *Create & Build Index* button to use its suggestion. This index will be created asynchronously, so it will take some time for the index to be completely available.
 
 After the index has been created (you can check in the "Indexes" section of the Couchbase Console), let's re-run the query and see if performance has improved.
 
