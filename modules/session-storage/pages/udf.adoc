@@ -1,5 +1,4 @@
 = Using User-Defined Functions with a Session Store
-:page-aliases: tutorials:session-storage-tutorial:udf
 
 == Overview
 
