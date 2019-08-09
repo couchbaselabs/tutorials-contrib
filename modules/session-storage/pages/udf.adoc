@@ -1,9 +1,8 @@
 = Using User-Defined Functions with a Session Store
-:page-aliases: tutorials:session-storage-tutorial:udf
 
 == Overview
 
-This tutorial is part of the main Session Store tutorial (both link:http://docs.couchbase.com/tutorials/session-storage/aspnet.html[ASP.NET] and link:http://docs.couchbase.com/tutorials/session-storage/java.html[Java]). You should be able to follow along if you haven't gone through those tutorials yet, but reading those tutorials first will give you more context.
+This tutorial is part of the main Session Store tutorial (both xref:aspnet.adoc[ASP.NET] and xref:java.adoc[Java]). You should be able to follow along if you haven't gone through those tutorials yet, but reading those tutorials first will give you more context.
 
 * <<Session Store Data Review>> How session data is stored and encoded by web frameworks like ASP.NET
 * <<Executing a Session Store Query>> How to query the session store data
@@ -16,7 +15,7 @@ NOTE: User-defined functions (UDFs) are only available in Couchbase Server 6.5 a
 
 When using a web framework, like ASP.NET or Spring, session data may be stored in an encoded format instead of raw JSON.
 
-For example: ASP.NET (as shown in the link:http://docs.couchbase.com/tutorials/session-storage/aspnet.html[ASP.NET session store tutorial]) encodes session data as Base64.
+For example: ASP.NET (as shown in the xref:aspnet.adoc[ASP.NET session store tutorial]) encodes session data as Base64.
 
 [source,JavaScript,indent=0]
 ----
@@ -28,13 +27,13 @@ key : c0077f11-401c-7a1d-72a3-a80b2f13084e
 }
 ----
 
-NOTE: Spring encodes session data differently (see: link:http://docs.couchbase.com/tutorials/session-storage/java.html[Using Couchbase Server as a Session Store tutorial for Java/Spring]). The rest of this tutorial assumes Base64, but the same principles can be applied to other decoding/encoding methods.
+NOTE: Spring encodes session data differently (see: http://docs.couchbase.com/tutorials/session-storage/java.html[Using Couchbase Server as a Session Store tutorial for Java/Spring]). The rest of this tutorial assumes Base64, but the same principles can be applied to other decoding/encoding methods.
 
 This approach makes it difficult to explore the data on its own. If we want to execute SQL queries against this data to gather insights and answer questions, we must decode the data in the SQL query itself.
 
 == Executing a Session Store Query
 
-In the link:http://docs.couchbase.com/tutorials/session-storage/aspnet.html[ASP.NET Session Storage tutorial], there is a query to find the 10 most recent shopping carts being stored as session data:
+In the xref:aspnet.adoc[ASP.NET Session Storage tutorial], there is a query to find the 10 most recent shopping carts being stored as session data:
 
 [source,SQL,indent=0]
 ----
@@ -92,9 +91,9 @@ The goal of this function is to return pre-decoded shopping cart data from the s
 
 More information about these keywords:
 
-* link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/metafun.html[BASE64_DECODE] decodes the session store object
-* link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/selectclause.html#sec_Arguments[VALUE] will unwrap the object created by BASE64_DECODE
-* link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/objectfun.html#object_put[OBJECT_PUT] is needed to combine the document key with the document value
+* https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/metafun.html[BASE64_DECODE] decodes the session store object
+* https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/selectclause.html#sec_Arguments[VALUE] will unwrap the object created by BASE64_DECODE
+* https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/objectfun.html#object_put[OBJECT_PUT] is needed to combine the document key with the document value
 
 After this function has been created, querying the function instead of querying the raw data results in a query with less repetition. For example, the above query can be refactored into:
 
@@ -136,9 +135,9 @@ A user-defined function (UDF) made our queries easier to read and write. A UDF c
 
 This tutorial showed how to specifically improve the query for finding recent shopping carts stored in session by ASP.NET, but you can apply the same principles to the Java/Spring tutorial as well (it uses `DECODE_JSON` in a similar fashion).
 
-If you have more questions about UDFs, you can always get help from humans in the link:https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums].
+If you have more questions about UDFs, you can always get help from humans in the https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums].
 
 Return to the parent Session Storage tutorial:
 
-* link:http://docs.couchbase.com/tutorials/session-storage/aspnet.html[ASP.NET] 
-* link:http://docs.couchbase.com/tutorials/session-storage/java.html[Java]
+* xref:aspnet.adoc[ASP.NET]
+* xref:java.adoc[Java]
