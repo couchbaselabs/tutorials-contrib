@@ -8,7 +8,8 @@ namespace UserProfileExample.Models
         {
             var userEvent = new UserEvent();
             userEvent.Id = "userevent::" + Guid.NewGuid().ToString();
-            userEvent.CreatedDate = DateTime.Now.AddSeconds(-1 * Faker.RandomNumber.Next(0, 300));
+            //userEvent.CreatedDate = DateTime.Now.AddSeconds(-1 * Faker.RandomNumber.Next(0, 300));
+            userEvent.CreatedDate = DateTime.Now.AddSeconds(-1 * Faker.RandomNumber.Next(0, 86400));
             userEvent.UserId = userId;
             switch (Faker.RandomNumber.Next(0,3))
             {
