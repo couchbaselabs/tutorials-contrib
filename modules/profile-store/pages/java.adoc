@@ -322,6 +322,14 @@ image:00301-create-index.png[Create Index]
 * *JSON type field:* As we are using Spring Data, our object type is the attribute called "_class"
 * *Advanced → Store Dynamic Fields:* Let's also store our documents in the index.
 
+[NOTE]
+====
+Creating a primary index is easy, but is not recommended for production. Creating the right indexes can be difficult. If you are having trouble creating the right index, here are two paths you can take to get help: 
+
+* Starting in Couchbase Server 6.5, there is an index advisor that can automatically make index recommendations for you. To learn more about this, read the link:link:http://docs.couchbase.com/tutorials/profile-store/indexing.html[User Profile Indexing tutorial]. This tutorial uses the same type of data that you've already been creating if you've been following along with this User Profile Tutorial.
+* Check out the link:https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums]. You can post a question about N1QL queries or indexes, and the community there can often help you.
+====
+
 Click on your index, type "Alex" and hit Search to check if your index was created correctly:
 
 image:00302-show-index-results.png[Index results]
