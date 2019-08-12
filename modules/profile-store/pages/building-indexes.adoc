@@ -134,7 +134,7 @@ image:00305-execution-time.png[Execution time using a primary index]
 
 If you have Couchbase Server 6.5 beta (or you've enabled developer preview features in Couchbase Server 6.5), you should notice an "Advise" button.
 
-NOTE: Query Advisor is only available starting in Couchbase Server 6.5 Beta, as a preview feature. As this tutorial was written, it is cutting edge. It is a very useful tool already, but please use it at your own risk.
+NOTE: Query Advisor is available starting in Couchbase Server 6.5 Beta, as a link:https://docs.couchbase.com/server/6.5/developer-preview/preview-mode.html[developer preview mode] feature. As this tutorial was written, it is cutting edge. It is a very useful tool already, but please use it at your own risk.
 
 Click the *Advise* button to get advice about indexing that will improve execution time:
 

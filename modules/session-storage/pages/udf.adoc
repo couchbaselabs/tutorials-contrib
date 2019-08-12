@@ -10,7 +10,7 @@ This tutorial is part of the main Session Store tutorial (both link:http://docs.
 * <<Creating a User-Defined Function>> How to create a UDF that will make writing queries easier
 * <<Summary>> A quick summary of this tutorial and next steps
 
-NOTE: User-defined functions (UDFs) are only available in Couchbase Server 6.5 and newer.
+NOTE: User-defined functions (UDFs) are only available in Couchbase Server 6.5 and newer (in the Couchbase Server 6.5 Beta release this is a link:https://docs.couchbase.com/server/6.5/developer-preview/preview-mode.html[developer preview mode] feature).
 
 == Session Store Data Review
 
