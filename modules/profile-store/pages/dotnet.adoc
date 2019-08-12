@@ -498,6 +498,8 @@ include::../examples/dotnet/UserProfileExample/UserProfileExample/Models/indexes
 
 With the asynchronous architecture we have explained in this session, your application won't need to wait for a response from the database. This approach can improve significantly your read/write throughput at scale.
 
+NOTE: For more on User Events, read the xref:window-functions.adoc[Querying User Events with Window functions / CTE tutorial] which uses some features only available starting in Couchbase Server 6.5.
+
 == How to configure Cross Data Center Replication (XDCR)
 
 link:https://docs.couchbase.com/server/6.0/manage/manage-xdcr/xdcr-management-overview.html[Cross Data Center Replication] is one of the most appealing features in Couchbase, with it you can easily distribute and replicate your data globally using a secure and reliable protocols that can be paused and resumed at any time.

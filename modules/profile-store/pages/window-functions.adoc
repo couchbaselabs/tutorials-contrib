@@ -1,0 +1,142 @@
+= Querying User Events with Window functions
+:imagesdir: ../assets/images
+
+== Overview
+
+This tutorial will show a time-series report about user event activity using both window functions and common table expressions (CTEs). The ultimate goal is to build a report that can help show any trends or patterns in user activity. This tutorial will not focus on visualization, but the end result could look something like this:
+
+image:00601-window-functions-visualization.png[Data visualization]
+
+This tutorial is part of the main User Profile tutorial (both xref:dotnet.adoc[.NET] and xref:java.adoc[Java]). You should be able to follow along if you haven't gone through those tutorials yet, but reading those tutorials first will give you more context.
+
+This tutorial contains 5 parts:
+
+* <<Setup and Prerequisites>> What you'll need to follow along.
+* <<Introduction to Window Functions>> What are window functions for?
+* <<Introduction to Common Table Expressions>> What are CTEs for?
+* <<Querying User Events>> Executing time series queries against user event data
+* <<Summary>> A quick summary of this tutorial and next steps.
+
+== Setup and Prerequisites
+
+This tutorial uses window functions, which were first introduced to Couchbase Server in version 6.5.
+
+Additionally, the data being queried in this tutorial comes from the main User Profile tutorial (xref:dotnet.adoc[.NET] and xref:java.adoc[Java]). If you are following along with those tutorials, you should have a data set that contains user events. For reference, the user profile store should contain many user event documents which look like this:
+
+[source,JavaScript,indent=0]
+----
+{
+  "createdDate": "2019-08-11T16:54:03.7227615-04:00",
+  "eventType": 1,
+  "userId": "user::70231780-3eef-40d6-b689-0a0d6455824e",
+  "type": "userEvent"
+}
+----
+
+The rest of this tutorial assumes you have a number of these type of documents in a bucket called *user_profile*.
+
+== Introduction to Window Functions
+
+Window functions are useful for reporting aggregations or cumulative data. The `OVER` clause defines a *window* over which these values will be calculated.
+
+There are a number of window functions available in Couchbase Server 6.5+. This tutorial will only be showing basic usage of `OVER`, but please refer to the full link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/windowfun.html[window functions documentation] for details about functions like `CUME_DIST`, `DENSE_RANK`, `ROW_NUMBER`, and much more.
+
+Within link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/window.html[the `OVER` clause], `PARTITION` specifies the field that describes the window. For example, to get a sum of the number of activities by a time segment:
+
+[source,SQL,indent=0]
+----
+SELECT
+    e.segment,
+    SUM(e.numEvents) OVER(PARTITION BY e.segment) AS numEvents
+FROM /* ... etc ... */
+----
+
+== Introduction to Common Table Expressions
+
+A common table expression is a way to define a temporary set of results which can be queried later in the query. Most often this is used to simplify a query when a result set is used several times.
+
+Use the `WITH` clause to create a common table expression. Please refer to the complete link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/with.html[documentation on the `WITH` clause] for more information.
+
+For this tutorial, notice that each user event has a `createdDate` field which contains a timestamp. However, for reporting purposes, it would be more useful to group these events into some segment (like a 15 minute interval).
+
+One approach might be to calculate the segment (based on the timestamp) and put those results into a CTE for further querying. For example:
+
+[source,SQL,indent=0]
+----
+WITH segmentedUserEvents AS (
+    SELECT 
+        DATE_ADD_STR(DATE_TRUNC_STR(u.createdDate,"hour"), ROUND(DATE_PART_STR(u.createdDate,"minute")/15,0)*15,"minute") as segment,
+        u.eventType,
+        COUNT(*) AS numEvents
+    FROM user_profile u
+    WHERE u.type = 'userEvent'
+    GROUP BY DATE_ADD_STR(DATE_TRUNC_STR(u.createdDate,"hour"), ROUND(DATE_PART_STR(u.createdDate,"minute")/15,0)*15,"minute"), u.eventType
+)
+SELECT /* ... etc ... */
+----
+
+After the initial `WITH`, the remainder of the query can refer to `segmentedUserEvents` instead of repeating the entire contents. This allows a query writer to simplify the entire query, as well as isolate certain components.
+
+Note that the series of `DATE_ADD_STR`, `DATE_TRUNC_STR`, and `ROUND` simply returns a "segment" date, rounded to 15 minute segments. Examples are: "2019-08-11T15:30:00-04:00", "2019-08-11T15:45:00-04:00", etc.
+
+== Querying User Events
+
+Putting together this simple CTE with the simple `OVER(PARTITION ...)` from earlier, build a query that will find the number of certain types of events that occurred within each segment of time.
+
+[source,SQL,indent=0]
+----
+WITH segmentedUserEvents AS (
+    SELECT 
+        DATE_ADD_STR(DATE_TRUNC_STR(u.createdDate,"hour"), ROUND(DATE_PART_STR(u.createdDate,"minute")/15,0)*15,"minute") as segment,
+        u.eventType,
+        COUNT(*) AS numEvents
+    FROM user_profile u
+    WHERE u.type = 'userEvent'
+    GROUP BY DATE_ADD_STR(DATE_TRUNC_STR(u.createdDate,"hour"), ROUND(DATE_PART_STR(u.createdDate,"minute")/15,0)*15,"minute"), u.eventType
+)
+SELECT
+    e.segment,
+    SUM(e.numEvents) OVER(PARTITION BY e.segment) AS numEvents
+FROM segmentedUserEvents e
+AND e.segment BETWEEN '2019-08-11' AND '2019-08-12'
+WHERE e.eventType = 1
+ORDER BY e.segment;
+----
+
+This query uses a CTE to segment each user event. It then uses `OVER` to sum up the number of events in each segment. The raw data result should look similar to:
+
+[source,JavaScript,indent=0]
+----
+[
+  { "numEvents": 5, "segment": "2019-08-11T15:30:00-04:00" },
+  { "numEvents": 5, "segment": "2019-08-11T15:45:00-04:00" },
+  { "numEvents": 8, "segment": "2019-08-11T16:00:00-04:00" },
+  
+  /* ... etc ... */
+
+]
+----
+
+This query and/or the resulting data can be fed directly into a data visualization tool. This screenshot shows a simple webpage using a JavaScript visualization tool.
+
+image:00601-window-functions-visualization.png[Data visualization]
+
+Upon clicking "Load", the tool makes an HTTP request to an endpoint that executes the above query.
+
+The full source code for this tutorial is link://[available on GitHub].
+
+== Summary
+
+In this mini-tutorial, we looked at some of the tools available in N1QL to perform time-series-oriented queries.
+
+For more information about the full capabilities of N1QL, check out the documentation:
+
+* link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/windowfun.html[Window Functions]
+* link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/with.html[WITH for Common Table Expressions]
+
+If you have questions or problems, you can always get help from humans on the https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums].
+
+Return to the parent User Profile tutorial:
+
+* xref:dotnet.adoc[.NET]
+* xref:java.adoc[Java]
