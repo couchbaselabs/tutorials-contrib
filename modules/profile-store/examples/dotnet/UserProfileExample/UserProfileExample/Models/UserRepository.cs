@@ -178,6 +178,7 @@ namespace UserProfileExample.Models
             var tasks = events.Select(e => _bucket.InsertAsync(e.Id, new
             {
                 e.CreatedDate,
+                e.CreatedDateTimestamp,
                 e.EventType,
                 e.UserId,
                 e.Type

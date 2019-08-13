@@ -1,4 +1,4 @@
-= Querying User Events with Window functions
+= Querying Time-Series data in Couchbase with Window Functions
 :imagesdir: ../assets/images
 
 == Overview
@@ -31,9 +31,36 @@ Additionally, the data being queried in this tutorial comes from the main User P
   "userId": "user::70231780-3eef-40d6-b689-0a0d6455824e",
   "type": "userEvent"
 }
+
+OR
+
+{
+  "createdDate": 1565691905000,
+  "eventType": 1,
+  "userId": "user::70231780-3eef-40d6-b689-0a0d6455824e",
+  "type": "userEvent"
+}
 ----
 
 The rest of this tutorial assumes you have a number of these type of documents in a bucket called *user_profile*.
+
+If you don't, you can load this sample data set: https://github.com/couchbaselabs/tutorials-contrib/blob/master/modules/profile-store/examples/user-profile-sample.json?raw=true[user-profile-sample.json file (large JSON file)].
+
+[source,PowerShell,indent=0]
+----
+cbimport json -c localhost -u Administrator -p
+password -b user_profile -d file://user-profile-sample.json -f list -g %id%
+----
+
+After this is complete, you should see a message like this:
+
+[source,PowerShell,indent=0]
+----
+Json `file://user-profile-sample.json` imported to `http://localhost:8091` successfully
+Documents imported: 25000 Documents failed: 0
+----
+
+For more details on loading this sample data set, see the xref:building-indexes.adoc[indexing user profiles tutorial].
 
 == Introduction to Window Functions
 
@@ -53,7 +80,7 @@ FROM /* ... etc ... */
 
 == Introduction to Common Table Expressions
 
-A common table expression is a way to define a temporary set of results which can be queried later in the query. Most often this is used to simplify a query when a result set is used several times.
+A common table expression is a way to define a temporary set of results which can be referenced later in the query. Most often this is used to simplify a query when a result set is used several times.
 
 Use the `WITH` clause to create a common table expression. Please refer to the complete link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/with.html[documentation on the `WITH` clause] for more information.
 
@@ -77,11 +104,13 @@ SELECT /* ... etc ... */
 
 After the initial `WITH`, the remainder of the query can refer to `segmentedUserEvents` instead of repeating the entire contents. This allows a query writer to simplify the entire query, as well as isolate certain components.
 
-Note that the series of `DATE_ADD_STR`, `DATE_TRUNC_STR`, and `ROUND` simply returns a "segment" date, rounded to 15 minute segments. Examples are: "2019-08-11T15:30:00-04:00", "2019-08-11T15:45:00-04:00", etc.
+Note that the combination of `DATE_ADD_STR`, `DATE_TRUNC_STR`, and `ROUND` returns a "segment" date, rounded to 15 minute segments. Examples are: "2019-08-11T15:30:00-04:00", "2019-08-11T15:45:00-04:00", etc.
+
+NOTE: If you are storing dates as milliseconds instead of a string, you will need to use a different set of `DATE` functions. For example: `DATE_ADD_MILLIS(DATE_TRUNC_MILLIS(u.createdDate,"hour"), ROUND(DATE_PART_MILLIS(u.createdDate,"minute")/15,0)*15,"minute")`
 
 == Querying User Events
 
-Putting together this simple CTE with the simple `OVER(PARTITION ...)` from earlier, build a query that will find the number of certain types of events that occurred within each segment of time.
+Putting together this CTE with the `OVER(PARTITION ...)` from earlier, build a query that will find the number of certain types of events that occurred within each segment of time.
 
 [source,SQL,indent=0]
 ----
@@ -123,13 +152,13 @@ image:00601-window-functions-visualization.png[Data visualization]
 
 Upon clicking "Load", the tool makes an HTTP request to an endpoint that executes the above query.
 
-The full source code for this tutorial is link://[available on GitHub].
+The full source code for this tutorial is https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/profile-store/examples[available on GitHub].
 
 == Summary
 
-In this mini-tutorial, we looked at some of the tools available in N1QL to perform time-series-oriented queries.
+In this mini-tutorial, we looked at some of the tools available in N1QL to perform time-series queries.
 
-For more information about the full capabilities of N1QL, check out the documentation:
+For more information about the full capabilities of window functions and common table expressions in N1QL, check out the documentation:
 
 * link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/windowfun.html[Window Functions]
 * link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/with.html[WITH for Common Table Expressions]
