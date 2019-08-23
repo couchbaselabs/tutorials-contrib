@@ -132,11 +132,11 @@ Now, let's try to understand what is going on with our query:
 
 ----
 
-We start by creating a disjunction of two matches of *Star War* in a field called *original_title*, the first one is an exact match, and the second and one with has a fuzziness one 1. A *disjunction* is similar to an *OR* clause in SQL.
+We start by creating a disjunction of two matches of *Star War* in a field called *original_title*. The first one is an exact match, and the second has a fuzziness of 1. A *disjunction* is similar to an *OR* clause in SQL.
 
 TIP: If you are not familiar with link:https://blog.couchbase.com/fuzzy-matching/[fuziness or Levenshtein Distance, check out this blog post.]
 
-This combination of *exact match + fuzziness N* is recommended if you want the exact term you are searching for to rank higher. Otherwise, a simple match with fuzziness 1 would make no distinction between "Star War" and "Start War".
+This combination of *exact match + fuzziness N* is recommended if you want the exact term you are searching for to rank higher. Otherwise, a simple match with fuzziness 1 would make no distinction between "Star War" and "StarT War".
 
 [source, SQL]
 ----
@@ -360,7 +360,7 @@ Here is the result of the query above:
 ----
 
 
-*Star Wars* was the first result and now after "improving" our search, it appears just as the 5th result. As expected, adding new fields generated more noise in the result. 
+*Star Wars* was in first position and now after "improving" our search, it appears just as the 5th result. As expected, adding new fields generated more noise in the score. 
 
 Here is how the overview of *Star Wars* looks like:
 
@@ -383,11 +383,11 @@ In the Robot Chicken case, *Star Wars* appear both in the title and in the descr
 
 === Manipulating Scores with User Defined Functions
 
-So far, if the user searches for *Star War* (with a missing *S*), he would still get fairly relevant results. However, the first 5 ones are not exactly the most popular Star Wars movies ever created.
+So far, if the user searches for *Star War* (with a missing *S*), he would still get fairly relevant results. However, the top 5 ones are not exactly the most popular Star Wars movies ever created.
 
 We could improve that by manipulating the score. Let's use the attributes *popularity*, *release_year* and *rating* to boost or penalize movies and see how it will affect the final order.
 
-Couchbase 6.5 allows you to create link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/userfun.html[User Defined Functions], we will use that feature to create a super naive function to manipulate our score. Here is the function we are going to use:
+Couchbase 6.5 allows you to create link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/userfun.html[User Defined Functions], we will use this feature to create a super naive function to manipulate our score:
 
 [source, Javascript]
 ----
@@ -430,9 +430,9 @@ function rank( score, year, popularity, weightedRating) {
 }
 ----
 
-In the function above we *boost* (multiply by a number > 1) or *penalize* (multiply by a number < 1) according to what we think that makes a movie more relevant.
+In the code above we *boost* (multiply by a number > 1) or *penalize* (multiply by a number < 1) according to what we think that makes a movie more relevant.
 
-Now that we have our function ready, let's add this function to a library called *movies* inside Couchbase:
+Now that we have our function ready, let's add it to a library called *movies* inside Couchbase:
 
 ----
 curl -X POST \
@@ -451,15 +451,14 @@ TIP: In a real-world scenario you might consider using link:https://en.wikipedia
 
 TIP: The function above can also be written using the link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/conditionalops.html[case operator] and the link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/userfun.html[standard inline UDF syntax]
 
-Finally, run the following command to create the User Defined Function:
+Finally, run the following command to create a User Defined Function:
 
 [source, SQL]
 ----
 CREATE FUNCTION rank() LANGUAGE JAVASCRIPT AS { "movies", "rank" };
 ----
 
-
-Now we can slightly adjust the query to use our newly created function:
+We can now adjust our previous query to use our newly created function:
 
 
 [source, SQL]
@@ -580,7 +579,7 @@ And here is the final result:
 
 In the case above we also added the *"size":40* to our query. This will limit the number of results returned from the Full-Text Search engine to N1QL. 
 
-Without the *size* attribute, FTS would return +600 results to N1QL, then all those results would be evaluated by our *rankMovie* function and just the first 20 will be actually returned. As I expect that a movie in the 50th position even after our rankMovie function won't jump to the first positions, we could specify to FTS to return just the top 40 movies.
+Without the *size* attribute, FTS would send +600 results to N1QL, then all those results would be evaluated by our *rankMovie* function and just the top 20 will be returned. As I expect that a movie in the 50th position even after our rankMovie function won't jump to the first positions, we could specify to FTS to return just the top 40 movies.
 
 Note that now the original Star Wars movie jumped to the 3rd position with a score of *0.462* while the first result has a score of *0.499*, a significant improvement compared to our previous query.
 
