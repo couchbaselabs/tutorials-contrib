@@ -519,6 +519,7 @@ include::../examples/Java/v2/src/main/java/com/cb/demo/userProfile/controllers/U
 
 With the event-driven architecture we have explained in this session, your application won't need to wait for a response from the database. This approach can improve significantly your read/write throughput at scale.
 
+NOTE: For more on User Events, read the xref:window-functions.adoc[Querying Time-Series data in Couchbase with Window Functions] which uses some features only available starting in Couchbase Server 6.5.
 
 == How to configure Cross Data Center Replication (XDCR)
 

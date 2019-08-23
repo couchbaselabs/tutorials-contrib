@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Couchbase.Core;
@@ -177,6 +178,7 @@ namespace UserProfileExample.Models
             var tasks = events.Select(e => _bucket.InsertAsync(e.Id, new
             {
                 e.CreatedDate,
+                e.CreatedDateTimestamp,
                 e.EventType,
                 e.UserId,
                 e.Type
@@ -206,5 +208,35 @@ namespace UserProfileExample.Models
             return result.Rows;
         }
         // end::FindLatestUserEvents[]
+
+        // example URL: http://localhost:5000/api/eventTimeSeries?eventType=0&startDate=2019-08-06&endDate=2019-08-09
+        public async Task<List<dynamic>> GetTimeSeriesDataForEventType(EventType eventType, DateTime startDate, DateTime endDate)
+        {
+            var n1ql = @"with segmentedUserEvents AS (
+                select 
+		            DATE_ADD_STR(DATE_TRUNC_STR(u.createdDate,""hour""), ROUND(DATE_PART_STR(u.createdDate,""minute"")/15,0)*15,""minute"") as segment,
+		            u.eventType,
+		            count(*) as numEvents
+	            from user_profile u
+	            where u.type = 'userEvent'
+	            group by DATE_ADD_STR(DATE_TRUNC_STR(u.createdDate,""hour""), ROUND(DATE_PART_STR(u.createdDate,""minute"")/15,0)*15,""minute""), u.eventType
+            )
+            select
+               e.segment,
+               SUM(e.numEvents) OVER(PARTITION BY e.segment) AS numEvents
+            from segmentedUserEvents e
+            where e.eventType = $eventType
+            and e.segment BETWEEN $startDate AND $endDate
+            order by e.segment;";
+
+            var query = QueryRequest.Create(n1ql);
+            query.AddNamedParameter("eventType", eventType);
+            query.AddNamedParameter("startDate", startDate);
+            query.AddNamedParameter("endDate", endDate);
+
+            var result = await _bucket.QueryAsync<dynamic>(query);
+
+            return result.Rows;
+        }
     }
 }
