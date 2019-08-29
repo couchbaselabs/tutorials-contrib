@@ -455,7 +455,7 @@ Finally, run the following command to create a User Defined Function:
 
 [source, SQL]
 ----
-CREATE FUNCTION rank() LANGUAGE JAVASCRIPT AS { "movies", "rank" };
+CREATE FUNCTION rankMovie() LANGUAGE JAVASCRIPT AS { "movies", "rank" };
 ----
 
 We can now adjust our previous query to use our newly created function:
@@ -464,7 +464,7 @@ We can now adjust our previous query to use our newly created function:
 [source, SQL]
 ----
 select m.original_title,  
-    rank( SEARCH_SCORE(), m.release_year, m.popularity, m.weightedRating) AS score  
+    rankMovie( SEARCH_SCORE(), m.release_year, m.popularity, m.weightedRating) AS score  
     from movies m where search(m, 
      {  "size":40, "sort":["-_score"], "query": { 
        "should": { 
