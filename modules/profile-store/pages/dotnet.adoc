@@ -534,9 +534,11 @@ image:00503-remote-cluster.png[Remote Cluster]
 
 * Click on *XDCR → Add Replication*, and fill out the form like the following:
 
-image:00504-add-rep.png[Add replication]
+image:00504-add-rep-dotnet.png[Add replication]
 
-Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated by applying a regex on the document id. In the case above, only documents with ids starting with *"user::"* will be replicated. As in our User Profile store, only the *User* has this prefix, it will be the only document type which will be replicated to other clusters. You can read more about it link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-filtering.html[here].
+Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated. Since Couchbase 6.5 you can filter documents using multiple attributes of your document using a syntax very similar to N1QL. You can read more about it link:https://docs.couchbase.com/server/6.5/xdcr-reference/xdcr-filtering-expressions.html[here]
+
+In the case above, only documents with the attribute *type* equals to *user* will be replicated.
 
 The final result should be similar to the following:
 
@@ -560,7 +562,7 @@ image:00506-remote-rep.png[Remote Repl]
 
 Finally, we can add the replication from EU to US:
 
-image:00507-eu-replication.png[EU Replication]
+image:00507-eu-replication-dotnet.png[EU Replication]
 
 Here is how your replication should look like:
 
