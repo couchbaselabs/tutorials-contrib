@@ -6,7 +6,7 @@ We already discussed how the link:https://blog.couchbase.com/why-you-should-avoi
 Apart from the fact that using Couchbase FTS is simpler in terms of setup and infrastructure, as you can leverage the infrastructure you already have for your database. You can combine the power of N1QL and FTS in a single statement:
 
 
-[source,SQL,indent=0]
+[source,N1QL,indent=0]
 ----
 SELECT META(t1).id FROM `travel-sample` AS t1 WHERE SEARCH(t1.country, "United States");
 ----
@@ -33,14 +33,14 @@ For this demo we will use a dataset of movies exported from IMDB, execute the fo
 
 * Create a bucket called "movies"
 * Clone the *Couchflix* repository with the following command
-[source,]
+[source,console]
 ----
 git clone https://github.com/deniswsrosa/couchflix.git
 ----
     
 * Go to the *data* folder and extract the *datasets.zip* file
 * Run the following command to import the dataset into your *movies* bucket
-[source,]
+[source,console]
 ----
 ./cbimport json -c couchbase://<IP_ADDRESS> -u <USERNAME> -p <PASSWORD> -b movies -d file://<PATH_TO_THE_FILE>/cb-movies-dataset2.json  -f list -g key::%id% -t 4
 ----
@@ -49,7 +49,7 @@ git clone https://github.com/deniswsrosa/couchflix.git
 TIP: The *cbimport* location might vary according to where you have installed Couchbase. On *Mac* it is typically at /Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin
 
 * Go to the *indexes* folder and run the following command to create the index we are going to use.
-
+[source,console]
 ----
 curl -XPUT -H "Content-type:application/json" http://<USERNAME>:<PASSWORD>@<IP_ADDRESS>:8094/api/index/movies_shingle -d @movies_shingle.json
 ----
@@ -67,7 +67,7 @@ Let's start by creating a query which searches for *Star War*. Note that we are 
 
 Run the following query via web console:
 
-[source, SQL]
+[source, N1QL]
 ----
 
 select m.original_title, SEARCH_SCORE() AS score  from movies m where search(m, 
@@ -97,7 +97,7 @@ Open the index we created via *Search -> movies_shingle*, you should see somethi
 image:003-index.png[movies index]
 
 Note that this definition only index documents with the type *_class* equals to *com.cb.fts.sample.entities.Movie*, and that is why our index wasn't used by our first query. If we rerun the same query filtering the result by the document type, it will much faster than before:
-[source, SQL,]
+[source, N1QL]
 ----
 
 select m.original_title, SEARCH_SCORE() AS score  from movies m where search(m, 
@@ -138,7 +138,7 @@ TIP: If you are not familiar with link:https://blog.couchbase.com/fuzzy-matching
 
 This combination of *exact match + fuzziness N* is recommended if you want the exact term you are searching for to rank higher. Otherwise, a simple match with fuzziness 1 would make no distinction between "Star War" and "StarT War".
 
-[source, SQL]
+[source, N1QL]
 ----
 select m.original_title, SEARCH_SCORE() AS score  from movies m 
 .
@@ -153,7 +153,7 @@ Then we call the function *SEARCH_SCORE()* to get the score of our FTS match and
 
 The results should be similar to the following:
 
-[source, JavaScript]
+[source, JSON]
 ----
 	[
     {
@@ -247,7 +247,7 @@ The natural step to improve what we have built so far is to add new fields to it
 
 In order to minimize this issue we can use boosting to give more relevance to matches in the title over matches in the overview:
 
-[source, SQL]
+[source, N1QL]
 ----
 select m.original_title, SEARCH_SCORE() AS score  from movies m where search(m, 
     {
@@ -274,6 +274,7 @@ limit 20
 
 Here is the result of the query above:
 
+[source, JSON]
 ----
 	[
     {
@@ -383,7 +384,7 @@ In the Robot Chicken case, *Star Wars* appear both in the title and in the descr
 
 === Manipulating Scores with User Defined Functions
 
-So far, if the user searches for *Star War* (with a missing *S*), he would still get fairly relevant results. However, the top 5 ones are not exactly the most popular Star Wars movies ever created.
+So far, if users search for *Star War* (with a missing *S*), they would still get fairly relevant results. However, the top 5 ones are not exactly the most popular Star Wars movies ever created.
 
 We could improve that by manipulating the score. Let's use the attributes *popularity*, *release_year* and *rating* to boost or penalize movies and see how it will affect the final order.
 
@@ -434,6 +435,7 @@ In the code above we *boost* (multiply by a number > 1) or *penalize* (multiply 
 
 Now that we have our function ready, let's add it to a library called *movies* inside Couchbase:
 
+[source,console]
 ----
 curl -X POST \
   http://<IP_ADDRESS>:8093/functions/v1/libraries/movies \
@@ -453,7 +455,7 @@ TIP: The function above can also be written using the link:https://docs.couchbas
 
 Finally, run the following command to create a User Defined Function:
 
-[source, SQL]
+[source, N1QL]
 ----
 CREATE FUNCTION rankMovie() LANGUAGE JAVASCRIPT AS { "movies", "rank" };
 ----
@@ -461,7 +463,7 @@ CREATE FUNCTION rankMovie() LANGUAGE JAVASCRIPT AS { "movies", "rank" };
 We can now adjust our previous query to use our newly created function:
 
 
-[source, SQL]
+[source, N1QL]
 ----
 select m.original_title,  
     rankMovie( SEARCH_SCORE(), m.release_year, m.popularity, m.weightedRating) AS score  
@@ -490,7 +492,7 @@ limit 20
 
 And here is the final result:
 
-[source, Javascript]
+[source, JSON]
 ----
 [
     {
@@ -579,7 +581,7 @@ And here is the final result:
 
 In the case above we also added the *"size":40* to our query. This will limit the number of results returned from the Full-Text Search engine to N1QL. 
 
-Without the *size* attribute, FTS would send +600 results to N1QL, then all those results would be evaluated by our *rankMovie* function and just the top 20 will be returned. As I expect that a movie in the 50th position even after our rankMovie function won't jump to the first positions, we could specify to FTS to return just the top 40 movies.
+Without the *size* attribute, FTS would send +600 results to N1QL, then all those results would be evaluated by our *rankMovie* function and just the top 20 will be returned. As I expect that a movie in the 50th position even after our rankMovie function won't jump to the first position, we could specify to FTS to return just the top 40 movies.
 
 Note that now the original Star Wars movie jumped to the 3rd position with a score of *0.462* while the first result has a score of *0.499*, a significant improvement compared to our previous query.
 
