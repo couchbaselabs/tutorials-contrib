@@ -123,7 +123,7 @@ image:004-index-being-used.png[Index used]
 
 Now, let's try to understand what is going on with our query:
 
-[source, JavaScript, linenums]
+[source, JSON, linenums]
 ----
 "disjuncts": [
     {"field":"original_title", "match": "Star War"}, 
