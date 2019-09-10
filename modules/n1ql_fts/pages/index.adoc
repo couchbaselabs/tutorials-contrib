@@ -15,11 +15,11 @@ In this tutorial, we will build a simpler version of the application link:https:
 
 This application goes much further than simply matching a target text to a field, and can be used as a reference to build production-grade search in your application. Here are some of the key points:
 
-* Best result is returned instead of the best match
+* Best result is returned instead of the best match.
 
 * No need to store an indexed field in the FTS index, as we will get the data we need via N1QL.
 
-* User Defined Functions to manipulate mathematically the score according to a given set of rules
+* User Defined Functions to manipulate mathematically the score according to a given set of rules.
 
 
 == Prerequisites
@@ -29,7 +29,7 @@ This application goes much further than simply matching a target text to a field
 
 == Loading the Dataset
 
-For this demo we will use a dataset of movies exported from IMDB, execute the following steps to import it into your Couchbase instance:
+For this demo we will use a dataset of movies exported from IMDB. Execute the following steps to import it into your Couchbase instance:
 
 1) Create a bucket called "movies"
 
