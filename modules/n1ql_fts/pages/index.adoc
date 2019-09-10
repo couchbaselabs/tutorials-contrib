@@ -31,15 +31,17 @@ This application goes much further than simply matching a target text to a field
 
 For this demo we will use a dataset of movies exported from IMDB, execute the following steps to import it into your Couchbase instance:
 
-* Create a bucket called "movies"
-* Clone the *Couchflix* repository with the following command
+1) Create a bucket called "movies"
+
+2) Clone the *Couchflix* repository with the following command
 [source,console]
 ----
 git clone https://github.com/deniswsrosa/couchflix.git
 ----
-    
-* Go to the *data* folder and extract the *datasets.zip* file
-* Run the following command to import the dataset into your *movies* bucket
+3) Go to the *data* folder and extract the *datasets.zip* file
+
+4) Run the following command to import the dataset into your *movies* bucket
+
 [source,console]
 ----
 ./cbimport json -c couchbase://<IP_ADDRESS> -u <USERNAME> -p <PASSWORD> -b movies -d file://<PATH_TO_THE_FILE>/cb-movies-dataset2.json  -f list -g key::%id% -t 4
@@ -48,7 +50,7 @@ git clone https://github.com/deniswsrosa/couchflix.git
 
 TIP: The *cbimport* location might vary according to where you have installed Couchbase. On *Mac* it is typically at /Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin
 
-* Go to the *indexes* folder and run the following command to create the index we are going to use.
+5) Go to the *indexes* folder and run the following command to create the index we are going to use.
 [source,console]
 ----
 curl -XPUT -H "Content-type:application/json" http://<USERNAME>:<PASSWORD>@<IP_ADDRESS>:8094/api/index/movies_shingle -d @movies_shingle.json
