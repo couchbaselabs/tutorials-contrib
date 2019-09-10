@@ -51,6 +51,7 @@ git clone https://github.com/deniswsrosa/couchflix.git
 TIP: The *cbimport* location might vary according to where you have installed Couchbase. On *Mac* it is typically at /Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin
 
 5) Go to the *indexes* folder and run the following command to create the index we are going to use.
+
 [source,console]
 ----
 curl -XPUT -H "Content-type:application/json" http://<USERNAME>:<PASSWORD>@<IP_ADDRESS>:8094/api/index/movies_shingle -d @movies_shingle.json
@@ -136,7 +137,7 @@ Now, let's try to understand what is going on with our query:
 
 We start by creating a disjunction of two matches of *Star War* in a field called *original_title*. The first one is an exact match, and the second has a fuzziness of 1. A *disjunction* is similar to an *OR* clause in SQL.
 
-TIP: If you are not familiar with link:https://blog.couchbase.com/fuzzy-matching/[fuziness or Levenshtein Distance, check out this blog post.]
+TIP: If you are not familiar with link:https://blog.couchbase.com/fuzzy-matching/[fuziness or Levenshtein Distance, check out this blog post].
 
 This combination of *exact match + fuzziness N* is recommended if you want the exact term you are searching for to rank higher. Otherwise, a simple match with fuzziness 1 would make no distinction between "Star War" and "StarT War".
 
@@ -451,9 +452,9 @@ curl -X POST \
 }'
 ----
 
-TIP: In a real-world scenario you might consider using link:https://en.wikipedia.org/wiki/Exponential_decay[exponential decay functions instead] of simple ifs
+TIP: In a real-world scenario you might consider using link:https://en.wikipedia.org/wiki/Exponential_decay[exponential decay functions instead] of simple ifs.
 
-TIP: The function above can also be written using the link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/conditionalops.html[case operator] and the link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/userfun.html[standard inline UDF syntax]
+TIP: The function above can also be written using the link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/conditionalops.html[case operator] and the link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/userfun.html[standard inline UDF syntax].
 
 Finally, run the following command to create a User Defined Function:
 
