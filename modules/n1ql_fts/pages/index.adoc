@@ -99,7 +99,7 @@ Open the index we created via *Search -> movies_shingle*, you should see somethi
 
 image:003-index.png[movies index]
 
-Note that this definition only index documents with the type *_class* equals to *com.cb.fts.sample.entities.Movie*, and that is why our index wasn't used by our first query. If we rerun the same query filtering the result by the document type, it will much faster than before:
+Note that this definition only indexes documents with the type *_class* equal to *com.cb.fts.sample.entities.Movie*, and that is why our index wasn't used by our first query. If we rerun the same query filtering the result by the document type, it will run much faster than before:
 [source, N1QL]
 ----
 
