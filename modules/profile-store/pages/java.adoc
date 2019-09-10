@@ -519,6 +519,7 @@ include::../examples/Java/v2/src/main/java/com/cb/demo/userProfile/controllers/U
 
 With the event-driven architecture we have explained in this session, your application won't need to wait for a response from the database. This approach can improve significantly your read/write throughput at scale.
 
+NOTE: For more on User Events, read the xref:window-functions.adoc[Querying Time-Series data in Couchbase with Window Functions] which uses some features only available starting in Couchbase Server 6.5.
 
 == How to configure Cross Data Center Replication (XDCR)
 
@@ -557,7 +558,10 @@ image:00503-remote-cluster.png[Remote Cluster]
 
 image:00504-add-rep.png[Add replication]
 
-Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated by applying a regex on the document id. In the case above, only documents with ids starting with *"user::"* will be replicated. As in our User Profile store, only the *UserEntity* has this prefix, it will be the only document type which will be replicated to other clusters. You can read more about it link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-filtering.html[here].
+Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated. Since Couchbase 6.5 you can filter documents using multiple attributes of your document using a syntax very similar to N1QL. You can read more about it link:https://docs.couchbase.com/server/6.5/xdcr-reference/xdcr-filtering-expressions.html[here]
+
+In the case above, only documents with the attribute *_class* equals to *com.cb.demo.userProfile.model.UserEntity* will be replicated. As in our User Profile store, only the *UserEntity* has this prefix, it will be the only document type which will be replicated to other clusters.
+
 
 The final result should be similar to the following:
 

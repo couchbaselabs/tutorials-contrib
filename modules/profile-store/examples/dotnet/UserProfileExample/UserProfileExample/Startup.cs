@@ -46,6 +46,8 @@ namespace UserProfileExample
             //  in production you should definitely be using HTTPS redirection
             //app.UseHttpsRedirection();
             app.UseMvc();
+
+            app.UseStaticFiles();
         }
     }
 }

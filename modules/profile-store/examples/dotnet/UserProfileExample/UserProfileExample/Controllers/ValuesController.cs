@@ -43,7 +43,8 @@ namespace UserProfileExample.Controllers
         {
             // this method will populate the Couchbase bucket with a bunch of randomish user profiles
             var users = new List<User>();
-            for(var i=0;i<100;i++)
+            var numUsers = Faker.RandomNumber.Next(80, 120);
+            for(var i=0;i< numUsers; i++)
             {
                 var user = FakeUser.Create();
                 _userRepository.Save(user);
@@ -56,7 +57,8 @@ namespace UserProfileExample.Controllers
             _userRepository.Save(FakeUser.Create(firstName: "Alec", enabled: true, countryCode: "US"));
 
             // also add some randomish User Events
-            for (var i = 0; i < 100; i++)
+            var numEvents = Faker.RandomNumber.Next(80, 120);
+            for (var i = 0; i < numEvents; i++)
             {
                 // I'm only pulling from the first 10 users just to increase event density
                 var randomUser = users[Faker.RandomNumber.Next(0, 10)];
@@ -129,5 +131,21 @@ namespace UserProfileExample.Controllers
             return Ok(result);
         }
         // end::FindLatestUserEvents[]
+
+        [HttpGet]
+        [Route("api/eventTimeSeries")]
+        public async Task<IActionResult> GetTimeSeriesDataForEventType(EventType? eventType, DateTime? startDate, DateTime? endDate)
+        {
+            if (!eventType.HasValue)
+                return BadRequest("You must specify an event type.");
+            if(!startDate.HasValue)
+                return BadRequest("You must specify a start date.");
+            if(!endDate.HasValue)
+                return BadRequest("You must specify an end date.");
+
+            var result = await _userRepository.GetTimeSeriesDataForEventType(eventType.Value, startDate.Value, endDate.Value);
+
+            return Ok(result);
+        }
     }
 }
