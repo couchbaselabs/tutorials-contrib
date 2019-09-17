@@ -1,0 +1,594 @@
+= How to use Full-Text Search with N1QL
+
+
+We already discussed how the link:https://blog.couchbase.com/why-you-should-avoid-like-deep-dive-on-fts-part-1/[Like %] clause is potentially harmful for your application at scale, and why you should consider using Couchbase Full-Text Search instead. But one thing we haven't mentioned yet is why you might prefer Couchbase FTS over any other FTS Engine in the market.
+
+Apart from the fact that using Couchbase FTS is simpler in terms of setup and infrastructure, as you can leverage the infrastructure you already have for your database. You can combine the power of N1QL and FTS in a single statement:
+
+
+[source,N1QL,indent=0]
+----
+SELECT META(t1).id FROM `travel-sample` AS t1 WHERE SEARCH(t1.country, "United States");
+----
+
+In this tutorial, we will build a simpler version of the application link:https://www.youtube.com/watch?v=B9qRJhA1ONs[built in this talk], which is a basic search engine for movies. 
+
+This application goes much further than simply matching a target text to a field, and can be used as a reference to build production-grade search in your application. Here are some of the key points:
+
+* Best result is returned instead of the best match.
+
+* No need to store an indexed field in the FTS index, as we will get the data we need via N1QL.
+
+* User Defined Functions to manipulate mathematically the score according to a given set of rules.
+
+
+== Prerequisites
+
+* Couchbase Server 6.5 Beta or Higher
+* Basic understanding of Couchbase and link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[Full-Text Search]
+
+== Loading the Dataset
+
+For this demo we will use a dataset of movies exported from IMDB. Execute the following steps to import it into your Couchbase instance:
+
+1) Create a bucket called "movies"
+
+2) Clone the *Couchflix* repository with the following command
+[source,console]
+----
+git clone https://github.com/deniswsrosa/couchflix.git
+----
+3) Go to the *data* folder and extract the *datasets.zip* file
+
+4) Run the following command to import the dataset into your *movies* bucket
+
+[source,console]
+----
+./cbimport json -c couchbase://<IP_ADDRESS> -u <USERNAME> -p <PASSWORD> -b movies -d file://<PATH_TO_THE_FILE>/cb-movies-dataset2.json  -f list -g key::%id% -t 4
+----
+
+
+TIP: The *cbimport* location might vary according to where you have installed Couchbase. On *Mac* it is typically at /Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin
+
+5) Go to the *indexes* folder and run the following command to create the index we are going to use.
+
+[source,console]
+----
+curl -XPUT -H "Content-type:application/json" http://<USERNAME>:<PASSWORD>@<IP_ADDRESS>:8094/api/index/movies_shingle -d @movies_shingle.json
+----
+
+Finally, go to Couchbase's Web Console and click on the *Search* menu. If everything is right you should see something similar to the following:
+
+image:001-index-created.png[Index Created Successfully]
+
+
+== Searching for Movies
+
+=== Building a basic search
+
+Let's start by creating a query which searches for *Star War*. Note that we are searching for *Star War* instead of *Star WarS*. The goal is to build a simple search that already has some tolerance for typos.
+
+Run the following query via web console:
+
+[source, N1QL]
+----
+
+select m.original_title, SEARCH_SCORE() AS score  from movies m where search(m, 
+    {
+       "should": { 
+                   "disjuncts": [
+                        {"field":"original_title", "match": "Star War"}, 
+                        {"field":"original_title", "match": "Star War", "fuzziness":1}
+                    ]
+             
+       }
+    }
+) 
+order by score desc
+limit 20
+
+----
+
+It will probably take a long time to run. You can see why in the query plan:
+
+image:002-slow-query-plan.png[Slow Query Plan]
+
+If you pay attention to the plan above, you will notice that no index has been used even though we have an index already in place. 
+
+Open the index we created via *Search -> movies_shingle*, you should see something similar to the following:
+
+image:003-index.png[movies index]
+
+Note that this definition only indexes documents with the type *_class* equal to *com.cb.fts.sample.entities.Movie*, and that is why our index wasn't used by our first query. If we rerun the same query filtering the result by the document type, it will run much faster than before:
+[source, N1QL]
+----
+
+select m.original_title, SEARCH_SCORE() AS score  from movies m where search(m, 
+    {
+       "should": { 
+                   "disjuncts": [
+                        {"field":"original_title", "match": "Star War"}, 
+                        {"field":"original_title", "match": "Star War", "fuzziness":1}
+                    ]
+             
+       }
+    }
+) 
+and m._class = "com.cb.fts.sample.entities.Movie" 
+order by score desc
+limit 20
+
+----
+
+The query plan now shows a step called *IndexFtsSearch* which means, as you might guess, that our index is now being used.
+
+image:004-index-being-used.png[Index used]
+
+Now, let's try to understand what is going on with our query:
+
+[source, JSON, linenums]
+----
+"disjuncts": [
+    {"field":"original_title", "match": "Star War"}, 
+    {"field":"original_title", "match": "Star War", "fuzziness":1}
+]
+
+----
+
+We start by creating a disjunction of two matches of *Star War* in a field called *original_title*. The first one is an exact match, and the second has a fuzziness of 1. A *disjunction* is similar to an *OR* clause in SQL.
+
+TIP: If you are not familiar with link:https://blog.couchbase.com/fuzzy-matching/[fuziness or Levenshtein Distance, check out this blog post].
+
+This combination of *exact match + fuzziness N* is recommended if you want the exact term you are searching for to rank higher. Otherwise, a simple match with fuzziness 1 would make no distinction between "Star War" and "StarT War".
+
+[source, N1QL]
+----
+select m.original_title, SEARCH_SCORE() AS score  from movies m 
+.
+.
+.
+order by score desc
+limit 20
+
+----
+
+Then we call the function *SEARCH_SCORE()* to get the score of our FTS match and sort our query by it. This will assure that the most relevant results will come first.
+
+The results should be similar to the following:
+
+[source, JSON]
+----
+	[
+    {
+        "original_title": "Star Wars",
+        "score": 0.7931522045391254
+    },
+    {
+        "original_title": "The Star Wars Holiday Special",
+        "score": 0.5227527907272408
+    },
+    {
+        "original_title": "Robot Chicken: Star Wars",
+        "score": 0.5192400029350398
+    },
+    {
+        "original_title": "Star Wars: The Clone Wars",
+        "score": 0.49209631357435557
+    },
+    {
+        "original_title": "Star Wars: The Force Awakens",
+        "score": 0.4893211766409259
+    },
+    {
+        "original_title": "Rogue One: A Star Wars Story",
+        "score": 0.4675643150566844
+    },
+    {
+        "original_title": "Star Wars: Episode I - The Phantom Menace",
+        "score": 0.41421024091244685
+    },
+    {
+        "original_title": "Plastic Galaxy: The Story of Star Wars Toys",
+        "score": 0.4100810344964956
+    },
+    {
+        "original_title": "Empire of Dreams: The Story of the Star Wars Trilogy",
+        "score": 0.38176466327415765
+    },
+    {
+        "original_title": "Star Wars: Episode II - Attack of the Clones",
+        "score": 0.3810180011370446
+    },
+    {
+        "original_title": "Star Wars: Episode III - Revenge of the Sith",
+        "score": 0.3810180011370446
+    },
+    {
+        "original_title": "Star!",
+        "score": 0.231899462135785
+    },
+    {
+        "original_title": "The Star",
+        "score": 0.23189945816699473
+    },
+    {
+        "original_title": "War",
+        "score": 0.20531043205056032
+    },
+    {
+        "original_title": "The War",
+        "score": 0.2053104285368219
+    },
+    {
+        "original_title": "The War",
+        "score": 0.2053104285368219
+    },
+    {
+        "original_title": "A Star Is Born",
+        "score": 0.17962854881843388
+    },
+    {
+        "original_title": "A Star for Two",
+        "score": 0.17962854881843388
+    },
+    {
+        "original_title": "A Star for Christmas",
+        "score": 0.17962854881843388
+    },
+    {
+        "original_title": "A Star Is Born",
+        "score": 0.17962854881843388
+    }
+    ]
+----
+
+TIP: Using the default tokenizer, "Star" and "War" would be matched separately. So a movie called "Star Star Star" would rank higher than a movie called "Star War". That is why we are indexing some fields using a *shingle* tokenizer. If you are not familiar with it, I highly recommend you to link:https://www.youtube.com/watch?v=B9qRJhA1ONs[watch this talk].
+
+=== Adding new fields and boosting results
+
+The natural step to improve what we have built so far is to add new fields to it. The problem is that adding new fields will generate more noise in the results, as an overview with "Star Wars" in it might have a higher score than a movie with "Star Wars" in the title.
+
+In order to minimize this issue we can use boosting to give more relevance to matches in the title over matches in the overview:
+
+[source, N1QL]
+----
+select m.original_title, SEARCH_SCORE() AS score  from movies m where search(m, 
+    {
+       "should": { 
+                   "disjuncts": [
+                       { "disjuncts": [
+                            {"field":"original_title", "match": "Star War", "boost": 1.4}, 
+                            {"field":"original_title", "match": "Star War", "fuzziness":1, "boost": 1.4}
+                         ]
+                       },
+                       { "disjuncts": [
+                              {"field":"overview", "match": "Star War"}, 
+                              { "field":"overview", "match": "Star War", "fuzziness":1}
+                         ]
+                       }
+                  ]
+       }
+    }
+) 
+and m._class = "com.cb.fts.sample.entities.Movie" 
+order by score desc
+limit 20
+----
+
+Here is the result of the query above:
+
+[source, JSON]
+----
+	[
+    {
+        "original_title": "Robot Chicken: Star Wars",
+        "score": 0.5331107529235098
+    },
+    {
+        "original_title": "Star Wars: The Clone Wars",
+        "score": 0.5076334813052524
+    },
+    {
+        "original_title": "Plastic Galaxy: The Story of Star Wars Toys",
+        "score": 0.43199757331570515
+    },
+    {
+        "original_title": "Empire of Dreams: The Story of the Star Wars Trilogy",
+        "score": 0.4172027006408549
+    },
+    {
+        "original_title": "Star Wars",
+        "score": 0.3911486022950121
+    },
+    {
+        "original_title": "The Star Wars Holiday Special",
+        "score": 0.2577992247497947
+    },
+    {
+        "original_title": "Star Wars: The Force Awakens",
+        "score": 0.24131218853216643
+    },
+    {
+        "original_title": "Rogue One: A Star Wars Story",
+        "score": 0.23058263883123975
+    },
+    {
+        "original_title": "The Star of Bethlehem",
+        "score": 0.2153327229007389
+    },
+    {
+        "original_title": "Star Wars: Episode I - The Phantom Menace",
+        "score": 0.20427070096000927
+    },
+    {
+        "original_title": "Star Wars: Episode III - Revenge of the Sith",
+        "score": 0.18790171387166904
+    },
+    {
+        "original_title": "Star Wars: Episode II - Attack of the Clones",
+        "score": 0.18790171387166904
+    },
+    {
+        "original_title": "Star!",
+        "score": 0.11436285490763314
+    },
+    {
+        "original_title": "The Star",
+        "score": 0.11436285295039623
+    },
+    {
+        "original_title": "War",
+        "score": 0.10125028723815423
+    },
+    {
+        "original_title": "The War",
+        "score": 0.10125028550532937
+    },
+    {
+        "original_title": "The War",
+        "score": 0.10125028550532937
+    },
+    {
+        "original_title": "A Star Is Born",
+        "score": 0.0885850854356994
+    },
+    {
+        "original_title": "A Star Is Born",
+        "score": 0.0885850854356994
+    },
+    {
+        "original_title": "A Star for Christmas",
+        "score": 0.0885850854356994
+    }
+    ]
+----
+
+
+*Star Wars* was in first position and now after "improving" our search, it appears just as the 5th result. As expected, adding new fields generated more noise in the score. 
+
+Here is how the overview of *Star Wars* looks like:
+
+[quote,]
+____
+Princess Leia is captured and held hostage by the evil Imperial forces in their effort to take over the galactic Empire. Venturesome Luke Skywalker and dashing captain Han Solo team together with the loveable robot duo R2-D2 and C-3PO to rescue the beautiful princess and restore peace and justice in the Empire
+____
+
+
+And here is the overview of *Robot Chicken: Star Wars*
+
+
+[quote,]
+____
+Fans of Adult Swim's 'Robot Chicken' and the Star Wars movie franchise won't want to miss this collection of 30 sketches. This hilarious compilation features an array of skits -- such as 'Darth Vader's Collect Call' and 'Inside the AT-AT' -- as well as the incredible voice talents of Hulk Hogan, Malcolm McDowell, Conan O'Brien and even the original Luke Skywalker himself, Mark Hamill.
+____
+
+In the Robot Chicken case, *Star Wars* appear both in the title and in the description, that is the reason why it is currently more relevant than the original movie. 
+
+
+=== Manipulating Scores with User Defined Functions
+
+So far, if users search for *Star War* (with a missing *S*), they would still get fairly relevant results. However, the top 5 ones are not exactly the most popular Star Wars movies ever created.
+
+We could improve that by manipulating the score. Let's use the attributes *popularity*, *release_year* and *rating* to boost or penalize movies and see how it will affect the final order.
+
+Couchbase 6.5 allows you to create link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/userfun.html[User Defined Functions], we will use this feature to create a super naive function to manipulate our score:
+
+[source, Javascript]
+----
+function rank( score, year, popularity, weightedRating) {
+
+    let yScore = score;
+    let pScore = score;
+    let wScore = score;
+
+    if(year >= 2016) {
+        yScore = yScore*1.35
+    } else if(year < 2009 && year > 2000) {
+         yScore = yScore * 0.95
+    } else if(year < 2000)  {
+         yScore = yScore * 0.9
+    }
+
+    if(popularity >= 40 ) {
+       pScore = pScore * 1.3
+    } else if(popularity < 40 && popularity >=30) {
+       pScore = pScore * 1.2
+    } else if(popularity < 30 && popularity >=10) {
+       pScore = pScore * 1.1
+    } else if(popularity < 10 && popularity >=4) {
+       pScore = pScore * 0.9
+    } else {
+       pScore = pScore * 0.8
+    }
+
+
+    if(weightedRating >= 7 ) {
+       wScore = wScore * 1.35
+    } else if(weightedRating < 7 && weightedRating >=5) {
+       wScore = wScore * 1.1
+    } else  {
+       wScore = wScore * 0.8
+    } 
+
+    return (yScore+pScore+wScore)/3; 
+}
+----
+
+In the code above we *boost* (multiply by a number > 1) or *penalize* (multiply by a number < 1) according to what we think that makes a movie more relevant.
+
+Now that we have our function ready, let's add it to a library called *movies* inside Couchbase:
+
+[source,console]
+----
+curl -X POST \
+  http://<IP_ADDRESS>:8093/functions/v1/libraries/movies \
+  -u <USERNAME>:<PASSWORD> \
+  -H 'content-type: application/json' \
+  -d '{
+    "name": "movies",
+    "functions": [
+        {"name": "rank","code": "function rank( score, year, popularity, weightedRating) {let yScore = score; let pScore = score;let wScore = score;if(year >= 2016) {yScore = yScore*1.35} else if(year < 2009 && year > 2000) {yScore = yScore * 0.95} else if(year < 2000)  {yScore = yScore * 0.9} if(popularity >= 40 ) {pScore = pScore * 1.3} else if(popularity < 40 && popularity >=30) {pScore = pScore * 1.2} else if(popularity < 30 && popularity >=10) {pScore = pScore * 1.1} else if(popularity < 10 && popularity >=4) {pScore = pScore * 0.9} else {pScore = pScore * 0.8}if(weightedRating >= 7 ) {wScore = wScore * 1.35} else if(weightedRating < 7 && weightedRating >=5) { wScore = wScore * 1.1} else  { wScore = wScore * 0.8} return (yScore+pScore+wScore)/3;  }"}
+    ]
+}'
+----
+
+TIP: In a real-world scenario you might consider using link:https://en.wikipedia.org/wiki/Exponential_decay[exponential decay functions instead] of simple ifs.
+
+TIP: The function above can also be written using the link:https://docs.couchbase.com/server/current/n1ql/n1ql-language-reference/conditionalops.html[case operator] and the link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/userfun.html[standard inline UDF syntax].
+
+Finally, run the following command to create a User Defined Function:
+
+[source, N1QL]
+----
+CREATE FUNCTION rankMovie() LANGUAGE JAVASCRIPT AS { "movies", "rank" };
+----
+
+We can now adjust our previous query to use our newly created function:
+
+
+[source, N1QL]
+----
+select m.original_title,  
+    rankMovie( SEARCH_SCORE(), m.release_year, m.popularity, m.weightedRating) AS score  
+    from movies m where search(m, 
+     {  "size":40, "sort":["-_score"], "query": { 
+       "should": { 
+                   "disjuncts": [
+                       { "disjuncts": [
+                            {"field":"original_title", "match": "Star War", "boost": 1.4}, 
+                            {"field":"original_title", "match": "Star War", "fuzziness":1, "boost": 1.4}
+                         ]
+                       },
+                       { "disjuncts": [
+                              {"field":"overview", "match": "Star War"}, 
+                              { "field":"overview", "match": "Star War", "fuzziness":1}
+                         ]
+                       }
+                  ]
+       }
+    }}
+) 
+and m._class = "com.cb.fts.sample.entities.Movie" 
+order by score desc
+limit 20
+----
+
+And here is the final result:
+
+[source, JSON]
+----
+[
+    {
+        "original_title": "Star Wars: The Clone Wars",
+        "score": 0.49917292328349827
+    },
+    {
+        "original_title": "Robot Chicken: Star Wars",
+        "score": 0.470914498415767
+    },
+    {
+        "original_title": "Star Wars",
+        "score": 0.46285917938243104
+    },
+    {
+        "original_title": "Plastic Galaxy: The Story of Star Wars Toys",
+        "score": 0.3743978968736112
+    },
+    {
+        "original_title": "Empire of Dreams: The Story of the Star Wars Trilogy",
+        "score": 0.36852905223275517
+    },
+    {
+        "original_title": "Rogue One: A Star Wars Story",
+        "score": 0.2805422105780084
+    },
+    {
+        "original_title": "Star Wars: The Force Awakens",
+        "score": 0.2654434073853831
+    },
+    {
+        "original_title": "The Star Wars Holiday Special",
+        "score": 0.22342599478315542
+    },
+    {
+        "original_title": "Star Wars: Episode I - The Phantom Menace",
+        "score": 0.21107972432534292
+    },
+    {
+        "original_title": "Star Wars: Episode III - Revenge of the Sith",
+        "score": 0.1972967995652525
+    },
+    {
+        "original_title": "Star Wars: Episode II - Attack of the Clones",
+        "score": 0.1972967995652525
+    },
+    {
+        "original_title": "The Star of Bethlehem",
+        "score": 0.18303281446562805
+    },
+    {
+        "original_title": "War",
+        "score": 0.10631280160006194
+    },
+    {
+        "original_title": "Star!",
+        "score": 0.09530237908969429
+    },
+    {
+        "original_title": "The Star",
+        "score": 0.09530237745866353
+    },
+    {
+        "original_title": "The War",
+        "score": 0.08606274267952997
+    },
+    {
+        "original_title": "The War",
+        "score": 0.0843752379211078
+    },
+    {
+        "original_title": "A Star Is Born",
+        "score": 0.07677374071093948
+    },
+    {
+        "original_title": "A Star for Christmas",
+        "score": 0.07677374071093948
+    },
+    {
+        "original_title": "A Star Is Born",
+        "score": 0.0738209045297495
+    }
+    ]
+----
+
+
+In the case above we also added the *"size":40* to our query. This will limit the number of results returned from the Full-Text Search engine to N1QL. 
+
+Without the *size* attribute, FTS would send +600 results to N1QL, then all those results would be evaluated by our *rankMovie* function and just the top 20 will be returned. As I expect that a movie in the 50th position even after our rankMovie function won't jump to the first position, we could specify to FTS to return just the top 40 movies.
+
+Note that now the original Star Wars movie jumped to the 3rd position with a score of *0.462* while the first result has a score of *0.499*, a significant improvement compared to our previous query.
+
+If you are still not happy with the results you could modify the ranking function or add new attributes to your query until you reach the desired state.
+
+
+
