@@ -448,7 +448,7 @@ Events are essential to understand how the user behaves and might feed several A
 
 One of well-known strategies to improve throughput of a system is to use a non-blocking programming approach. As Couchbase itself was internally designed to be reactive, you can develop a true end-to-end non-blocking system.
 
-Both Java and Spring SDK can be used reactively, the he main difference between these two is that the Spring Data works with both link:https://projectreactor.io/[Reactor] and link:https://github.com/ReactiveX/RxJava[RxJava], while the Java SDK is designed to use RxJava only.
+Both Java and Spring SDK can be used reactively, the main difference between these two is that the Spring Data works with both link:https://projectreactor.io/[Reactor] and link:https://github.com/ReactiveX/RxJava[RxJava], while the Java SDK is designed to use RxJava only.
 
 If you are not familiar with reactive programming, I highly recommend you to link:http://reactivex.io/tutorials.html[check this out first].
 
