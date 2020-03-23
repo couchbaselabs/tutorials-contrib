@@ -191,7 +191,7 @@ Then, add the following dependency in your *pom.xml* file:
 <dependency>
 	<groupId>io.github.couchbaselabs</groupId>
 	<artifactId>spring-session-data-couchbase</artifactId>
-	<version>1.1</version>
+	<version>1.1.1</version>
 </dependency>
 ----
 
