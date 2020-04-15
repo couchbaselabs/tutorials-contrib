@@ -1,0 +1,178 @@
+// :doctype: book
+
+// image::./media/couchbase_logo.png[,66%]
+
+English | link:tutorial_es.html[Español]
+
+= Setting up a Couchbase CE cluster
+
+Here you can learn how to set up a `Couchbase Server` cluster, how to manage services availability and replicate data. This tutorial was made using `Couchbase Server CE`, so you can use this distribution to follow this guide free of charge.
+
+= Installation
+
+To set up a cluster, you need to install `Couchbase Server` on multiple nodes. In this section you can find instructions on how to do so, please follow these instructions to deploy 3 nodes. Later on, we will refer to those as `node-1`, `node-2` and `node-3`.
+
+____
+Tested for `Ubuntu 18.04`, `macOS Mojave` and `Windows 10`.
+____
+
+You can install the server in a machine (bare metal) or use a containerization tool such as `Docker`, to speed up this part of the tutorial.
+
+== Docker
+
+This would be the fastest and easiest way to get the server started. If you need help installing `Docker`, their official documentation contains link:https://docs.docker.com/install/[install guides] for multiple OS.
+
+After `Docker` is up and running you can type this command on your terminal to launch the server.
+
+[source,bash]
+----
+docker run -itd --name couchbase-server -p 8091-8094:8091-8094 -p 11210:11210 couchbase:community
+----
+
+____
+For a more extensive install guide, you can check the Couchbase image description on https://hub.docker.com/_/couchbase[Dockerhub].
+____
+
+== Bare metal
+
+=== Ubuntu 18.04
+
+First, open your terminal and install these tools, used by some of the core `Couchbase Server` packages.
+
+[source,bash]
+----
+sudo apt update
+sudo apt install curl lsb-release gnupg
+----
+
+Download and install the `.deb` meta-package, it contains the necessary information for `apt` to retrieve Couchbase's necessary packages and public signing keys.
+
+[source,bash]
+----
+curl -O https://packages.couchbase.com/releases/couchbase-release/couchbase-server-community_6.5.0-ubuntu18.04_amd64.deb
+sudo dpkg -i ./couchbase-server-community_6.5.0-ubuntu18.04_amd64.deb
+----
+
+Now you are ready to install the `Couchbase Server CE` latest release.
+
+[source,bash]
+----
+sudo apt update
+sudo apt install couchbase-server-community
+----
+
+____
+For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/server/6.5/install/ubuntu-debian-install.html[Ubuntu 18.04].
+____
+
+=== Windows 10
+
+Download the `MSI` installer from this link:https://www.couchbase.com/downloads/thankyou/community?product=couchbase-server&version=6.5.0&platform=windows&addon=false&beta=false[link].
+
+Execute it and follow the wizard.
+
+image::install_windows.gif[,]
+
+____
+For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/server/6.5/install/install-package-windows.html[Windows 10].
+____
+
+=== macOS
+
+Download the `zip` file from this link:https://www.couchbase.com/downloads/thankyou/community?product=couchbase-server&version=6.5.0&platform=osx&addon=false&beta=false[link] and open it, it will be send to `Downloads` folder.
+
+image::mac_unzip.png[,800]
+
+Open the folder and drag the application to you `Applications` folder.
+
+image::mac_open.png[,800]
+
+Double click the `Couchbase Server` application to start the server.
+
+image::mac_installed.png[,800]
+
+You can now use the navigation tab icon on the top right corner of your desktop to manage your server.
+
+image:mac_bar.png[,300]
+image:mac_bar_open.png[,300]
+
+____
+For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/server/6.5/install/macos-install.html[macOS].
+____
+
+= Provisioning
+
+Provisioning establishes the full administrator credentials for the server and specifies its service-assignments and memory-quota allocations. When provisioning a node, options are to create a new cluster with a sole member or joining an existing one. You can provision a node by https://docs.couchbase.com/server/6.5/manage/manage-nodes/create-cluster.html#provision-a-node-with-the-cli[CLI], https://docs.couchbase.com/server/6.5/manage/manage-nodes/create-cluster.html#provision-a-node-with-the-rest-api[REST API] or https://docs.couchbase.com/server/6.5/manage/manage-nodes/create-cluster.html#provision-a-node-with-the-ui[Web UI].
+
+== First one
+
+The easiest way is with the help of the `Web UI`, so open your browser and navigate to port 8091 of `node-1`. You should see something like this now.
+
+image::couchbase_front.png[,500]
+
+Since this will be the first node of our 3 nodes cluster, click on `Setup New Cluster`. Choose a server name and an administrator with a password, these credentials must be saved for later use.
+
+image::first_part.gif[,]
+
+The next step is to configure some aspects of your cluster like services available, memory utilization and storage path for your data and indexes. Click on the `Configure Disk, Memory, Services` button.
+
+image::second_part.gif[,800]
+
+The default path and memory quotas should be fine for this test cluster. If you want to learn more about couchbase services and how to properly tune your server, follow this link:https://docs.couchbase.com/server/6.5/learn/services-and-indexes/services/services.html[link].
+
+Quick explanation though:
+
+* `Data`: Supports the storing, setting, and retrieving of data-items, specified by key.
+* `Query`: Parses queries specified in the `N1QL` query language, executes the queries, and returns results. This service interacts with both the `Data` and `Index` services.
+* `Index`: Creates indexes, for use by the `Query` service.
+* `Search`: Create indexes specially purposed for `Full-Text Search`. This supports language-aware searching; allowing users to search for, say, the word beauties, and additionally obtain results for beauty and beautiful.
+
+== Insert data
+
+Right now, you have a functional one node cluster, let's add some data before adding more nodes. If you look close enough, there is a note indicating you to add a sample bucket. Click it and choose any of the options, you will see a notification for the task. When it finishes you can explore your new sample data on the `Buckets` tab.
+
+image::insert_sample.gif[,800]
+
+On the `Servers` tab, you can find a list of your nodes, and how much data is currently stored. If you look closer, there is also a warning telling you that you need at least one more node to be able to replicate your data.
+
+image::warning.png[,800]
+
+== Join another one
+
+Open up your browser again, this time open the `Web UI` of `node-2` and press on `Join Existing Cluster`. Enter `node-1` address and credentials. At the bottom, press the arrow to configure some aspect of this node. You could probably notice there are fewer options than those available for `node-1`, that's because you will form part of a previously created cluster, so most configurations will be imported.
+
+image::join_2.gif[,800]
+
+In the `Dashboard` tab you can find information about your cluster. To get a more detailed view, go to the `Server` tab.
+
+Right now your new node is waiting for a rebalance operation to start serving data or holding replicas. To manually force such operation, press on the `Rebalance` button.
+
+image::rebalance.gif[,800]
+
+That may take a while, so be patient, when it's over, each document and its replica will be distributed between your nodes. As a quick indicator, bellow the `items` column, there is information about how many `documents`/`replicas` are currently being stored on each node.
+
+== Join the last one
+
+Adding another node or more can be done easily by just following the steps in the section above as many times as necessary. Enter the `Web UI` from `node-3` now, and follow those steps again.
+
+With each node added, documents and replicas get more and more sparsely between your cluster. This is quite good, you can access all your data from any node and replicas will be available if any node crashes or gets removed.
+
+image::show_replica.gif[,800]
+
+The number of replicas per document can be changed for any bucket, increasing that factor will make your cluster more secure against crashes in exchange for disk capacity. To change the replica level click the bucket on the `Buckets` tab, and then press the `Edit` button. The desired value is under `Advanced bucket settings`.
+
+image::replica_change.gif[,800]
+
+== Remove one node
+
+`Couchbase Server` nodes can indistinctly be removed or added, there are no special nodes with services or processes that can't be replaced on the run. Let's test that by removing the very first node we provisioned.
+
+image::remove_first.gif[,800]
+
+After a rebalance operation, your cluster will drop all documents and replicas from `node-1` and form a 2 nodes cluster again with all data.
+
+= Next steps
+
+We recommend you to follow our next tutorials, go to the link:../index.html[Home] page to find the full list.
+
+Also, you could review link:https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.

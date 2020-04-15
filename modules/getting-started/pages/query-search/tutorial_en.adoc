@@ -1,0 +1,318 @@
+English | link:tutorial_es.html[Español]
+
+= Querying and Searching Couchbase CE
+
+This tutorial will teach you the different ways to perform queries using `N1QL` and the procedure to perform `Full Text Search`. It was made using `Couchbase Server CE`, so you can use this distribution to follow this guide free of charge.
+
+= Basics of N1QL
+
+`N1QL` is a query language that uses a SQL-like syntax, but it operates on structured and flexible `JSON` documents, returning other `JSON` documents in response.
+
+A basic `N1QL` query has the structure below:
+
+* SELECT -- The fields of each document to return
+* FROM -- The data bucket in which to look
+* WHERE -- The conditions that the document must satisfy
+
+A `N1QL` consult can be run from:
+
+* Command line, using the `cbq` tool
+* `Query` in the `Couchbase Server Web UI`
+
+`N1QL` uses indexes in order to do its work, to make a bucket queryable, it must have at least one index defined. There are two types of indexes, a `primary index` that can issue non-covered queries on the bucket and a `secondary index` that contains a filtered or a full set of keys of a given bucket, they're optional but increase query efficiency on a bucket. In this case, we will create a `secondary index` on a `movies` bucket:
+
+[source,bash]
+----
+CREATE INDEX ix_movies_genre ON `movies`(genre);
+----
+
+To create this index and to realize the queries, we are going to use, for now, the `Query` tab, as explained in next section.
+
+== Querying by using Query tab
+
+Query is an interactive tool that lets you create and execute `N1QL` queries, it's included in `Couchbase Server Web UI`.
+
+Before anything, for later examples, you must have loaded the `bucket movies` as shown in the following line:
+
+[source,bash]
+----
+cbtransfer /home/couchbase/movies.csv http: // localhost: 8091 -B movies -u Administrator -p password
+----
+
+Then, with your appropriate credentials, access to the `Web UI` by typing http://localhost:8091 into the address-field at the top of your browser, the login screen will look like this:
+
+image::login.png[,25%]
+
+Once on the login page, type your appropriate credentials and sing in. The home page will show you the dashboard of your cluster, on the left side you must select the `Query` tab:
+
+image::queryworkbench.png[,66%]
+
+As shown, in the image, `Query` has three main areas:
+
+* Query Editor: Where you will type your N1QL query
+* Data Insights: Provides information on the buckets that are currently maintained by your system
+* Query Results: Shows query results and provides options for their display
+
+To create the index previously seen, you must execute that line in `Query` as you can see here:
+
+image::createindexquery.png[,66%]
+
+That will allow you to query the `movies` bucket concerning a concrete genre, for example, the following code line returns the `name` and `year` of the movies into the `movies` bucket, which their genre is `Crime&Drama` like is shown below:
+
+[source,bash]
+----
+SELECT name, year FROM `movies` WHERE genre="Crime&Drama";
+----
+
+image::executingqueryonworkbench.png[,66%]
+
+At this point three movies were found in the `movies` bucket with the specific genre.
+For more information about it, refer to the Couchbase documentation for https://docs.couchbase.com/server/current/tools/query-workbench.html[Query Workbench].
+This kind of query can also be done from the console window as shown in next section.
+
+== Querying by using the Interactive Query Shell
+
+To run the interactive query shell (`cbq`), type on your console window the following line, to navigate to the Couchbase bin directory, and start `cbq`:
+
+[source,bash]
+----
+cd /opt/couchbase/bin
+./cbq -u Administrator -p password -engine=http://127.0.0.1:8091/
+----
+
+Once do that, you are on `cbq` shell prompt, which allows you to start to execute `N1QL` commands on your console. For example, if you want to know how many movies with `Drama` genre were made in `1994` and are stored in the `movies` bucket, you need to type this:
+
+[source,bash]
+----
+cbq> SELECT * FROM `movies` WHERE genre="Drama" AND year=1994;
+----
+
+The console will show the following result:
+
+[source,bash]
+----
+{
+    "requestID": "e01ae981-cb0d-48ac-8cd2-59224ece52d2",
+    "signature": {
+        "*": "*"
+    },
+    "results": [
+        {
+            "movies": {
+                "genre": "Drama",
+                "id": "movie_1",
+                "name": "The Shawshank Redemption",
+                "year": 1994
+            }
+        }
+    ],
+    "status": "success",
+    "metrics": {
+        "elapsedTime": "2.388205ms",
+        "executionTime": "2.265674ms",
+        "resultCount": 1,
+        "resultSize": 197
+    }
+}
+----
+
+As you can see there is only one `movie` with those requirements. If you need more detailed information about this, refer to the Couchbase documentation for https://docs.couchbase.com/server/current/tools/cbq-shell.html[The Command Line Shell for N1QL]
+
+= Full Text Search
+
+This section will show you how with `Full Text Search` (FTS) you can create, manage, and query specially purposed indexes, stored in `JSON` documents within a Couchbase bucket.
+
+== Features of Full Text Search
+
+`FTS` has several options to perform queries in natural language such as:
+
+* Language-aware searching; enables users to search, for example, the word `technician`, and also obtain results for `technology` and `technique`
+* Scoring of results, according to relevancy; permits users to obtain result-sets with only documents that have had the highest scores, this achieve decrease the result-sets
+* Fast indexes, which support a wide range of possible text-searches
+
+`FTS` uses Bleve for the indexing of documents, and it also makes Bleve's extensive range of query types able to be used, these contain:
+
+* Match, Match Phrase, Doc ID, and Prefix queries
+* Conjunction, Disjunction, and Boolean field queries
+* Numeric Range and Date Range queries
+* Geospatial queries
+* Query String queries, which employ a special syntax to express the details of each query. See head link:qsq[Query String Query] for information
+
+== Preparing for Full Text Searches
+
+Before to trying a `FTS` you should guarantee the following things:
+
+* `Couchbase Server` has the `Search` service correctly enabled, the service must be enabled for a given node. See https://docs.couchbase.com/server/current/manage/manage-nodes/create-cluster.html[Create a cluster] for more information
+* Create an index appropriately, employing the `Web UI`. For basic information about it refer to section <<sfui,Searching from the UI>> and for detailed information see https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes].
+
+____
+Throughout index creation, you can select or create, and use an analyzer. In case you didn't, a default analyzer will be assigned to you. See more information about analyzers creation in https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes] and their functionality and components https://docs.couchbase.com/server/current/fts/fts-using-analyzers.html[Understanding Analyzers].
+____
+
+== Performing Full Text Searches
+
+`FTS` can be achieved using the following:
+
+* The `Couchbase Web UI`. Refer to section <<sfui,Searching from the UI>>
+* The `Couchbase REST API`. Refer to section <<sfra,Searching with the REST API>> and to page https://docs.couchbase.com/server/current/rest-api/rest-fts.html[Full Text Search API]
+* The `Couchbase SDK`. Refer to our tutorial link:../tutorial_en.html[Developing on Couchbase CE with Python / Java]
+* The `N1QL Search functions`. These allow you to perform a `FTS` as part of a N1QL query. Refer to the Couchbase documentation for link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/searchfun.html[Search Function]
+
+== +++<a name="sfui">++++++</a>+++Searching from the UI
+
+In this part, you can see an example of a search from the `Couchbase Web UI` considering all the above.
+
+On the left side of your `Web UI`, you must select the Search tab, that will be displayed like this:
+
+image::fulltextsearch.png[,66%]
+
+=== Create an Index
+
+To create an index press `Add Index` button which will be shown as below:
+
+image::createanindex.png[,30%]
+
+To create a basic index you need to define a unique name for the index (Note that only alphanumeric characters, hyphens, and underscores are allowed for index names, and the first character of the name must be an alphabetic character). After that, you must select the bucket and press the `Create Index` button. This is all you need to specify, to create a basic index for test and development. However, such default indexing is not recommended for production environments, to review the wide range of options for creating indexes, refer to the Couchbase documentation for https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes].
+
+Now you are returned to the `FTS` screen, once there, you need to wait for the build progress until it reaches 100%. After that you can start to realize searches by all available means: the `Web UI`, the `Couchbase REST API`, and the `Couchbase SDK`.
+
+=== Perform a Query
+
+To perform a query, type a word into the text-field of the selected index, for example, `adventure`, then click on the Search button and it will show the `Search Results` as shown below:
+
+image::searching.png[,66%]
+
+== +++<a name="sfra">++++++</a>+++Searching with the REST API
+
+On the `Search Result` page, to the immediate right of the `Search` button, appears the show advanced query settings checkbox. Check this to display the advanced settings:
+
+image::advancedquerysettings.png[,66%]
+
+Additionally, the `JSON for Query Request` panel displays the submitted query in `JSON` format, and next to it, has a checkbox with the possibility to complete a curl command:
+
+image::curlcommand.png[,66%]
+
+This curl command allows to execute the search outside of the current session within the `Web UI`, taking into account that the credentials for authentication are required.
+
+== +++<a name="ua">++++++</a>+++Creating Queries
+
+In this chapter you will learn to use, through examples, some types of the most relevant queries that are part of the wide range of available queries, using the query syntax of the Couchbase `REST API`. We will continue to use, for next examples, data from the `movies` bucket with their respective index.
+
+=== +++<a name="qsq">++++++</a>+++ Query String Query
+
+A `Query String` can be used to express a given query using a special syntax. This query-type combines standard alphanumeric characters with syntactic elements, in order to specify complex queries in ASCII form.
+Moreover, the `full text query syntax help` link below the Search text-field on page Search Results shows detailed information about `Query String FTS` queries.
+If you want to realize this kind of query into a curl command, you need to execute it as follow:
+
+[source,bash]
+----
+curl -u Administrator:password -XPOST -H "Content-Type: application/json" \
+http://localhost:8094/api/index/movies-index/query \
+-d '{
+  "explain": true,
+  "fields": [
+    "*"
+  ],
+  "highlight": {},
+  "query": {
+     "query": "+drama +pulp"
+   }
+}'
+----
+
+=== Match query
+
+Match query belongs to the group of `Simple Queries`, it analyzes input text and uses the results to query an index. Options include specifying an analyzer, performing a fuzzy match, and performing a prefix match. When fuzzy matching is used, if the single parameter is set to a non-zero integer, the analyzed text is matched with a corresponding level of fuzziness. The maximum supported fuzziness is 2. When a prefix match is used, the prefix_length parameter specifies that for a match to occur, a prefix of specified length must be shared by the input-term and the target text-element.
+
+Here you can see an example of match query use into a curl command, ready to execute it:
+
+[source,bash]
+----
+curl -u Administrator:password -XPOST -H "Content-Type: application/json" \
+http://localhost:8094/api/index/movies-index/query \
+-d '{
+  "explain": true,
+  "fields": [
+    "*"
+  ],
+  "highlight": {},
+  "query": {
+       "match": "drama",
+      "field": "genre",
+      "analyzer": "standard",
+      "fuzziness": 2,
+      "prefix_length": 3
+    }
+}'
+----
+
+=== Conjunction Query (AND)
+
+Conjunction query is a type of `Compound Queries` that contains multiple child queries. Its result documents must satisfy all of the child queries, the opposite of Disjunction Query (OR).
+Below is an example of this type of query ready to run into a curl command:
+
+[source,bash]
+----
+curl -u Administrator:password -XPOST -H "Content-Type: application/json" \
+http://localhost:8094/api/index/movies-index/query \
+-d '{
+  "explain": true,
+  "fields": [
+    "*"
+  ],
+  "highlight": {},
+  "query": {
+       "conjuncts":[
+        {"field":"genre", "match": "drama"},
+        {"field":"name", "match": "movie_1"}
+      ]
+   }
+}'
+----
+
+=== Numeric Range Query
+
+Numeric range query is a type of `Range Queries` which finds documents containing a numeric value in the specified field within the specified range. This query defines the endpoints using the fields min and max.
+Here is an example of use of this query into a curl command, using their specifics options:
+
+[source,bash]
+----
+curl -u Administrator:password -XPOST -H "Content-Type: application/json" \
+http://localhost:8094/api/index/movies-index/query \
+-d '{
+  "explain": true,
+  "fields": [
+    "*"
+  ],
+  "highlight": {},
+   "query": {
+      "min": 1966, "max": 2000,
+      "inclusive_min": false,
+      "inclusive_max": false,
+      "field": "year"
+      }
+}'
+----
+
+____
+At this point, some query-types have been explained in broad strokes, for more specificity, go to the Couchbase documentation for https://docs.couchbase.com/server/current/fts/fts-query-types.html[Query Types] where you will find detailed information about it.
+____
+
+== Response Object
+
+Once executed these queries, the successful message should look like follows, which indicates that you have achieved a right `FTS`:
+
+[source,bash]
+----
+"status": {
+     "total": 6,
+     "failed": 0,
+     "successful": 6
+},
+----
+
+= Next steps
+
+We recommend you to follow our next tutorials, go to the link:../index.html[Home] page to find the full list.
+
+Also, you could review https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.

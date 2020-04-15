@@ -1,0 +1,412 @@
+// :doctype: book
+
+link:tutorial_en.html[English] | Español
+
+= Desarrollando para Android usando Couchbase Mobile CE
+
+Este tutorial lo guiará a través de la creación de una aplicación móvil de Android con `Couchbase Mobile`. Para lograr esto, se instalarán dos componentes del lado del servidor: `Couchbase Server CE` y `Sync Gateway`, y se desarrollará una aplicación móvil con `Couchbase Lite` que sincronizará sus datos con la nube sin problemas.
+
+____
+Esta guía fue probada utilizando `Ubuntu 18.04`, `Docker CE 19.03.5` y `Android Studio 3.5`
+____
+
+== Docker
+
+`Docker` se utilizará ampliamente a lo largo de este tutorial ya que la mayoría de los componentes se pueden desplegar fácilmente con su ayuda. Escriba el siguiente comando en su consola para verificar si ya se encuentra instalado.
+
+[source,bash]
+----
+sudo docker -v
+Docker version 19.03.5, build 633a0ea838
+----
+
+De ser así, la salida debería ser similar a esa, y puede avanzar a la siguiente sección. De lo contrario, revise su documentación oficial, la cual contiene link:https://docs.docker.com/install/[guías de instalación] para múltiples sistemas operativos.
+
+= Couchbase Server CE
+
+El primer paso será poner en funcionamiento su servidor, para ello, cree una red local de docker llamada "couchbase-net". Abra una consola y ejecute el siguiente comando:
+
+[source,bash]
+----
+docker network create -d bridge couchbase-net
+----
+
+Revise que se haya creado la red:
+
+[source,bash]
+----
+docker network ls
+NETWORK ID          NAME                                      DRIVER              SCOPE
+d3a4d9d23eab        bridge                                    bridge              local
+8cc9b7774503        couchbase-net                             bridge              local
+----
+
+Cree un directorio para almacenar los datos del servidor.
+
+[source,bash]
+----
+mkdir ~/Couchbase
+----
+
+Para ejecutar `Couchbase Server CE` en un contenedor, primero debe obtener la imagen de `Dockerhub`. Abra una nueva consola y ejecute lo siguiente:
+
+[source,bash]
+----
+docker pull couchbase:community
+----
+
+Una vez que el comando se haya completado, puede iniciar el servidor con la siguiente línea:
+
+[source,bash]
+----
+docker run -itd --name couchbase-server  --network couchbase-net -v ~/CouchBase/:/opt/couchbase/var -p 8091-8094:8091-8094 -p 11210:11210 couchbase:community
+----
+
+Puede ver los logs en cualquier momento ejecutando el siguiente comando:
+
+[source,bash]
+----
+docker logs couchbase-server
+----
+
+El servidor puede tardar unos segundos en iniciarse. Verifique que el contenedor se esté ejecutando con el siguiente comando:
+
+[source,bash]
+----
+docker ps
+----
+
+Para conectarse a su servidor, vaya a su navegador y acceda a la `Web UI` en el puerto 8091. Allí verá una pantalla de inicio de sesión como esta:
+
+image::login.png[,750]
+
+Seleccione `Setup New Cluster` y complete los campos de acuerdo con la siguiente imagen. ¡Tome nota de su nombre de usuario y contraseña!
+
+image::setup1.png[,650]
+
+Asegúrese de leer y aceptar los términos y condiciones, y presione `Next: Accept Terms`. Luego presione `Configure Disk, Memory, Services`, lea las opciones preseleccionadas y finalmente presione `Save & Finish`.
+
+En este punto, ya tiene el servidor en ejecución, pero todavía no tiene datos. `Couchbase Server CE` incluye tres buckets de muestra para ayudarlo a comenzar a probar el servidor. Utilizaremos el bucket de muestra de cerveza, que tiene dos tipos de documentos: cervezas y cervecerías.
+
+Los documentos de cerveza contienen información básica sobre diferentes tipos de cerveza, incluido el nombre, el volumen de alcohol (abv) y los datos de categorización. Los documentos de cervecerías incluyen el contacto, la dirección de la cervecería, un registro espacial que consta de la latitud y la longitud de su ubicación. Cada documento de cerveza están relacionados con los documentos de la cervecería usando el campo `brewery_id`, que contiene la llave de una cervecería específica.
+
+Para agregar este bucket, inicie sesión en la `IU web` del servidor. En el panel izquierdo, seleccione `Bucket` y haga click en `sample bucket` en el panel derecho.
+
+image::sample-bucket1.png[,950]
+
+Seleccione `beer-sample` y de click en `Load Sample Data`.
+
+image::sample-bucket2.png[,950]
+
+Los datos se cargarán en el servidor. Puede explorarlos yendo a `Buckets` en el panel izquierdo y seleccionando `Documents` en el lado derecho. Los datos se verán así.
+
+image::sample-bucket-loaded.png[,950]
+
+= Sync Gateway
+
+`Sync Gateway` es una aplicación web segura de puerta de enlace con sincronización, `REST`, stream, batch y events `API` para acceder y sincronizar los datos a través de la web. `Sync Gateway` permite, entre otras cosas, la replicación segura de datos entre `Couchbase Server CE` y `Couchbase Lite`.
+
+Para obtener más información acerca de `Sync Gateway`, consulte; link:https://www.couchbase.com/products/sync-gateway[the official page] y el siguiente blog, link:https://log.couchbase.com/getting-comfortable-with-couchbase-mobile-sync-gateway-via-the-command-line/[Sync Gateway via the Command Line].
+
+Para ejecutar el contenedor `Sync Gateway`, descargue primero la imagen.
+
+[source,bash]
+----
+docker pull couchbase/sync-gateway:2.6.1-community
+----
+
+El contenedor de `Sync Gateway` requiere el nombre y el puerto de `Couchbase Server CE`, que ya está configurado en el link:./sync-gateway-config-beersampler.json[sync-gateway-config-beersampler.json] file.
+
+[source,json]
+----
+"server": "http://couchbase-server:8091"
+----
+
+Y el nombre de usuario y la contraseña necesarios para acceder a él:
+
+[source,json]
+----
+"username": "Administrator",
+"password": "your password",
+----
+
+Ahora configure el nombre de usuario y la contraseña para los usuarios autorizados a conectarse a su `Sync Gateway`. Reemplace 123456 por sus contraseñas preferidas.
+
+[source,json]
+----
+"users":{
+    "admin": {"password": "123456", "admin_channels": ["*"]},
+    "demo": {"password": "123456"},
+    "tester": {"password": "123456"}
+}
+----
+
+Inicie el contenedor `Sync Gateway` con el siguiente comando. Asegúrese de estar en el mismo directorio del archivo de configuración.
+
+[source,bash]
+----
+docker run -p 4984-4985:4984-4985 --network couchbase-net --name sync-gateway -d -v `pwd`/sync-gateway-config-beersampler.json:/etc/sync_gateway/sync_gateway.json couchbase/sync-gateway:2.6.1-community -adminInterface :4985 /etc/sync_gateway/sync_gateway.json
+----
+
+Verifique que el contenedor llamado "sync-gateway" se esté ejecutando, escriba el siguiente comando en la consola:
+
+[source,bash]
+----
+docker ps
+----
+
+Usted puede ver los logs en cualquier momento ejecutando el siguiente comando:
+
+[source,bash]
+----
+docker logs sync-gateway
+----
+
+Pruebe la interfaz de sincronización en su navegador accediendo al puerto 4984.
+
+Debería recibir una respuesta JSON, como la siguiente:
+
+[source,json]
+----
+{"couchdb":"Welcome","vendor":{"name":"Couchbase Sync Gateway","version":"2.6"},"version":"Couchbase Sync Gateway/2.6.1(1;4907fed) CE"}
+----
+
+= Couchbase Lite
+
+`Couchbase Lite` proporciona una base de datos integrada `NoSQL` para aplicaciones móviles. Dependiendo de la implementación, se puede usar en cualquiera de los siguientes modos, o combinándolos:
+
+* Como una base de datos integrada independiente dentro de sus aplicaciones móviles.
+* Permite que se puedan sincronizar los datos entre sus clientes móviles usando `Sync Gateway`.
+* Permite que usando `Sync Gateway` puedan sincronizar datos entre los clientes móviles y el `Couchbase Server CE`.
+
+En este tutorial implementaremos una aplicación `Android`, usando el primer y tercer modo.
+
+= Aplicación de Android
+
+La aplicación `Android` se basará en `Couchbase Lite`, que trabajará junto a `Sync Gateway` para conservar los datos de `Couchbase Server CE` en la nube, ya sea pública o privada.
+
+Desarrollaremos una aplicación utilizando uno de los buckets de ejemplo incluidos en `Couchbase Server CE`, el ejemplo se encuentra en el siguiente enlace, link:https://developer.couchbase.com/documentation/server/3.x/admin/Misc/sample-bucket-beer.html[beer-sample bucket].
+
+El objetivo de la aplicación será servir un formulario de entrada para la base de datos, de modo que cualquier usuario pueda incluir nuevas cervecerías o cervezas. Además, el usuario podrá buscar en la base de datos cervezas o cervecerías.
+
+image::app1.png[,250]
+
+Para comenzar a utilizar `Couchbase Lite`, descargue `Beer Sampler Project` y abra link:https://developer.android.com/studio[Android Studio].
+
+== Incluir la biblioteca
+
+El primer paso para incluir el soporte `Couchbase Lite` dentro de una aplicación `Android` es declararlo como una dependencia en _app/build.gradle_.
+
+[source,gradle]
+----
+dependencies {
+
+    (...)
+
+    implementation 'com.couchbase.lite:couchbase-lite-android:2.6.0'
+
+}
+----
+
+Después de este paso, todos los métodos `Couchbase Lite` estarán disponibles para la aplicación.
+
+== Base de datos local integrada: abrir y leer datos
+
+El segundo paso es implementar un método para abrir la base de datos. Como se indicó anteriormente, se implementarán dos modos: base de datos independiente y base de datos sincronizada. El primer caso estará cubierto con un usuario `guest`, que podrá almacenar, modificar o eliminar cervezas. El segundo caso se cubrirá con un usuario `demo` autenticado, cuyas credenciales se definieron anteriormente en la `Sync Gateway`.
+
+El manejo de la base de datos se define en `app/src/main/java/com/couchbasece/beersampler/utils/DatabaseManager.java`. Todas las líneas `Log.i` son para generar logs informativos. Estos logs se pueden ver en la parte inferior de `Android Studio` mientras se ejecuta la aplicación, en la pestaña `Logcat`. Puede seleccionar la pestaña `Logcat` con la combinación de teclas `Alt + 6` en `Android Studio`.
+
+[source,java]
+----
+public void OpenGuestDatabase() {
+    Log.i("appBeerSampler","Opening Guest Database");
+    DatabaseConfiguration config = new DatabaseConfiguration();
+
+    config.setDirectory(String.format("%s/guest", appContext.getFilesDir()));
+    Log.i("appBeerSampler","Database path: "+config.getDirectory());
+
+    try {
+        database = new Database("guest", config);
+    } catch (CouchbaseLiteException e) {
+        e.printStackTrace();
+    }
+
+    (...)
+----
+
+Cuando el usuario abre las aplicaciones y pulsa `Access as Guest`, se almacenan un usuario y una contraseña especiales en las `Shared Preferences` de la aplicación, y se invoca un método para abrir una nueva base de datos local. Desde este método, se llama a la función anterior.
+
+[source,java]
+----
+public void fetchBeers() {
+
+    (...)
+
+    Log.i("appBeerSampler", "Opening local DB as user Guest");
+    DatabaseManager dbMgr = DatabaseManager.getSharedInstance();
+    dbMgr.initCouchbaseLite(getApplicationContext());
+    dbMgr.OpenGuestDatabase();
+
+    (...)
+
+}
+----
+
+Luego, se ejecuta una consulta para recuperar las cervezas almacenadas en la base de datos local. Estos métodos se encuentran en `app/src/main/java/com/couchbasece/beersampler/BrowseData.java`.
+
+[source,java]
+----
+Database database = DatabaseManager.getDatabase();
+
+Log.i("appBeerSampler", "Connected to database: "+database.getName().toString());
+
+Query searchQuery = QueryBuilder
+        .select(SelectResult.expression(Expression.property("name")))
+        .from(DataSource.database(database))
+        .where(Expression.property("type").equalTo(Expression.string("beer")));
+
+Log.i("appBeerSampler", "Query loaded");
+
+ResultSet rows = null;
+try {
+    Log.i("appBeerSampler", "Ready to run query");
+    rows = searchQuery.execute();
+
+    (...)
+----
+
+Todas las filas recuperadas se mostrarán en la aplicación y también en los registros.
+
+== Base de datos en la nube: abrir y leer datos
+
+Esta sección se cubrirá con el usuario `demo`, que se definió previamente en el archivo `sync-gateway-config-beersampler.json`. La secuencia de inicio de la base de datos será un poco diferente esta vez.
+
+[source,java]
+----
+buttonLogin.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+
+        String user = usernameInput.getText().toString();
+        String passwd = passwordInput.getText().toString();
+
+        // Stores username and password on Shared Preferences
+        SharedPreferences sp=getActivity().getSharedPreferences("Login", MODE_PRIVATE);
+        SharedPreferences.Editor Ed=sp.edit();
+        Ed.putString("username", user);
+        Ed.putString("password", passwd);
+        Ed.commit();
+
+        DatabaseManager dbMgr = DatabaseManager.getSharedInstance();
+        dbMgr.initCouchbaseLite(getActivity().getApplicationContext());
+        dbMgr.OpenDatabaseForUser(user);
+        DatabaseManager.startPushAndPullReplicationForCurrentUser(user, passwd);
+
+        Intent intent = new Intent(getActivity().getApplicationContext(), BrowseData.class);
+        startActivity(intent);
+    }
+
+    (...)
+----
+
+Observe `startPushAndPullReplicationForCurrentUser(user,passwd)`, este método se encarga de la replicación y está definido en el archivo `DatabaseManager.java`. Cuando el usuario inserta una cerveza, se refleja en el `Couchbase Server CE`, a través del `Sync Gateway`. La puerta de enlace se define en `DatabaseManager.java`, con un hostname.
+
+[source,java]
+----
+public static String mSyncGatewayEndpoint = "ws://PUT-THE-GATEWAY-IP-HERE:4984/beer-sample";
+----
+
+Después de este paso, todas las operaciones son comunes para la base de datos integrada o remota.
+
+== Insertar un nuevo documento
+
+Para insertar una cerveza nueva, el usuario debe tocar el botón:
+
+image::app3.png[,250]
+
+Esto le permite ingresar los datos sobre la nueva cerveza.
+
+image::app4.png[,250]
+
+Inserte algunas cervezas y tome nota de los nombres insertados, por ejemplo, "Polar Dark".
+
+image::app2.png[,250]
+
+El código que inserta los datos simplemente crea un nuevo `MutableDocument` con una ID única (la combinación de los nombres de cervecería y cerveza, como `"\(cervecería)-\(beerName)"`) e invoca el método de guardado.
+
+[source,java]
+----
+mutableCopy = new MutableDocument(Brewery+"-"+BeerName, properties);
+
+try {
+    Log.i("appBeerSampler", "Ready to insert");
+    database.save(mutableCopy);
+}
+----
+
+Si ha iniciado sesión con el usuario "demo", debería ver la nueva cerveza cargada en el `Couchbase Server CE`, a través del `Sync Gateway`. Tenga en cuenta las cervezas "Polar Blondie" y "Polar Dark".
+
+image::web-app1.png[,950]
+
+=== Actualizar un documento existente
+
+Para actualizar un documento existente, toque el documento. En el cuadro de diálogo, el usuario actualiza cualquier valor (los nombres _beer_ y _brewery_ no pueden actualizarse porque la combinación de ambos conforma el _ID_ único del documento). Detrás de escena, el documento recuperado se modifica y se inserta nuevamente con la misma _ID_.
+
+[source,java]
+----
+public void onClick(View v) {
+
+    Log.i("appBeerSampler", "Update a beer");
+
+    // Retrieving beer data from the interface
+    String Brewery = breweryInput.getText().toString();
+    String BeerName = beerNameInput.getText().toString();
+    String Category = categoryInput.getText().toString();
+    String Style = styleInput.getText().toString();
+    String ABV = abvInput.getText().toString();
+
+    // Get the database in use
+    Database database = DatabaseManager.getDatabase();
+
+    // Filling the beer's data
+    HashMap<String, Object> properties = new HashMap<>();
+    properties.put("type", "beer");
+    properties.put("name", BeerName);
+    properties.put("brewery_id", Brewery);
+    properties.put("category", Category);
+    properties.put("style", Style);
+    properties.put("abv", ABV);
+
+    // Retrieves username and password from Shared Preferences
+    SharedPreferences sp1= getSharedPreferences("Login", MODE_PRIVATE);
+    String user = sp1.getString("username", null);
+    String passwd = sp1.getString("password", null);
+
+    if (user.equals("D3m0u53r") && passwd.equals("D3m0u53r")) {
+
+        properties.put("username", "guest");
+
+    } else {
+        properties.put("username", user);
+    }
+
+    MutableDocument mutableCopy = new MutableDocument(Brewery+"-"+BeerName, properties);
+
+    try {
+        Log.i("appBeerSampler", "Ready to insert");
+
+        database.save(mutableCopy);
+        Log.i("appBeerSampler", "Inserted");
+
+    } catch (CouchbaseLiteException e) {
+        e.printStackTrace();
+    }
+    finish();
+}
+----
+
+= Próximos pasos
+
+Le recomendamos que siga nuestros próximos tutoriales, para encontrar la lista completa diríjase a link:../index_es.html[Home].
+
+Además, puede revisar link:https://docs.couchbase.com/home/index.html[Couchbase Documentation] para obtener más información sobre otros temas.

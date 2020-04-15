@@ -1,0 +1,318 @@
+// :doctype: book
+
+link:tutorial_en.html[English] | Español
+
+= Consulta y búsqueda de Couchbase CE
+
+Este tutorial le enseñará las diferentes formas de realizar consultas utilizando `N1QL` y el procedimiento para realizar `Full Text Search`. Este tutorial ha sido realizado utilizando `Couchbase Server CE`, por lo que puede usar esa distribución para seguir esta guía de forma gratuita.
+
+= Conceptos básicos de N1QL
+
+`N1QL` es un lenguaje de consulta que usa una sintaxis similar a `SQL`, pero opera en documentos `JSON` estructurados y flexibles, devolviendo otros documentos `JSON` como respuesta.
+
+Una consulta básica `N1QL` tiene la siguiente estructura:
+
+* SELECT : Los campos de cada documento a devolver
+* FROM : El `bucket` de datos que se va a buscar
+* WHERE : Las condiciones que debe cumplir el documento
+
+Se puede ejecutar una consulta `N1QL` desde:
+
+* Consola, usando la herramienta `cbq`
+* Una consulta `Workbench` en `Couchbase Server Web UI`
+
+`N1QL` usa índices para hacer su trabajo. Para hacer que se pueda consultar un bucket, se debe tener al menos un índice definido. Hay dos tipos de índices: un `primary index` que puede emitir consultas no cubiertas en el bucket y un `secondary index` que contiene un conjunto filtrado o completo de llaves de un bucket dado, estos son opcionales, pero aumentan la eficiencia de la consulta en un bucket. En este caso, crearemos un `secondary index` sobre el `bucket movies`:
+
+----
+bash
+CREATE INDEX ix_movies_genre ON `movies`(genre);
+----
+
+Para crear este índice y realizar las consultas, vamos a utilizar, por ahora, la pestaña `Query`, como se explica en la siguiente sección.
+
+== Consulta utilizando Query Workbench
+
+`Query Workbench` es una herramienta interactiva que le permite crear y ejecutar consultas `N1QL`, y que se encuentra incluida en `Couchbase Server Web UI`.
+
+Para los ejemplos posteriores, usted deberá haber cargado el `bucket movies` como se muestra en la siguiente línea:
+
+[source,bash]
+----
+cbtransfer /home/couchbase/movies.csv http://localhost:8091 -B movies -u Administrator -p password
+----
+
+Luego, con sus credenciales, acceda a `Couchbase Server Web UI` escribiendo http://localhost:8091 en el campo de dirección en la parte superior de su navegador, la pantalla de inicio de sesión se verá como se le muestra a continuación:
+
+image::login.png[,25%]
+
+Una vez en la página de inicio de sesión, escriba sus credenciales y acceda. La página de inicio le mostrará el panel de control de su clúster, en el lado izquierdo debe seleccionar la pestaña `Query`:
+
+image::queryworkbench.png[,66%]
+
+Como se puede observar en la imagen, `Query Workbench` tiene tres áreas principales:
+
+* Query Editor: donde escribirá su consulta N1QL
+* Data Insights: proporciona información sobre los `buckets` que actualmente mantiene su sistema
+* Query Results: muestra los resultados de la consulta y proporciona algunas opciones para su visualización
+
+Para crear el índice visto anteriormente, debe ejecutar esa línea en `Query` como puede observar a continuación:
+
+image::createindexquery.png[,66%]
+
+Esto le permitirá consultar el `bucket movies` sobre un género concreto, por ejemplo, la siguiente línea de código devuelve `name` y `year` de las películas, cuyo género es `Crime&Drama`, como se muestra a continuación :
+
+[source,bash]
+----
+SELECT name, year FROM `movies` WHERE genre="Crime&Drama";
+----
+
+image::executingqueryonworkbench.png[,66%]
+
+Como puede ver, se encontraron tres películas en el `bucket`, con el género especificado.
+
+Para obtener más información al respecto, consulte en la documentación oficial de Couchbase parahttps://docs.couchbase.com/server/current/tools/query-workbench.html[Query Workbench].
+
+Este tipo de consulta también puede realizarse desde la consola como se muestra en el siguiente apartado.
+
+== Consultas utilizando el Shell de consulta interactiva
+
+Para ejecutar el shell de consulta interactiva, `cbq`, escriba en la ventana de su consola la siguiente línea, para navegar al directorio `bin` de Couchbase e iniciar `cbq`:
+
+[source,bash]
+----
+cd /opt/couchbase/bin
+./cbq -u Administrator -p password -engine=http://127.0.0.1:8091/
+----
+
+Una vez que termine, usted se encontrará en el indicador de shell `cbq`, que le permitirá comenzar a ejecutar comandos `N1QL` en su consola. Por ejemplo, si desea saber cuántas películas que se almacenan en el `bucket movies`, con el género `Drama` se hicieron en `1994`, usted deberá escribir lo siguiente:
+
+[source,bash]
+----
+cbq> SELECT * FROM `movies` WHERE genre="Drama" AND year=1994;
+----
+
+La consola deberá mostrarle el siguiente resultado:
+
+[source,bash]
+----
+{
+    "requestID": "e01ae981-cb0d-48ac-8cd2-59224ece52d2",
+    "signature": {
+        "*": "*"
+    },
+    "results": [
+        {
+            "movies": {
+                "genre": "Drama",
+                "id": "movie_1",
+                "name": "The Shawshank Redemption",
+                "year": 1994
+            }
+        }
+    ],
+    "status": "success",
+    "metrics": {
+        "elapsedTime": "2.388205ms",
+        "executionTime": "2.265674ms",
+        "resultCount": 1,
+        "resultSize": 197
+    }
+}
+----
+
+Como usted podrá observar solo existe una película con esos requisitos.
+Si necesita información más detallada al respecto, consulte la documentación de Couchbase para https://docs.couchbase.com/server/current/tools/cbq-shell.html[The Command Line Shell for N1QL].
+
+= Full Text Search
+
+Este apartado le mostrará cómo con `Full Text Search` (FTS) usted puede crear, administrar y consultar índices especialmente diseñados, almacenados en documentos `JSON` dentro de un `bucket` de Couchbase.
+
+== Características de Full Text Search
+
+`FTS` tiene varias opciones para realizar consultas en lenguaje natural como:
+
+* Búsqueda del idioma; permite a los usuarios buscar, por ejemplo, la palabra `técnico`, y también obtener resultados para `tecnología` y `tecnica`
+* Puntuación de resultados, según relevancia; permite a los usuarios obtener conjuntos de resultados con solo documentos que han tenido los puntajes más altos, esto logra disminuir los conjuntos de resultados
+* Índices rápidos, los cuales admiten una amplia gama de posibles búsquedas de texto
+
+`FTS` utiliza Bleve para la indexación de documentos, y también permite utilizar la amplia gama de tipos de consultas de Bleve, que contienen:
+
+* Match, Match Phrase, Doc ID, and Prefix queries
+* Conjunction, Disjunction, and Boolean field queries
+* Numeric Range and Date Range queries
+* Geospatial queries
+* Query String queries, que emplean una sintaxis especial para expresar los detalles de cada consulta. Consulte link:qsq[Query String Query] para obtener más información.
+
+== Preparación para realizar Full Text Search
+
+Antes de intentar hacer una `FTS` debe garantizar lo siguiente:
+
+* Que `Couchbase Server` tenga el servicio de búsqueda habilitado correctamente, el servicio debe estar habilitado para un nodo determinado. Consulte el siguiente enlace https://docs.couchbase.com/server/current/manage/manage-nodes/create-cluster.html[Create a cluster] para obtener más información.
+* Cree un índice apropiadamente, empleando `web UI`. Para obtener la información básica al respecto, consulte la sección <<sfui,Búsqueda desde la interfaz de usuario>> y para obtener una información más detallada, consulte https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes].
+
+____
+Durante la creación del índice, puede seleccionar, crear o utilizar un analizador. En caso de que no lo haya hecho, se le asignará un analizador predeterminado. Consulte para más información sobre la creación de analizadores el siguiente enlace https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes] y su funcionalidad y componentes https://docs.couchbase.com/server/current/fts/fts-using-analyzers.html[Understanding Analyzers].
+____
+
+== Realizar FTS
+
+`FTS` se puede lograr usando lo siguiente:
+
+* La `Web UI`. Consulte la sección <<sfui,Buscando desde la UI>>
+* La API REST de Couchbase. Consulte la sección <<sfra,Buscando con la REST API>> y la página: https://docs.couchbase.com/server/current/rest-api/rest-fts.html[Full Text Search API]
+* El SDK de Couchbase. Consulte nuestro tutorial link:../dev-python-java/tutorial_es.html[Desarrollando en Couchbase CE con Python/Java]
+* Las funciones de búsqueda N1QL. Estos le permiten realizar un `FTS` como parte de una consulta `N1QL`. Consulte la página: link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/searchfun.html[Search Function]
+
+== +++<a name="sfui">++++++</a>+++Buscando desde la UI
+
+En esta parte, usted podrá ver un ejemplo de una búsqueda desde  `Couchbase Web UI` teniendo en cuenta todo lo anterior.
+
+En el lado izquierdo de la `Web UI` de `Couchbase Server`, debe seleccionar la pestaña `Search`, como se muestra próximamente:
+
+image::fulltextsearch.png[,66%]
+
+=== Crear un índice
+
+Para crear un índice, presione el botón `Add Index` como se muestra a continuación:
+
+image::createanindex.png[,30%]
+
+Para crear un índice básico, usted necesita definir un nombre para el índice (tenga en cuenta que solo se permiten caracteres alfanuméricos, guiones y guiones bajos para los nombres de los índices, y el primer carácter del nombre debe ser alfabético). Después de eso, debe seleccionar el bucket y presionar el botón `Create Index`. Esto es todo lo que necesita especificar para crear un índice básico para las pruebas y el desarrollo. Sin embargo, dicha indexación predeterminada no se recomienda para entornos de producción, para revisar la amplia gama de opciones para crear índices, consulte https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes].
+
+Ahora vuelve a la pantalla `FTS`, una vez allí, debe esperar a que la compilación alcance el 100%. Después de eso, puede comenzar a realizar búsquedas por todos los medios disponibles: la interfaz de usuario de la consola, la `API REST de Couchbase` y el `SDK de Couchbase`.
+
+=== Realizar una consulta
+
+Para realizar una consulta, escriba una palabra en el campo de texto del índice seleccionado, por ejemplo, `adventure`, luego haga click en el botón `Search`, donde se mostrarán los resultados de la búsqueda, como se muestra a continuación:
+
+image::searching.png[,66%]
+
+== +++<a name="sfra">++++++</a>+++Buscando con la REST API
+
+En la página `Search Result`, a la derecha del botón `Search`, aparece la casilla de verificación `show advanced query settings`. Marque esto para mostrar la configuración avanzada:
+
+image::advancedquerysettings.png[,66%]
+
+Además, en el panel `JSON for Query Request` se muestra la consulta enviada en formato `JSON` y junto a ella, se encuentra una casilla de verificación con la posibilidad de completar un comando `curl`:
+
+image::curlcommand.png[,66%]
+
+Este comando `curl` le permite ejecutar esta consulta fuera de la sesión actual de la `Web UI` de `Couchbase`, teniendo en cuenta que las credenciales para la autenticación son requeridas.
+
+== +++<a name="ua">++++++</a>+++Crear consultas
+
+En este apartado usted aprenderá a usar, a través de ejemplos, algunos de los tipos de consultas más relevantes que forman parte de la amplia gama de consultas disponibles, utilizando la sintaxis de consulta de la `API REST de Couchbase`. Continuaremos usando, para los próximos ejemplos, algunos datos del `bucket movies` con sus respectivos índices.
+
+=== +++<a name="qsq">++++++</a>+++Consulta de String
+
+Se puede usar una `Consulta de String` para expresar una consulta dada utilizando una sintaxis especial. Este tipo de consulta combina caracteres alfanuméricos estándar con elementos sintácticos, para especificar consultas complejas en forma ASCII.
+Además, el enlace `full text query syntax help` debajo del campo de texto `Search` en la página `Search Results` muestra información detallada sobre las consultas de `Query String FTS`.
+Si desea realizar este tipo de consulta en un comando curl, debe ejecutarlo de la siguiente manera:
+
+[source,bash]
+----
+curl -u Administrator:password -XPOST -H "Content-Type: application/json" \
+http://localhost:8094/api/index/movies-index/query \
+-d '{
+  "explain": true,
+  "fields": [
+    "*"
+  ],
+  "highlight": {},
+  "query": {
+     "query": "+drama +pulp"
+   }
+}'
+----
+
+=== Consulta de coincidencia
+
+La consulta de coincidencia pertenece al grupo de `Simple Queries`, esta analiza el texto de entrada y utiliza los resultados para consultar el índice. Las opciones incluyen: especificar un analizador, realizar una coincidencia difusa y realizar una coincidencia de prefijo. Cuando se utiliza la coincidencia difusa, si el parámetro único se establece en un número entero distinto de cero, el texto analizado se corresponde con un nivel correspondiente de difuminación. La confusión máxima admitida es 2. Cuando se utiliza una coincidencia de prefijo, el parámetro prefix_length especifica que para que se produzca una coincidencia, el input-term y el text-element deben compartir un prefijo de longitud especificada.
+
+Aquí se puede observar un ejemplo del uso de consultas de coincidencia en un comando `curl`, listo para ser ejecutado:
+
+[source,bash]
+----
+curl -u Administrator:password -XPOST -H "Content-Type: application/json" \
+http://localhost:8094/api/index/movies-index/query \
+-d '{
+  "explain": true,
+  "fields": [
+    "*"
+  ],
+  "highlight": {},
+  "query": {
+       "match": "drama",
+      "field": "genre",
+      "analyzer": "standard",
+      "fuzziness": 2,
+      "prefix_length": 3
+    }
+}'
+----
+
+=== Consulta Conjunta (Y)
+
+La consulta conjunta es un tipo de `Compound Queries` que contiene múltiples consultas secundarias. Los documentos que muestran los resultados deben satisfacer todas las consultas secundarias, es decir, lo contrario a la Disjunction Query (OR).
+A continuación se muestra un ejemplo de este tipo de consulta en un comando curl, listo para ser ejecutado:
+
+[source,bash]
+----
+curl -u Administrator:password -XPOST -H "Content-Type: application/json" \
+http://localhost:8094/api/index/movies-index/query \
+-d '{
+  "explain": true,
+  "fields": [
+    "*"
+  ],
+  "highlight": {},Query String Query
+   }
+}'
+----
+
+=== Consulta de rango numérico
+
+La consulta de rango numérico es un tipo de `Range Queries` que encuentra los documentos que contienen un valor numérico en el campo especificado, dentro del rango especificado. Esta consulta define los puntos finales utilizando los campos min y max.
+A continuación se muestra un ejemplo del uso de esta consulta en un comando `curl`, usando sus opciones específicas:
+
+[source,bash]
+----
+curl -u Administrator:password -XPOST -H "Content-Type: application/json" \
+http://localhost:8094/api/index/movies-index/query \
+-d '{
+  "explain": true,
+  "fields": [
+    "*"
+  ],
+  "highlight": {},
+   "query": {
+      "min": 1966, "max": 2000,
+      "inclusive_min": false,
+      "inclusive_max": false,
+      "field": "year"
+      }
+}'
+----
+
+____
+Como usted puede observar, algunos tipos de consulta se han explicado a grandes rasgos, para obtener más especificidad, diríjase al siguiente enlace, donde encontrara información más detallada al respecto https://docs.couchbase.com/server/current/fts/fts-query-types.html[Query Types]
+____
+
+== Resultado de FTS
+
+Una vez ejecutadas estas consultas, la confirmación debería verse de la siguiente manera, esto indica que ha realizado una `FTS` correctamente:
+
+[source,bash]
+----
+"status": {
+     "total": 6,
+     "failed": 0,
+     "successful": 6
+},
+----
+
+= Próximos pasos
+
+Le recomendamos que siga nuestros próximos tutoriales, para encontrar la lista completa diríjase a link:../index_es.html[Home].
+
+Además, puede revisar https://docs.couchbase.com/home/index.html[Couchbase Documentation] para obtener más información sobre otros temas.el mensaje de exitoso

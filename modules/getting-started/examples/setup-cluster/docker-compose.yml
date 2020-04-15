@@ -1,0 +1,39 @@
+version: "3.7"
+
+networks:
+  couchbase-net:
+    name: couchbase-net
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.1.0/24
+
+services:
+
+  couchbase-master:
+    image: couchbase:community
+    container_name: couchbase-master
+    hostname: couchbase-master
+    restart: always
+    networks:
+      couchbase-net:
+        ipv4_address: 192.168.1.10
+
+  couchbase-node-1:
+    image: couchbase:community
+    container_name: couchbase-node-1
+    hostname: couchbase-node-1
+    restart: always
+    networks:
+      couchbase-net:
+        ipv4_address: 192.168.1.20
+
+  couchbase-node-2:
+    image: couchbase:community
+    container_name: couchbase-node-2
+    hostname: couchbase-node-2
+    restart: always
+    networks:
+      couchbase-net:
+        ipv4_address: 192.168.1.30

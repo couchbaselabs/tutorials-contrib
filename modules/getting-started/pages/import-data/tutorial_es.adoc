@@ -1,0 +1,116 @@
+//:doctype: book
+
+link:./tutorial_en.html[English] | Español
+
+= Importar datos existentes en Couchbase CE
+
+Este tutorial le mostrará como insertar datos existentes en Couchbase CE https://docs.couchbase.com/server/current/introduction/editions.html[Couchbase Community Edition]. Para lograr esto, se utilizarán algunas herramientas para importar los datos de diferentes fuentes en un clúster de Couchbase, todas ellas proporcionadas por https://docs.couchbase.com/server/current/introduction/editions.html[Couchbase CE].
+
+= Importar datos JSON en Couchbase CE
+
+Para importar los datos de un archivo `JSON`, utilizará la herramienta `cbdocloader` que se utiliza para cargar, en un bucket de `Couchbase`, uno o varios `JSON` desde un directorio dado o un grupo de documentos `JSON` desde un solo archivo .zip.
+
+La siguiente línea muestra la sintaxis básica de `cbdocloader`:
+
+----
+cbdocloader -c [host]:8091 -u [Administrator] -p [password] -b [bucket-name] -m [bucket-quota-MB] -d [source-file]
+----
+
+____
+Para obtener más información sobre las opciones de comando de `cbdocloader`, consulte la documentación oficial de Couchbase para https://docs.couchbase.com/server/6.0/cli/cbdocloader-tool.html[cbdocloader].
+____
+
+== Descripción
+
+Para lograr la carga correcta de datos, todos los archivos `JSON` deben encontrarse con el formato adecuado y se deben excluir los espacios en los nombres de los archivos.
+
+=== Tipos de errores:
+
+* Los archivos no se encuentran bien formateados
+* Las credenciales son incorrectas
+* La RAM de un nuevo `bucket` para contener el `JSON` es demasiado grande dada la cuota actual para Couchbase Server
+
+El `cbdocloader` se puede encontrar en las siguientes ubicaciones, dependiendo de la plataforma:
+
+* `Linux`: /opt/couchbase/bin/cbdocloader
+* `Windows`: C:\Program Files\Couchbase\Server\bin\cbdocloader
+* `Mac OS X`: /Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin/cbdocloader
+
+== Ejemplo
+
+El siguiente código es un ejemplo de la carga de un archivo `JSON`, como puedes observar solo es necesario especificar el directorio en que se encuentra el fichero `JSON`, por lo cual si existe en este directorio más de un fichero `JSON` `cbdocloader` tambien lo subirá:
+
+[source,bash]
+----
+cbdocloader -c localhost:8091 -u Administrator -p password -b colors-bucket -m 100 -d /home/couchbase//import-data/resources/json
+----
+
+Otra forma de cargar un grupo de archivos `JSON` al mismo tiempo, es crear un `.zip` y cargarlo usando el mismo código anterior, solamente cambiando el archivo fuente, como se muestra a continuación:
+
+[source,bash]
+----
+cbdocloader -c localhost:8091 -u Administrator -p password -b colors-bucket -m 100 -d /home/couchbase/import-data/resources/colors-zip.zip
+----
+
+Una vez ejecutados estos comandos, usted podrá ver la confirmación de carga de datos exitosa:
+
+[source,bash]
+----
+cbdocloader -c localhost:8091 -u Administrator -p password -b colors-bucket -m 100 -d /home/couchbase/import-data/resources/colors-zip.zip
+Data loaded successfully
+----
+
+== Importar datos CSV en Couchbase CE
+
+Para importar los datos de un archivo `CSV`, usted puede utilizar una de las herramientas proporcionadas por Couchbase Server CE, `cbtransfer`. Esta es una herramienta ligera de extracción, transformación y carga (`ETL`) que transfiere datos entre clústeres. Los parámetros de origen y destino son similares a las URL o rutas de archivos. La sintaxis para cargar los datos de un archivo `CSV` usando esta herramienta se muestra a continuación:
+
+----
+cbtransfer [source-file] [host]:8091 -B [bucket-name] -u [Administrator] -p [password]
+----
+
+____
+Para obtener más información sobre las opciones de comando de `cbtransfer`, consulte la documentación oficial de Couchbase para https://docs.couchbase.com/server/current/cli/cbtransfer-tool.html[cbtransfer].
+____
+
+== Descripción
+
+Para lograr una carga de datos correcta, cada archivo `CSV` debe contener un campo `id` en la primera línea del `CSV`, este campo debe ser único, ya que en el caso de que no lo sea, se sobrescribirá su valor.
+
+____
+`cbtransfer` solo puede importar ficheros que hayan sido generados por la misma versión de `cbtransfer`, si el ``csv``no fue generado por esta herramienta la importación fallará.
+____
+
+El `cbtransfer` se puede encontrar en las siguientes ubicaciones, dependiendo de la plataforma:
+
+* `Linux`: /opt/couchbase/bin/cbtransfer
+* `Windows`: C:\Program Files\Couchbase\Server\bin\cbtransfer
+* `Mac OS X`: /Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin/cbtransfer
+
+== Ejemplo
+
+Los datos se importan en `Couchbase Server` como documentos; en el caso del archivo`` CSV``, cada línea se importa como un documento independiente.
+
+El siguiente código es un ejemplo de carga de un archivo `CSV`:
+
+[source,bash]
+----
+cbtransfer /home/couchbase/import-data/resources/csv/people_name-age_127.0.1.1%3A8091.csv http://localhost:8091 -B name-age -u Administrator -p password
+----
+
+Después de ejecutar esta línea de comando, usted verá una confirmación de que la carga de datos fue exitosa:
+
+[source,bash]
+----
+cbtransfer /home/couchbase/import-data/resources/csv/people_name-age_127.0.1.1%3A8091.csv http://localhost:8091 -B name-age -u Administrator -p password
+.
+bucket: people_name-age_127.0.1.1%3A8091.csv, msgs transferred...
+       :                total |       last |    per sec
+ byte  :                   48 |         48 |      796.2
+done
+----
+
+= Próximos pasos
+
+Le recomendamos que siga nuestros próximos tutoriales, para encontrar la lista completa diríjase a link:../index_es.html[Home].
+
+Además, puede revisar https://docs.couchbase.com/home/index.html[Couchbase Documentation] para obtener más información sobre otros temas.el mensaje de exitoso

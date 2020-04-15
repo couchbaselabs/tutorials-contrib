@@ -1,0 +1,129 @@
+// :doctype: book
+
+link:./tutorial_en.html[English] | Español
+
+= Instalar y operar Couchbase Server CE
+
+Aquí, usted podrá aprender cómo instalar `Couchbase Server` y configurar algunos aspectos básicos. Este tutorial se realizó con `Couchbase Server CE`, por lo que usted podrá utilizar esa distribución para seguir esta guía de forma gratuita.
+
+== Introducción a Couchbase Server Community Edition
+
+// - All of this was copied from Docker official image intro -
+
+https://www.couchbase.com/products/server[Couchbase Server] es la integración entre una base de datos de documentos y un almacén de llave-valor con una arquitectura distribuida para mejor rendimiento, escalabilidad y disponibilidad. Permite a los desarrolladores crear aplicaciones de manera más fácil y rápida al aprovechar el poder de `SQL` con la flexibilidad de `JSON`.
+
+Para preguntas y comentarios adicionales, consulte las preguntas etiquetadas en link:stackoverflow.com/questions/tagged/couchbase[Stack Overflow] o en https://forums.couchbase.com[Couchbase Forums].
+
+= Instalación
+
+____
+Esta guía ha sido probada en  `Ubuntu 18.04`, `macOS Mojave` y `Windows 10`.
+____
+
+Usted puede instalar el servidor en su máquina (bare metal) o utilizar una herramienta de contenerización como `Docker`, para acelerar esta parte del tutorial.
+
+== Docker
+
+Esta sería la forma más rápida y fácil de iniciar el servidor. Si usted necesita ayuda para instalar `Docker`, puede consultar las https://docs.docker.com/install/[guías de instalación] para múltiples sistemas operativos en su documentación oficial.
+
+Después de que `Docker` se encuentre en funcionamiento, escriba el siguiente comando en su consola para iniciar el servidor.
+
+[source,bash]
+----
+docker run -itd --name couchbase-server -p 8091-8094:8091-8094 -p 11210:11210 couchbase:community
+----
+
+____
+Para obtener una guía de instalación más detallada, puede consultar la imagen de Couchbase en el siguiente link https://hub.docker.com/_/couchbase[Dockerhub].
+____
+
+== Bare metal
+
+=== Ubuntu 18.04
+
+Primero, abra una consola e instale las siguientes herramientas, utilizadas por algunos de los paquetes principales de `Couchbase Server`.
+
+[source,bash]
+----
+sudo apt update
+sudo apt install curl lsb-release gnupg
+----
+
+Descargue e instale el meta-package `.deb`, el cual contiene la información necesaria para que `apt` recupere los paquetes necesarios de Couchbase y las llaves publicas.
+
+[source,bash]
+----
+curl -O https://packages.couchbase.com/releases/couchbase-release/couchbase-server-community_6.5.0-ubuntu18.04_amd64.deb
+sudo dpkg -i ./couchbase-server-community_6.5.0-ubuntu18.04_amd64.deb
+----
+
+Ahora usted está listo para instalar la última versión de `Couchbase Server CE`.
+
+[source,bash]
+----
+sudo apt update
+sudo apt install couchbase-server-community
+----
+
+____
+Para obtener una guía de instalación más detallada, puede seguir la documentación de Couchbase para Ubuntu 18.04 en el siguiente link, https://docs.couchbase.com/server/6.5/install/ubuntu-debian-install.html[Ubuntu 18.04]
+____
+
+=== Windows 10
+
+Descargue el instalador `MSI` desde el siguiente https://www.couchbase.com/downloads/thankyou/community?product=couchbase-server&version=6.5.0&platform=windows&addon=false&beta=false[enlace].
+
+Ejecútelo y siga el asistente.
+
+image::install_windows.gif[,]
+
+____
+Para obtener una guía de instalación más detallada, puede revisar la documentación de Couchbase en siguiente enlace, https://docs.couchbase.com/server/6.5/install/install-package-windows.html[Windows 10]
+____
+
+=== macOS
+
+Descargue el fichero `zip` desde este https://www.couchbase.com/downloads/thankyou/community?product=couchbase-server&version=6.5.0&platform=osx&addon=false&beta=false[link] y ábralo posteriormente, este le enviará a la carpeta `Descargas`.
+
+image::mac_unzip.png[,800]
+
+Abra la carpeta y arrastre la aplicación a su carpeta de `Aplicaciones`.
+
+image::mac_open.png[,800]
+
+Haga doble click en la aplicación `Couchbase Server` para iniciar el servidor.
+
+image::mac_installed.png[,800]
+
+Ahora, usted puede usar el ícono de navegción en la esquina derecha de su escritorio para administrar su servidor.
+
+image:mac_bar.png[,300]
+image:mac_bar_open.png[,300]
+
+____
+Para obtener una guía de instalación más detallada, puede seguir la documentación de Couchbase para https://docs.couchbase.com/server/6.5/install/macos-install.html[macOS].
+____
+
+= Inicialización
+
+El servidor se inicia automáticamente después de la instalación. Usted puede administrar este comportamiento, como se muestra https://docs.couchbase.com/server/6.5/install/startup-shutdown.html[aquí].
+
+Si todo salió bien durante la instalación, cuando abra su navegador en http://localhost:8091, usted deberá observar la `Web UI`.
+
+image::couchbase_front.png[,500]
+
+El siguiente paso será configurar su servidor, haga click en `Setup New Cluster`.
+
+Elija un nombre para el servidor y un nombre de usuario para el administrador con su respectiva contraseña, estas credenciales deben guardarse para su uso posterior.
+
+Ahora, presione "Finish With Defaults", esto deberá ser suficiente para seguir con el tutorial. Si desea configurar el servidor de otra manera, según sus necesidades particulares, siga este enlace https://docs.couchbase.com/server/6.5/manage/manage-nodes/create-cluster.html#configure-couchbase-servidor[link].
+
+image::init_server.gif[,800]
+
+Luego de estos pasos usted tiene un `Couchbase Server CE` funcional.
+
+= Próximos pasos
+
+Le recomendamos que siga nuestros próximos tutoriales, para encontrar la lista completa diríjase a link:../ndex_es.html[Home].
+
+Además, puede revisar https://docs.couchbase.com/home/index.html[Couchbase Documentation] para obtener más información sobre otros temas.
