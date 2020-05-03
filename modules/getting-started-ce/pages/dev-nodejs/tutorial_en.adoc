@@ -1,12 +1,12 @@
 // :doctype: book
 
-English | link:tutorial_es.html[Español]
+//English | link:tutorial_es.html[Español]
 
 = Developing on Couchbase CE with Node.js
 
 Here you can learn how to install and use `Couchbase Node SDK`. This tutorial was made using `Couchbase Server CE`, so you can use this distribution to follow this guide free of charge.
 
-= Node SDK setup
+== Node SDK Setup
 
 Now that you have `Couchbase Server` up and running, you will need to allow your applications to interact with it. The `Couchbase SDK` provides an `API` for that purpose. Follow the steps indicated below to install it in your projects.
 
@@ -68,20 +68,20 @@ npm install couchbase
 Your `Node` project is now ready to interact with any `Couchbase Server`.
 
 ____
-For a more extensive install guide, you can follow the Couchbase documentation for link:https://docs.couchbase.com/nodejs-sdk/current/hello-world/start-using-sdk.html[Node SDK]
+For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/nodejs-sdk/current/hello-world/start-using-sdk.html[Node SDK]
 ____
 
-= Example project
+== Example Project
 
 Most applications we work on, usually require some level of abstraction or framework to interact with data, especially for `CRUD` operations. In this example project, we will implement a collection of functions capable of manage ratings, users and movies. Something you would need if working on a movie rating site, as `IMDb` for example.
 
-== Populate your server
+=== Populate Your Server
 
-=== Buckets
+==== Buckets
 
-`Couchbase Server` uses link:https://docs.couchbase.com/server/6.5/learn/buckets-memory-and-storage/buckets-memory-and-storage.html[Buckets] and link:https://docs.couchbase.com/server/6.5/developer-preview/collections/collections-overview.html[Collections] to store and group documents respectively.
+`Couchbase Server` uses https://docs.couchbase.com/server/6.5/learn/buckets-memory-and-storage/buckets-memory-and-storage.html[Buckets] and https://docs.couchbase.com/server/6.5/developer-preview/collections/collections-overview.html[Collections] to store and group documents respectively.
 
-There are three link:https://docs.couchbase.com/server/6.5/learn/buckets-memory-and-storage/buckets.html[types of buckets] according to persistence, and three link:https://docs.couchbase.com/server/6.5/clustersetup/create-bucket.html[ways to create] them (`CLI`, `REST API`, and `Web UI`). You can have one or more buckets and for each one, you can control access (who can create, delete and list objects in the bucket) and check the logs for access to the bucket and its objects.
+There are three https://docs.couchbase.com/server/6.5/learn/buckets-memory-and-storage/buckets.html[types of buckets] according to persistence, and three https://docs.couchbase.com/server/6.5/clustersetup/create-bucket.html[ways to create] them (`CLI`, `REST API`, and `Web UI`). You can have one or more buckets and for each one, you can control access (who can create, delete and list objects in the bucket) and check the logs for access to the bucket and its objects.
 
 Inside each bucket, you can create and use up to 1000 `collections` (groups) of documents and up to 100 `scopes` to group those collections. Every bucket has a `default` collection and scope that will be used if you don't specifically target a different one.
 
@@ -91,7 +91,7 @@ Go to the `Buckets` tab and click on `Add Bucket`. Now create a bucket named `ra
 
 image::create_bucket.gif[,750]
 
-We have already created a sample bucket with the project's data and saved it to disk using the link:https://docs.couchbase.com/server/6.5/cli/cbtransfer-tool.html[cbtransfer] tool. To import the sample bucket into your server, you must now use the link:https://docs.couchbase.com/server/6.5/cli/cbrestore-tool.html[cbrestore] tool. These assets are useful to create and restore backups of your buckets or your entire server at any moment.
+We have already created a sample bucket with the project's data and saved it to disk using the https://docs.couchbase.com/server/6.5/cli/cbtransfer-tool.html[cbtransfer] tool. To import the sample bucket into your server, you must now use the https://docs.couchbase.com/server/6.5/cli/cbrestore-tool.html[cbrestore] tool. These assets are useful to create and restore backups of your buckets or your entire server at any moment.
 
 To import the data open you console and type these comands, make sure to substitute your parameters correctly.
 
@@ -112,9 +112,9 @@ bucket: b'rate-these-movies', msgs transferred...
 done
 ----
 
-=== Indexes
+==== Indexes
 
-link:https://docs.couchbase.com/server/6.5/learn/services-and-indexes/indexes/indexes.html[Indexes] enhance the performance of query and search operations, especially as the `buckets` grow in size. Creating secondary indexes (`GSI`) on the document values will also let you perform `JOIN` operations `ON` those.
+https://docs.couchbase.com/server/6.5/learn/services-and-indexes/indexes/indexes.html[Indexes] enhance the performance of query and search operations, especially as the `buckets` grow in size. Creating secondary indexes (`GSI`) on the document values will also let you perform `JOIN` operations `ON` those.
 
 You can manage `Indexes` through the `SDK`, this time however we will do it from the `Web UI`. Click the `Query` tab, and execute the follow line to create the primary index of our bucket.
 
@@ -141,7 +141,7 @@ to create the secondary indexes needed to perform ``JOIN``s between movies, user
 
 You just executed `N1QL` queries on your server, keep reading to learn how to run them using the `SDK` as well.
 
-=== Visualize
+==== Visualize
 
 The simplest way to verify your data state, and quickly access a particular document, is through `Web UI`. Go to `Buckets` tab, and click the `Documents` button on any bucket.
 
@@ -151,19 +151,19 @@ Click each document for a more extended view, or set some filters to make a spec
 
 image::filter_documents.gif[,750]
 
-== Using the SDK
+=== Using the SDK
 
 `Couchbase SDK` provides you with multiple ways to manipulate data:
 
-* link:https://docs.couchbase.com/nodejs-sdk/current/core-operations.html#crud-overview[Core operations] or key-value operations, are quite basic and will allow you to work with your data similar to how you would do with a dictionary. But, if you want to perform more complex operations like filters or joins, you would have to implement those behaviors on the client-side. Also, they work with the full document, rather than the exact values you may need.
-* link:https://docs.couchbase.com/nodejs-sdk/current/subdocument-operations.html[Sub-document operations] can target specific values in a document. Use these operations to save bandwidth, and be more efficient when consulting partial data.
-* link:https://docs.couchbase.com/nodejs-sdk/current/n1ql-queries-with-sdk.html[N1QL] is an expressive, powerful, and complete `SQL` dialect for querying, transforming, and manipulating `JSON` data. These queries will be interpreted by the server and transformed into core operations. Most queries will require the creation of indexes to join other buckets or decreasing query latency.
+* https://docs.couchbase.com/nodejs-sdk/current/core-operations.html#crud-overview[Core operations] or key-value operations, are quite basic and will allow you to work with your data similar to how you would do with a dictionary. But, if you want to perform more complex operations like filters or joins, you would have to implement those behaviors on the client-side. Also, they work with the full document, rather than the exact values you may need.
+* https://docs.couchbase.com/nodejs-sdk/current/subdocument-operations.html[Sub-document operations] can target specific values in a document. Use these operations to save bandwidth, and be more efficient when consulting partial data.
+* https://docs.couchbase.com/nodejs-sdk/current/n1ql-queries-with-sdk.html[N1QL] is an expressive, powerful, and complete `SQL` dialect for querying, transforming, and manipulating `JSON` data. These queries will be interpreted by the server and transformed into core operations. Most queries will require the creation of indexes to join other buckets or decreasing query latency.
 
-=== Connect
+==== Connect
 
-Let's see now how to establish a connection to the server using the `SDK` to open our previously created bucket `rate-these-movies`.
+Let's see now how to establish a connection to the server using the SDK to open our previously created bucket `rate-these-movies`.
 
-This step requires credentials, as a shortcut, you could use the ones used to set up the cluster. Although we don't recommend this for a production deployment, it fits this tutorial purpose. If you wish to create new credentials with specific permissions, you can follow this link:https://docs.couchbase.com/server/6.5/manage/manage-security/manage-users-and-roles.html#creating-and-managing-users-with-the-UI[link].
+This step requires credentials, as a shortcut, you could use the ones used to set up the cluster. Although we don't recommend this for a production deployment, it fits this tutorial purpose. If you wish to create new credentials with specific permissions, you can follow this https://docs.couchbase.com/server/6.5/manage/manage-security/manage-users-and-roles.html#creating-and-managing-users-with-the-UI[link].
 
 To gain access to the server, you can use the `Cluster` class. An instance of this class can be used to open buckets and manage data through queries and other operations.
 
@@ -177,9 +177,9 @@ var cluster = new couchbase.Cluster('couchbase://' + hostname,
 var bucket = cluster.bucket(bucket_name)
 ----
 
-You don't need to explicitly disconnect from the server, this will be performed automatically when the instance fall off your code's scope.
+You don't need to explicitly disconnect from the server, this will be performed automatically when the instance falls off your code's scope.
 
-=== Core operations
+==== Core Operations
 
 When you need to simply insert, delete or retrieve a particular document, of which you know its `ID`, the recommended approach would be to use core operations.
 
@@ -234,7 +234,7 @@ if (answer) {
 }
 ----
 
-=== Sub-document operations
+==== Sub-document Operations
 
 Apps will commonly need to change data: ratings for instance, or some miss-typed name. Most of the time this means changing a particular value, not an entire document. For example, a user document may contain a name, a country, and an age, but you only want to update the country the user is currently living. When this situation presents, you should use sub-document operations to target those specific values and reduce network traffic.
 
@@ -270,7 +270,7 @@ if (answer) {
 
 Now we use `mutateIn` to target the document we want to change, and then `upsert` to modify its country value.
 
-=== N1QL queries
+==== N1QL Queries
 
 These queries allow us to find and work better with associated documents, as usually required by most applications. For example, if we intend to remove a movie, which has ratings referring to it.
 
@@ -305,8 +305,8 @@ if (answer) {
 }
 ----
 
-= Next steps
+== Next steps
 
-We recommend you to follow our next tutorials, go to the link:../index.html[Home] page to find the full list.
+We recommend you to follow our next tutorials, go to the xref:index.adoc[Getting Started with Couchbase Community Edition] page to find the full list.
 
-Also, you could review link:https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.
+Also, you could review https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.

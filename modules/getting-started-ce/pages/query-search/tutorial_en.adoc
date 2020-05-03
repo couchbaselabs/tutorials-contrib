@@ -1,10 +1,14 @@
-English | link:tutorial_es.html[Español]
+//English | link:tutorial_es.html[Español]
 
-= Querying and Searching Couchbase CE
+= Querying and Searching Couchbase Server Community Edition (CE)
 
-This tutorial will teach you the different ways to perform queries using `N1QL` and the procedure to perform `Full Text Search`. It was made using `Couchbase Server CE`, so you can use this distribution to follow this guide free of charge.
+This tutorial will walk you through the different ways to query data: N1QL and full text search. 
 
-= Basics of N1QL
+This tutorial was built using the https://docs.couchbase.com/server/current/introduction/editions.html[Community Edition(CE)] of Couchbase Server, so you can use this distribution to follow this guide free of charge. 
+
+== Querying Using N1QL
+
+=== Basics of N1QL
 
 `N1QL` is a query language that uses a SQL-like syntax, but it operates on structured and flexible `JSON` documents, returning other `JSON` documents in response.
 
@@ -28,7 +32,7 @@ CREATE INDEX ix_movies_genre ON `movies`(genre);
 
 To create this index and to realize the queries, we are going to use, for now, the `Query` tab, as explained in next section.
 
-== Querying by using Query tab
+=== Querying by Using the Query Workbench
 
 Query is an interactive tool that lets you create and execute `N1QL` queries, it's included in `Couchbase Server Web UI`.
 
@@ -43,7 +47,7 @@ Then, with your appropriate credentials, access to the `Web UI` by typing http:/
 
 image::login.png[,25%]
 
-Once on the login page, type your appropriate credentials and sing in. The home page will show you the dashboard of your cluster, on the left side you must select the `Query` tab:
+Once on the login page, type your appropriate credentials and sign in. The home page will show you the dashboard of your cluster, on the left side you must select the `Query` tab:
 
 image::queryworkbench.png[,66%]
 
@@ -70,7 +74,7 @@ At this point three movies were found in the `movies` bucket with the specific g
 For more information about it, refer to the Couchbase documentation for https://docs.couchbase.com/server/current/tools/query-workbench.html[Query Workbench].
 This kind of query can also be done from the console window as shown in next section.
 
-== Querying by using the Interactive Query Shell
+=== Querying by Using the Interactive Query Shell
 
 To run the interactive query shell (`cbq`), type on your console window the following line, to navigate to the Couchbase bin directory, and start `cbq`:
 
@@ -118,11 +122,11 @@ The console will show the following result:
 
 As you can see there is only one `movie` with those requirements. If you need more detailed information about this, refer to the Couchbase documentation for https://docs.couchbase.com/server/current/tools/cbq-shell.html[The Command Line Shell for N1QL]
 
-= Full Text Search
+== Full Text Search
 
 This section will show you how with `Full Text Search` (FTS) you can create, manage, and query specially purposed indexes, stored in `JSON` documents within a Couchbase bucket.
 
-== Features of Full Text Search
+=== Features of Full Text Search
 
 `FTS` has several options to perform queries in natural language such as:
 
@@ -138,7 +142,7 @@ This section will show you how with `Full Text Search` (FTS) you can create, man
 * Geospatial queries
 * Query String queries, which employ a special syntax to express the details of each query. See head link:qsq[Query String Query] for information
 
-== Preparing for Full Text Searches
+=== Preparing for Full Text Searches
 
 Before to trying a `FTS` you should guarantee the following things:
 
@@ -149,7 +153,7 @@ ____
 Throughout index creation, you can select or create, and use an analyzer. In case you didn't, a default analyzer will be assigned to you. See more information about analyzers creation in https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes] and their functionality and components https://docs.couchbase.com/server/current/fts/fts-using-analyzers.html[Understanding Analyzers].
 ____
 
-== Performing Full Text Searches
+=== Performing Full Text Searches
 
 `FTS` can be achieved using the following:
 
@@ -158,7 +162,8 @@ ____
 * The `Couchbase SDK`. Refer to our tutorial link:../tutorial_en.html[Developing on Couchbase CE with Python / Java]
 * The `N1QL Search functions`. These allow you to perform a `FTS` as part of a N1QL query. Refer to the Couchbase documentation for link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/searchfun.html[Search Function]
 
-== +++<a name="sfui">++++++</a>+++Searching from the UI
+[#sfui]
+=== Searching from the UI
 
 In this part, you can see an example of a search from the `Couchbase Web UI` considering all the above.
 
@@ -166,7 +171,7 @@ On the left side of your `Web UI`, you must select the Search tab, that will be 
 
 image::fulltextsearch.png[,66%]
 
-=== Create an Index
+==== Create an Index
 
 To create an index press `Add Index` button which will be shown as below:
 
@@ -176,13 +181,14 @@ To create a basic index you need to define a unique name for the index (Note tha
 
 Now you are returned to the `FTS` screen, once there, you need to wait for the build progress until it reaches 100%. After that you can start to realize searches by all available means: the `Web UI`, the `Couchbase REST API`, and the `Couchbase SDK`.
 
-=== Perform a Query
+==== Perform a Query
 
 To perform a query, type a word into the text-field of the selected index, for example, `adventure`, then click on the Search button and it will show the `Search Results` as shown below:
 
 image::searching.png[,66%]
 
-== +++<a name="sfra">++++++</a>+++Searching with the REST API
+[#sfra]
+=== Searching with the REST API
 
 On the `Search Result` page, to the immediate right of the `Search` button, appears the show advanced query settings checkbox. Check this to display the advanced settings:
 
@@ -194,11 +200,13 @@ image::curlcommand.png[,66%]
 
 This curl command allows to execute the search outside of the current session within the `Web UI`, taking into account that the credentials for authentication are required.
 
-== +++<a name="ua">++++++</a>+++Creating Queries
+[#ua]
+=== Creating Queries
 
 In this chapter you will learn to use, through examples, some types of the most relevant queries that are part of the wide range of available queries, using the query syntax of the Couchbase `REST API`. We will continue to use, for next examples, data from the `movies` bucket with their respective index.
 
-=== +++<a name="qsq">++++++</a>+++ Query String Query
+[#qsq]
+=== Query String Query
 
 A `Query String` can be used to express a given query using a special syntax. This query-type combines standard alphanumeric characters with syntactic elements, in order to specify complex queries in ASCII form.
 Moreover, the `full text query syntax help` link below the Search text-field on page Search Results shows detailed information about `Query String FTS` queries.
@@ -220,7 +228,7 @@ http://localhost:8094/api/index/movies-index/query \
 }'
 ----
 
-=== Match query
+==== Match query
 
 Match query belongs to the group of `Simple Queries`, it analyzes input text and uses the results to query an index. Options include specifying an analyzer, performing a fuzzy match, and performing a prefix match. When fuzzy matching is used, if the single parameter is set to a non-zero integer, the analyzed text is matched with a corresponding level of fuzziness. The maximum supported fuzziness is 2. When a prefix match is used, the prefix_length parameter specifies that for a match to occur, a prefix of specified length must be shared by the input-term and the target text-element.
 
@@ -246,7 +254,7 @@ http://localhost:8094/api/index/movies-index/query \
 }'
 ----
 
-=== Conjunction Query (AND)
+==== Conjunction Query (AND)
 
 Conjunction query is a type of `Compound Queries` that contains multiple child queries. Its result documents must satisfy all of the child queries, the opposite of Disjunction Query (OR).
 Below is an example of this type of query ready to run into a curl command:
@@ -270,7 +278,7 @@ http://localhost:8094/api/index/movies-index/query \
 }'
 ----
 
-=== Numeric Range Query
+==== Numeric Range Query
 
 Numeric range query is a type of `Range Queries` which finds documents containing a numeric value in the specified field within the specified range. This query defines the endpoints using the fields min and max.
 Here is an example of use of this query into a curl command, using their specifics options:
@@ -298,7 +306,7 @@ ____
 At this point, some query-types have been explained in broad strokes, for more specificity, go to the Couchbase documentation for https://docs.couchbase.com/server/current/fts/fts-query-types.html[Query Types] where you will find detailed information about it.
 ____
 
-== Response Object
+=== Response Object
 
 Once executed these queries, the successful message should look like follows, which indicates that you have achieved a right `FTS`:
 
@@ -311,8 +319,8 @@ Once executed these queries, the successful message should look like follows, wh
 },
 ----
 
-= Next steps
+== Next Steps
 
-We recommend you to follow our next tutorials, go to the link:../index.html[Home] page to find the full list.
+We recommend you to follow our next tutorials, go to the xref:index.adoc[Getting Started with Couchbase Community Edition] page to find the full list.
 
 Also, you could review https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.

@@ -1,14 +1,14 @@
 //:doctype: book
+//English | link:./tutorial_es.html[Español]
 
-English | link:./tutorial_es.html[Español]
-
-= Importing existing data into Couchbase CE
+= Importing Existing Data into Couchbase Server Community Edition
+:description: Tutorial to import data into Couchbase Server Community Edition (CE)
 
 This tutorial will guide you through the insertion of existing data into https://docs.couchbase.com/server/current/introduction/editions.html[Couchbase Community Edition]. To achieve this, you will use some tools for importing data from different sources into a Couchbase cluster, all of them provided by https://docs.couchbase.com/server/current/introduction/editions.html[Couchbase CE].
 
-= Import JSON data into Couchbase CE
+== Import JSON Data into Couchbase Server CE
 
-To import data from a `JSON` file, you will use the `cbdocloader` tool, which is used to load one or a group of `JSON` document in a given directory or a group of `JSON` documents in a single .zip file into a `Couchbase bucket`.
+To import data from a `JSON` file, you will use the `cbdocloader` tool, which is used to load one or a group of `JSON` document in a given directory or a group of `JSON` documents in a single .zip file into a Couchbase bucket.
 
 The following line shows the basic syntax of `cbdocloader`:
 
@@ -20,11 +20,11 @@ ____
 For more information about cbdocloader's command options, refer to the Couchbase documentation for https://docs.couchbase.com/server/6.0/cli/cbdocloader-tool.html[cbdocloader tool].
 ____
 
-== Description
+=== Description
 
 To achieve correct data upload all `JSON` files must contain well-formatted `JSON` and the file names should exclude spaces.
 
-=== Types of errors:
+=== Types of Errors:
 
 * Files are not well-formatted
 * Credentials are incorrect
@@ -36,9 +36,9 @@ The `cbdocloader` can be found in the following locations, depending on the plat
 * `Windows`: C:\Program Files\Couchbase\Server\bin\cbdocloader
 * `Mac OS X`: /Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin/cbdocloader
 
-== Example
+=== Example
 
-The following code is an example of uploading a `JSON` file, as you can see, it is only necessary to specify the directory in which the `JSON` file is located, so if there is more than one `JSON` file in this directory `cbdocloader` will also upload it
+The following code is an example of uploading a `JSON` file, as you can see, it is only necessary to specify the directory in which the `JSON` file is located, so if there is more than one `JSON` file in this directory `cbdocloader` will also upload it.
 
 [source,bash]
 ----
@@ -60,7 +60,7 @@ cbdocloader -c localhost:8091 -u Administrator -p password -b colors-bucket -m 1
 Data loaded successfully
 ----
 
-= Import CSV data into Couchbase CE
+== Import CSV Data into Couchbase Server CE
 
 To import data from a `CSV` file, you can use `cbtransfer`. This tool is a lightweight extract-transform-load (`ETL`) tool that transfers data between clusters and to and from files. The source and destination parameters are similar to URLs or file paths. The syntax to load data from a `CSV` file using this tool is shown below:
 
@@ -72,7 +72,7 @@ ____
 For more information about cbtransfer's command options, refer to the Couchbase documentation for https://docs.couchbase.com/server/current/cli/cbtransfer-tool.html[cbtransfer-tool].
 ____
 
-== Description
+=== Description
 
 To accomplish a correct data upload every `CSV` file must contain an `id` field in the first line of `CSV` and this field needs to be unique, because in the case that it is not, its value will be overwritten.
 
@@ -86,9 +86,9 @@ The `cbtransfer` can be found in the following locations, depending on the platf
 * `Windows`: C:\Program Files\Couchbase\Server\bin\cbtransfer
 * `Mac OS X`: /Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin/cbtransfer
 
-== Example
+=== Example
 
-Data is imported into `Couchbase Server` as documents, in the case of `CSV` file, each line is imported as an independent document.
+Data is imported into Couchbase Server as documents, in the case of `CSV` file, each line is imported as an independent document.
 
 The following code is an example of uploading a `CSV` file:
 
@@ -109,8 +109,8 @@ bucket: people_name-age_127.0.1.1%3A8091.csv, msgs transferred...
 done
 ----
 
-= Next steps
+== Next Steps
 
-We recommend you to follow our next tutorials, go to the link:../index.html[Home] page to find the full list.
+We recommend you to follow our next tutorials, go to the xref:index.adoc[Getting Started with Couchbase Community Edition] page to find the full list.
 
 Also, you could review https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.

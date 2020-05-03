@@ -1,8 +1,8 @@
 // :doctype: book
 
-English | link:tutorial_es.html[Español]
+//English | link:tutorial_es.html[Español]
 
-= Developing using Couchbase Mobile CE for Android
+= Developing Using Couchbase Mobile CE for Android
 
 This tutorial will guide you through creating an Android Mobile application with Couchbase Mobile. To achieve this, you will install two server-side components: `Couchbase Server CE` and the `Sync Gateway`, and develop a mobile application with `Couchbase Lite` that will synchronize your data with the cloud seamlessly.
 
@@ -20,9 +20,9 @@ sudo docker -v
 Docker version 19.03.5, build 633a0ea838
 ----
 
-If it is, the output should be similar to that one, and you can start the next section. Otherwise, check their official documentation, which contains link:https://docs.docker.com/install/[install guides] for multiple OS.
+If it is, the output should be similar to that one, and you can start the next section. Otherwise, check their official documentation, which contains https://docs.docker.com/install/[install guides] for multiple OS.
 
-= Couchbase Server CE
+== Couchbase Server Community Edition(CE)
 
 The first step will be to get your server up and running. Create a local docker network named "couchbase-net". Open a terminal window and run the following command.
 
@@ -102,11 +102,11 @@ The data will be loaded into the server. You can explore the data by going to `B
 
 image::sample-bucket-loaded.png[,950]
 
-= Sync Gateway
+== Sync Gateway
 
 `Sync Gateway` is a secure web gateway application with synchronization, `REST`, stream, batch and events `API` for accessing and synchronizing data over the web. `Sync Gateway` enables, among other things, secure data replication between `Couchbase Server CE` and `Couchbase Lite`.
 
-For more information about the `Sync Gateway`, refer to link:https://www.couchbase.com/products/sync-gateway[the official page] and this blog post, link:https://blog.couchbase.com/getting-comfortable-with-couchbase-mobile-sync-gateway-via-the-command-line/[Sync Gateway via the Command Line].
+For more information about the `Sync Gateway`, refer to https://www.couchbase.com/products/sync-gateway[the official page] and this blog post, https://blog.couchbase.com/getting-comfortable-with-couchbase-mobile-sync-gateway-via-the-command-line/[Sync Gateway via the Command Line].
 
 To run the `Sync Gateway` container, download the image first.
 
@@ -115,7 +115,7 @@ To run the `Sync Gateway` container, download the image first.
 docker pull couchbase/sync-gateway:2.6.1-community
 ----
 
-The `Sync Gateway` container requires the name and port of the `Couchbase Server CE`, which is already configured in the link:./sync-gateway-config-beersampler.json[sync-gateway-config-beersampler.json] file.
+The `Sync Gateway` container requires the name and port of the `Couchbase Server CE`, which is already configured in the xref:sync-gateway-config-beersampler.json[sync-gateway-config-beersampler.json] file.
 
 [source,json]
 ----
@@ -171,7 +171,7 @@ You should receive a JSON response, like the following.
 {"couchdb":"Welcome","vendor":{"name":"Couchbase Sync Gateway","version":"2.6"},"version":"Couchbase Sync Gateway/2.6.1(1;4907fed) CE"}
 ----
 
-= Couchbase Lite
+== Couchbase Lite
 
 `Couchbase Lite` provides an embedded `NoSQL` database for mobile apps. Depending on the deployment, it can be used in any of the following modes, or a combination of them:
 
@@ -181,19 +181,19 @@ You should receive a JSON response, like the following.
 
 In this tutorial we will implement an `Android` application, using the first and third mode.
 
-= Android application
+== Android Application
 
 The `Android` application will rely on `Couchbase Lite`, which will work together with the `Sync Gateway` to persist your data in the `Couchbase Server CE` in the cloud, be it public or private.
 
-We will be developing an application using one of the example buckets comprised in the `Couchbase Server CE`, the link:https://developer.couchbase.com/documentation/server/3.x/admin/Misc/sample-bucket-beer.html[beer-sample bucket].
+We will be developing an application using one of the example buckets comprised in the `Couchbase Server CE`, the https://developer.couchbase.com/documentation/server/3.x/admin/Misc/sample-bucket-beer.html[beer-sample bucket].
 
 The application aim will be to serve as an input form for the database, so any user can include new breweries or beers. Also, the user will be able to search in the database for beers or breweries.
 
 image::app1.png[,250]
 
-To start using `Couchbase Lite`, download our `Beer Sampler Project` and open it with link:https://developer.android.com/studio[Android Studio].
+To start using `Couchbase Lite`, download our `Beer Sampler Project` and open it with https://developer.android.com/studio[Android Studio].
 
-== Include the library
+=== Include the Library
 
 The first step to include `Couchbase Lite` support within an `Android` app is to declare it as a dependency in _app/build.gradle_.
 
@@ -210,7 +210,7 @@ dependencies {
 
 After this step, all `Couchbase Lite` methods become available for the application.
 
-== Local embedded database: Open and read data
+=== Local Embedded Database: Open and Read Data
 
 The second step is to implement a method for opening the database. As previously stated, two modes will be implemented: standalone database and database synced with the cloud. The first case will be covered with a guest user, who will be able to store, modify or delete beers. The second case will be covered with an authenticated "demo" user, whose credentials were defined in the `Sync Gateway` before.
 
@@ -234,7 +234,7 @@ public void OpenGuestDatabase() {
     (...)
 ----
 
-When the user opens the applications and hits `Access as Guest`, a special user and password are stored in the application's `Shared Preferences`, and a method for opening a new local database is invoked. From this method, the previous function is called.
+When the user opens the applications and hits `Access as Guest`, a special user and password are stored in the `Shared Preferences` of the application, and a method for opening a new local database is invoked. From this method, the previous function is called.
 
 [source,java]
 ----
@@ -277,7 +277,7 @@ try {
 
 All rows retrieved will be shown in the application, and also in the logs.
 
-== Cloud database: Open and read data
+=== Cloud Database: Open and Read Data
 
 This section will be covered with the "demo" user, which was previously defined in the file `sync-gateway-config-beersampler.json`. The startup sequence for the database will be a little different this time.
 
@@ -318,7 +318,7 @@ public static String mSyncGatewayEndpoint = "ws://PUT-THE-GATEWAY-IP-HERE:4984/b
 
 After this step, all operations are common for the embedded or the remote database.
 
-== Insert a new document
+=== Insert a New Document
 
 To insert a new beer, the user should tap the button.
 
@@ -348,7 +348,7 @@ If you are logged in with the user "demo", then you should see the new beer uplo
 
 image::web-app1.png[,950]
 
-=== Update an existing document
+=== Update an Existing Document
 
 To update an existing document, tap on the document. In the dialog, the user updates any value. Behind the scene, the document retrieved is modified and inserted again with the same `ID`.
 
@@ -405,8 +405,8 @@ public void onClick(View v) {
 }
 ----
 
-= Next steps
+== Next Steps
 
-We recommend you to follow our next tutorials, go to the link:../index.html[Home] page to find the full list.
+We recommend you to follow our next tutorials, go to the xref:index.adoc[Getting Started with Couchbase Community Edition] page to find the full list.
 
-Also, you could review link:https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.
+Also, you could review https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.
