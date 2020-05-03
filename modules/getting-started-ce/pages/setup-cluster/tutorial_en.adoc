@@ -39,6 +39,7 @@ ____
 ====
 Ubuntu 18.04::
 +
+--
 First, open your terminal and install these tools, used by some of the core `Couchbase Server` packages.
 
 [source,bash]
@@ -63,25 +64,24 @@ sudo apt update
 sudo apt install couchbase-server-community
 ----
 
-____
 For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/server/6.5/install/ubuntu-debian-install.html[Ubuntu 18.04].
-____
-
+--
 
 Windows 10::
 +
+--
 Download the `MSI` installer from this link:https://www.couchbase.com/downloads/thankyou/community?product=couchbase-server&version=6.5.0&platform=windows&addon=false&beta=false[link].
 
 Execute it and follow the wizard.
 
 image::install_windows.gif[,]
 
-____
 For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/server/6.5/install/install-package-windows.html[Windows 10].
-____
+--
 
 macOS::
 +
+--
 Download the `zip` file from this link:https://www.couchbase.com/downloads/thankyou/community?product=couchbase-server&version=6.5.0&platform=osx&addon=false&beta=false[link] and open it, it will be send to `Downloads` folder.
 
 image::mac_unzip.png[,800]
@@ -99,10 +99,8 @@ You can now use the navigation tab icon on the top right corner of your desktop 
 image:mac_bar.png[,300]
 image:mac_bar_open.png[,300]
 
-____
 For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/server/6.5/install/macos-install.html[macOS].
-____
-
+--
 ====
 
 ////

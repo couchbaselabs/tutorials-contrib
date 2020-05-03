@@ -1,15 +1,15 @@
-English | link:index_es.html[Español]
+//English | link:index_es.html[Español]
+= Getting Started with Couchbase Server Community Edition (CE) 
+:description: Getting started with Couchbase Community Edition
 
-# Couchbase CE tutorials 
+This project explains how to get started with Couchbase Community Edition, and briefly mentions all steps to do it, as well as the reasons or elements behind those.
 
-This project explains how getting started with Couchbase, and briefly mentions all steps to do it, as well as the reasons or elements behind those.
+Each topic contains individual tutorials and examples which provide details to install, configure, and manage Couchbase products for your specific needs.
 
-Each folder contains individual tutorials and examples giving you all details to install, configure and manage a Couchbase products  for your specific needs.
-
-. link:install-manage/tutorial_en.html[Install and Manage]
-. link:import-data/tutorial_en.html[Import existing data]
-. link:query-search/tutorial_en.html[Queries and Search]
-. link:setup-cluster/tutorial_en.html[Set up a cluster]
-. link:dev-nodejs/tutorial_en.html[Development with Node.js]
-. link:dev-java/tutorial_en.html[Development with Java]
-. link:mobile-android/tutorial_en.html[Couchbase Mobile on Android]
+. xref:install-manage/tutorial_en.adoc[Install and Manage]
+. xref:import-data/tutorial_en.adoc[Import existing data]
+. xref:query-search/tutorial_en.adoc[Queries and Search]
+. xref:setup-cluster/tutorial_en.adoc[Set up a cluster]
+. xref:dev-nodejs/tutorial_en.adoc[Development with Node.js]
+. xref:dev-java/tutorial_en.adoc[Development with Java]
+. xref:mobile-android/tutorial_en.adoc[Couchbase Mobile on Android]
