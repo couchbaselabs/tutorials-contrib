@@ -16,9 +16,7 @@ The following line shows the basic syntax of `cbdocloader`:
 cbdocloader -c [host]:8091 -u [Administrator] -p [password] -b [bucket-name] -m [bucket-quota-MB] -d [source-file]
 ----
 
-____
 For more information about cbdocloader's command options, refer to the Couchbase documentation for https://docs.couchbase.com/server/6.0/cli/cbdocloader-tool.html[cbdocloader tool].
-____
 
 === Description
 
@@ -68,9 +66,7 @@ To import data from a `CSV` file, you can use `cbtransfer`. This tool is a light
 cbtransfer [source-file] [host]:8091 -B [bucket-name] -u [Administrator] -p [password]
 ----
 
-____
 For more information about cbtransfer's command options, refer to the Couchbase documentation for https://docs.couchbase.com/server/current/cli/cbtransfer-tool.html[cbtransfer-tool].
-____
 
 === Description
 

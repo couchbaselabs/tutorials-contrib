@@ -67,9 +67,7 @@ npm install couchbase
 
 Your `Node` project is now ready to interact with any `Couchbase Server`.
 
-____
 For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/nodejs-sdk/current/hello-world/start-using-sdk.html[Node SDK]
-____
 
 == Example Project
 

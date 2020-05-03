@@ -35,9 +35,7 @@ Now you just need to add the following dependency in your project's `pom.xml` fi
 </dependency>
 ----
 
-____
 For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/java-sdk/current/start-using-sdk.html[Java SDK]
-____
 
 == Example Project
 

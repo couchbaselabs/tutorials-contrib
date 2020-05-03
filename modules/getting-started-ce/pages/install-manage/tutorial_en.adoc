@@ -34,9 +34,7 @@ After `Docker` is up and running you can type this command on your terminal to l
 docker run -itd --name couchbase-server -p 8091-8094:8091-8094 -p 11210:11210 couchbase:community
 ----
 
-____
 For a more extensive install guide, you can check the Couchbase image description on https://hub.docker.com/_/couchbase[Dockerhub].
-____
 
 === Bare Metal
 

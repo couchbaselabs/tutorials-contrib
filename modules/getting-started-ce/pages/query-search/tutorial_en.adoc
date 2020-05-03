@@ -149,9 +149,7 @@ Before to trying a `FTS` you should guarantee the following things:
 * `Couchbase Server` has the `Search` service correctly enabled, the service must be enabled for a given node. See https://docs.couchbase.com/server/current/manage/manage-nodes/create-cluster.html[Create a cluster] for more information
 * Create an index appropriately, employing the `Web UI`. For basic information about it refer to section <<sfui,Searching from the UI>> and for detailed information see https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes].
 
-____
 Throughout index creation, you can select or create, and use an analyzer. In case you didn't, a default analyzer will be assigned to you. See more information about analyzers creation in https://docs.couchbase.com/server/current/fts/fts-creating-indexes.html[Creating Indexes] and their functionality and components https://docs.couchbase.com/server/current/fts/fts-using-analyzers.html[Understanding Analyzers].
-____
 
 === Performing Full Text Searches
 
@@ -302,9 +300,7 @@ http://localhost:8094/api/index/movies-index/query \
 }'
 ----
 
-____
 At this point, some query-types have been explained in broad strokes, for more specificity, go to the Couchbase documentation for https://docs.couchbase.com/server/current/fts/fts-query-types.html[Query Types] where you will find detailed information about it.
-____
 
 === Response Object
 
