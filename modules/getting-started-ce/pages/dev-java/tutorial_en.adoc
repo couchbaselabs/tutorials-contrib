@@ -1,0 +1,288 @@
+//:doctype: book
+
+//English | link:tutorial_es.html[Español]
+
+= Developing on Couchbase CE with Java
+
+Here you can learn how to install and use `Couchbase Java SDK`. This tutorial was made using `Couchbase Server CE`, so you can use this distribution to follow this guide free of charge.
+
+== Java SDK Setup
+
+____
+Tested for `Java 11` and `Java SDK 3.0`
+____
+
+We used `Maven` as the project manager for this tutorial, when installing it, `OpenJDK` will get installed too as a dependency.
+
+So open your terminal and type the commands below.
+
+[source,bash]
+----
+sudo apt update
+sudo apt install maven
+----
+
+When that finishes, you have already installed the latest `Maven` and `Java` versions.
+
+Now you just need to add the following dependency in your project's `pom.xml` file, and you can start coding.
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.couchbase.client</groupId>
+    <artifactId>java-client</artifactId>
+    <version>3.0.2</version>
+</dependency>
+----
+
+For a more extensive install guide, you can follow the Couchbase documentation for https://docs.couchbase.com/java-sdk/current/start-using-sdk.html[Java SDK]
+
+== Example Project
+
+Most applications we work on, usually require some level of abstraction or framework to interact with data, especially for `CRUD` operations. In this example project, we will implement a collection of functions capable of manage ratings, users and movies. Something you would need if working on a movie rating site, as `IMDb` for example.
+
+=== Populate Your Server
+
+==== Buckets
+
+`Couchbase Server` uses https://docs.couchbase.com/server/6.5/learn/buckets-memory-and-storage/buckets-memory-and-storage.html[Buckets] and https://docs.couchbase.com/server/6.5/developer-preview/collections/collections-overview.html[Collections] to store and group documents respectively.
+
+There are three https://docs.couchbase.com/server/6.5/learn/buckets-memory-and-storage/buckets.html[types of buckets] according to persistence, and three https://docs.couchbase.com/server/6.5/clustersetup/create-bucket.html[ways to create] them (`CLI`, `REST API`, and `Web UI`). You can have one or more buckets and for each one, you can control access (who can create, delete and list objects in the bucket) and check the logs for access to the bucket and its objects.
+
+Inside each bucket, you can create and use up to 1000 `collections` (groups) of documents and up to 100 `scopes` to group those collections. Every bucket has a `default` collection and scope that will be used if you don't specifically target a different one.
+
+In this tutorial, we will use a `Couchbase Bucket`, which is stored both on memory and disk, and the default collection and scope. Since these last features are still under `Developer Preview` you can only use them through the `SDK`. Buckets, on the other hand, can be created with the `Web UI` on port `8091`.
+
+Go to the `Buckets` tab and click on `Add Bucket`. Now create a bucket named `rate-these-movies` with 100 `Mb` using default configurations.
+
+image::create_bucket.gif[,750]
+
+We have already created a sample bucket with the project's data and saved it to disk using the https://docs.couchbase.com/server/6.5/cli/cbtransfer-tool.html[cbtransfer] tool. To import the sample bucket into your server, you must now use the https://docs.couchbase.com/server/6.5/cli/cbrestore-tool.html[cbrestore] tool. These assets are useful to create and restore backups of your buckets or your entire server at any moment.
+
+To import the data open you console and type these comands, make sure to substitute your parameters correctly.
+
+[source,bash]
+----
+cd /opt/couchbase
+cbrestore /path/to/cbb couchbase://hostname:8091 -u username -p password
+----
+
+If everything went well, you should see this message on the console.
+
+[source,bash]
+----
+[####################] 100.0% (138/estimated 138 msgs)
+bucket: b'rate-these-movies', msgs transferred...
+       :                total |       last |    per sec
+ byte  :               198972 |     198972 |  3161194.6
+done
+----
+
+==== Indexes
+
+https://docs.couchbase.com/server/6.5/learn/services-and-indexes/indexes/indexes.html[Indexes] enhance the performance of query and search operations, especially as the `buckets` grow in size. Creating secondary indexes (`GSI`) on the document values will also let you perform `JOIN` operations `ON` those.
+
+You can manage `Indexes` through the `SDK`, this time however we will do it from the `Web UI`. Click the `Query` tab, and execute the follow line to create the primary index of our bucket.
+
+[source,SQL]
+----
+CREATE PRIMARY INDEX `movies_primary` ON `rate-these-movies`
+----
+
+image::execute_query.gif[,750]
+
+Then, execute
+
+[source,SQL]
+----
+CREATE INDEX `movies_secondary_movie` ON `rate-these-movies`(`id_movie`)
+----
+
+[source,SQL]
+----
+CREATE INDEX `movies_secondary_user` ON `rate-these-movies`(`id_user`)
+----
+
+to create the secondary indexes needed to perform ``JOIN``s between movies, users and ratings.
+
+You just executed `N1QL` queries on your server, keep reading to learn how to run them using the `SDK` as well.
+
+=== Visualize
+
+The simplest way to verify your data state, and quickly access a particular document, is through `Web UI`. Go to `Buckets` tab, and click the `Documents` button on any bucket.
+
+image::view_bucket.gif[,750]
+
+Click each document for a more extended view, or set some filters to make a specific search.
+
+image::filter_documents.gif[,750]
+
+=== Using the SDK
+
+`Couchbase SDK` provides you with multiple ways to manipulate data:
+
+* https://docs.couchbase.com/java-sdk/current/core-operations.html#crud-overview[Core operations] or key-value operations, are quite basic and will allow you to work with your data similar to how you would do with a dictionary. But, if you want to perform more complex operations like filters or joins, you would have to implement those behaviors on the client-side. Also, they work with the full document, rather than the exact values you may need.
+* https://docs.couchbase.com/java-sdk/current/subdocument-operations.html[Sub-document operations] can target specific values in a document. Use these operations to save bandwidth, and be more efficient when consulting partial data.
+* https://docs.couchbase.com/java-sdk/current/n1ql-queries-with-sdk.html[N1QL] is an expressive, powerful, and complete `SQL` dialect for querying, transforming, and manipulating `JSON` data. These queries will be interpreted by the server and transformed into core operations. Most queries will require the creation of indexes to join other buckets or decreasing query latency.
+
+==== Connect
+
+Let's see now how to establish a connection to the server using the `SDK` to open our previously created bucket `rate-these-movies`.
+
+This step requires credentials, as a shortcut, you could use the ones used to set up the cluster. Although we don't recommend this for a production deployment, it fits this tutorial purpose. If you wish to create new credentials with specific permissions, you can follow this https://docs.couchbase.com/server/6.5/manage/manage-security/manage-users-and-roles.html#creating-and-managing-users-with-the-UI[link].
+
+To gain access to the server, you can use the `Cluster` class. An instance of this class can be used to open buckets and manage data through queries and other operations.
+
+[source,java]
+----
+final Cluster cluster = Cluster.connect(hostname, username, password);
+final Bucket bucket = cluster.bucket(bucketName);
+----
+
+You don't need to explicitly disconnect from the server, this will be performed automatically when the instance fall off your code's scope.
+
+==== Core Operations
+
+When you need to simply insert, delete or retrieve a particular document, of which you know its `ID`, the recommended approach would be to use core operations.
+
+For inserting a document, you can use any of the operations below, the only difference between them is how they react to previously existing documents:
+
+* `insert` will only create the document if the given `ID` is not found within the database.
+* `replace` will only replace the document if the given `ID` already exists within the database.
+* `upsert` will always replace the document, ignoring whether the `ID` has already existed or not.
+
+Most times, `upsert` would be the safest choice, lets use it to add a rating, a standard operation in any rating site.
+
+[source,java]
+----
+final JsonObject ratingJSON = JsonObject.create()
+                                .put("movie_id", movieId)
+                                .put("user_id", userId)
+                                .put("value", value);
+
+try {
+    bucket.defaultCollection().upsert(ratingId, ratingJSON);
+    System.out.println("OK");
+}
+catch (Exception e){
+    System.out.println("ERROR: " + e.getMessage());
+}
+----
+
+Notice the use of `defaultCollection`, it targets all documents in the bucket. In later versions, you will be able to use `collection(name)` to group up documents of a similar type.
+
+Through this tutorial we will use `System.out.println` to print answers and give feedback, if you are executing that code inside a function you can return the result or do something else entirely.
+
+Operations like `replace` or `upsert` can be used to update an existing document. However, remember this will send the full document to the cluster, so as a rule of thumb, do this only when more than half of the values have changed. Later on, we will explain how to update data more efficiently when changes are minimal.
+
+To retrieve documents previously inserted in a bucket, use the `get` operation. You can use it now to check the test `rating` we just inserted in the server.
+
+[source,java]
+----
+try {
+    final GetResult answer = bucket.defaultCollection().get(ratingId);
+    System.out.println(answer.contentAs(JsonObject.class));
+}
+catch (Exception e) {
+    System.out.println("ERROR: " + e.getMessage());
+}
+----
+
+If a user wishes to remove its rating from our server, use the `remove` operation. Try it by removing the `rating` you have been using until now.
+
+[source,java]
+----
+try {
+    bucket.defaultCollection().remove(ratingId);
+    System.out.println("OK");
+}
+catch (Exception e) {
+    System.out.println("ERROR: " + e.getMessage());
+}
+----
+
+==== Sub-document Operations
+
+Apps will commonly need to change data: ratings for instance, or some miss-typed name. Most of the time this means changing a particular value, not an entire document. For example, a user document may contain a name, a country, and an age, but you only want to update the country the user is currently living. When this situation presents, you should use sub-document operations to target those specific values and reduce network traffic.
+
+Code bellow shows you how to retrieve a particular value from a particular user.
+
+[source,java]
+----
+try {
+    final LookupInResult answer = bucket.defaultCollection().lookupIn(
+            userId, Collections.singletonList(
+                    LookupInSpec.get("country")));
+    System.out.println(answer.contentAs(0, String.class));
+}
+catch (Exception e) {
+    System.out.println("ERROR: " + e.getMessage());
+}
+----
+
+Notice how we target a particular document with `lookupIn`, then use `get` to retrieve the value we want, in this case, the country.
+
+On the other hand, if a user moves to another country and wishes to update its profile, you can do something like this.
+
+[source,java]
+----
+try {
+    final MutateInResult answer = bucket.defaultCollection().mutateIn(
+            userId, Collections.singletonList(
+                    MutateInSpec.upsert("country", country)));
+    System.out.println("OK");
+}
+catch (Exception e) {
+    System.out.println("ERROR: " + e.getMessage());
+}
+----
+
+Now we use `mutateIn` to target the document we want to change, and then `upsert` to modify its country value.
+
+==== N1QL queries
+
+These queries allow us to find and work better with associated documents, as usually required by most applications. For example, if we intend to remove a movie, which has ratings referring to it.
+
+Parameters for the query can be passed in an instance of `QueryOptions`, grouped in a `JsonArray`. They can get referenced in the query with `?`, in the same order they are at the array.
+
+[source,java]
+----
+final QueryOptions parameters = QueryOptions.queryOptions().parameters(JsonArray.from(movieId));
+
+try {
+    cluster.query("DELETE FROM `rate-these-movies` USE KEYS ?", parameters);
+    cluster.query("DELETE FROM `rate-these-movies` WHERE id_movie=?", parameters);
+    System.out.println("OK");
+}
+catch (Exception e) {
+    System.out.println("ERROR: " + e.getMessage());
+}
+----
+
+Appreciate the simplicity and resemblance to an `SQL` query, just refer the bucket as you would with a table.
+
+Another example, most read operations target a subset of data or require some aggregation or augmentation to be performed. So, once again, we will depend on `N1QL` queries, in this case, to get the top 5 rated movies along with its average rating.
+
+Since we are joining the data of a bucket with itself we use aliases.
+
+[source,java]
+----
+final DecimalFormat df = new DecimalFormat("0.00");
+
+try {
+    final QueryResult answer = cluster.query("SELECT a.name AS name, AVG(b.`value`) AS avg FROM `rate-these-movies` AS a JOIN `rate-these-movies` AS b ON META(a).id=b.id_movie GROUP BY a.name ORDER BY avg DESC LIMIT 5");
+
+    for (JsonObject row : answer.rowsAsObject()) {
+        System.out.println(row.get("name") + " -> " + df.format(row.get("avg")));
+    }
+}
+catch (Exception e) {
+    System.out.println("ERROR: " + e.getMessage());
+}
+----
+
+== Next Steps
+
+We recommend you to follow our next tutorials, go to the xref:index.adoc[Getting Started with Couchbase Community Edition] page to find the full list.
+
+Also, you could review https://docs.couchbase.com/home/index.html[Couchbase Documentation] to learn more about all sorts of topics.

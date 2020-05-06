@@ -1,0 +1,499 @@
+// :doctype: book
+
+link:tutorial_en.html[English] | Español
+
+= Desarrollando para iOS usando Couchbase Mobile CE
+
+Este tutorial lo guiará a través de la creación de una aplicación móvil de iOS con `Couchbase Mobile`. Para lograr esto, se instalarán dos componentes del lado del servidor: `Couchbase Server CE` y `Sync Gateway`, y se desarrollará una aplicación móvil con `Couchbase Lite` que sincronizará sus datos con la nube sin problemas.
+
+____
+Esta guía fue probada utilizando `MacOS 10.13`, `Docker CE 19.03.5` y `Xcode 11.2`
+____
+
+== Docker
+
+`Docker` se utilizará ampliamente a lo largo de este tutorial ya que la mayoría de los componentes se pueden desplegar fácilmente con su ayuda. Escriba el siguiente comando en su consola para verificar si ya se encuentra instalado.
+
+[source,bash]
+----
+sudo docker -v
+Docker version 19.03.5, build 633a0ea838
+----
+
+De ser así, la salida debería ser similar a esa, y puede avanzar a la siguiente sección. De lo contrario, revise su documentación oficial, la cual contiene link:https://docs.docker.com/install/[guías de instalación] para múltiples sistemas operativos.
+
+= Couchbase Server CE
+
+El primer paso será poner en funcionamiento su servidor, para ello, cree una red local de docker llamada "couchbase-net". Abra una consola y ejecute el siguiente comando:
+
+[source,bash]
+----
+docker network create -d bridge couchbase-net
+----
+
+Revise que se haya creado la red:
+
+[source,bash]
+----
+docker network ls
+NETWORK ID          NAME                                      DRIVER              SCOPE
+d3a4d9d23eab        bridge                                    bridge              local
+8cc9b7774503        couchbase-net                             bridge              local
+----
+
+Cree un directorio para almacenar los datos del servidor.
+
+[source,bash]
+----
+mkdir ~/Couchbase
+----
+
+Para ejecutar `Couchbase Server CE` en un contenedor, primero debe obtener la imagen de `Dockerhub`. Abra una nueva consola y ejecute lo siguiente:
+
+[source,bash]
+----
+docker pull couchbase:community
+----
+
+Una vez que el comando se haya completado, puede iniciar el servidor con la siguiente línea:
+
+[source,bash]
+----
+docker run -itd --name couchbase-server  --network couchbase-net -v ~/CouchBase/:/opt/couchbase/var -p 8091-8094:8091-8094 -p 11210:11210 couchbase:community
+----
+
+Puede ver los logs en cualquier momento ejecutando el siguiente comando:
+
+[source,bash]
+----
+docker logs couchbase-server
+----
+
+El servidor puede tardar unos segundos en iniciarse. Verifique que el contenedor se esté ejecutando con el siguiente comando:
+
+[source,bash]
+----
+docker ps
+----
+
+Para conectarse a su servidor, vaya a su navegador y acceda a la `Web UI` en el puerto 8091. Allí verá una pantalla de inicio de sesión como esta:
+
+image::login.png[,750]
+
+Seleccione `Setup New Cluster` y complete los campos de acuerdo con la siguiente imagen. ¡Tome nota de su nombre de usuario y contraseña!
+
+image::setup1.png[,650]
+
+Asegúrese de leer y aceptar los términos y condiciones, y presione `Next: Accept Terms`. Luego presione `Configure Disk, Memory, Services`, lea las opciones preseleccionadas y finalmente presione `Save & Finish`.
+
+En este punto, ya tiene el servidor en ejecución, pero todavía no tiene datos. `Couchbase Server CE` incluye tres buckets de muestra para ayudarlo a comenzar a probar el servidor. Utilizaremos el bucket de muestra de cerveza, que tiene dos tipos de documentos: cervezas y cervecerías.
+
+Los documentos de cerveza contienen información básica sobre diferentes tipos de cerveza, incluido el nombre, el volumen de alcohol (abv) y los datos de categorización. Los documentos de cervecerías incluyen el contacto, la dirección de la cervecería, un registro espacial que consta de la latitud y la longitud de su ubicación. Cada documento de cerveza están relacionados con los documentos de la cervecería usando el campo `brewery_id`, que contiene la llave de una cervecería específica.
+
+Para agregar este bucket, inicie sesión en la `IU web` del servidor. En el panel izquierdo, seleccione `Bucket` y haga click en `sample bucket` en el panel derecho.
+
+image::sample-bucket1.png[,950]
+
+Seleccione `beer-sample` y de click en `Load Sample Data`.
+
+image::sample-bucket2.png[,950]
+
+Los datos se cargarán en el servidor. Puede explorarlos yendo a `Buckets` en el panel izquierdo y seleccionando `Documents` en el lado derecho. Los datos se verán así.
+
+image::sample-bucket-loaded.png[,950]
+
+= Sync Gateway
+
+`Sync Gateway` es una aplicación web segura de puerta de enlace con sincronización, `REST`, stream, batch y events `API` para acceder y sincronizar los datos a través de la web. `Sync Gateway` permite, entre otras cosas, la replicación segura de datos entre `Couchbase Server CE` y `Couchbase Lite`.
+
+Para obtener más información acerca de `Sync Gateway`, consulte; link:https://www.couchbase.com/products/sync-gateway[the official page] y el siguiente blog, link:https://log.couchbase.com/getting-comfortable-with-couchbase-mobile-sync-gateway-via-the-command-line/[Sync Gateway via the Command Line].
+
+Para ejecutar el contenedor `Sync Gateway`, descargue primero la imagen.
+
+[source,bash]
+----
+docker pull couchbase/sync-gateway:2.6.1-community
+----
+
+El contenedor de `Sync Gateway` requiere el nombre y el puerto de `Couchbase Server CE`, que ya está configurado en el link:./sync-gateway-config-beersampler.json[sync-gateway-config-beersampler.json] file.
+
+[source,json]
+----
+"server": "http://couchbase-server:8091"
+----
+
+Y el nombre de usuario y la contraseña necesarios para acceder a él:
+
+[source,json]
+----
+"username": "Administrator",
+"password": "your password",
+----
+
+Ahora configure el nombre de usuario y la contraseña para los usuarios autorizados a conectarse a su `Sync Gateway`. Reemplace 123456 por sus contraseñas preferidas.
+
+[source,json]
+----
+"users":{
+    "admin": {"password": "123456", "admin_channels": ["*"]},
+    "demo": {"password": "123456"},
+    "tester": {"password": "123456"}
+}
+----
+
+Inicie el contenedor `Sync Gateway` con el siguiente comando. Asegúrese de estar en el mismo directorio del archivo de configuración.
+
+[source,bash]
+----
+docker run -p 4984-4985:4984-4985 --network couchbase-net --name sync-gateway -d -v `pwd`/sync-gateway-config-beersampler.json:/etc/sync_gateway/sync_gateway.json couchbase/sync-gateway:2.6.1-community -adminInterface :4985 /etc/sync_gateway/sync_gateway.json
+----
+
+Verifique que el contenedor llamado "sync-gateway" se esté ejecutando, escriba el siguiente comando en la consola:
+
+[source,bash]
+----
+docker ps
+----
+
+Usted puede ver los logs en cualquier momento ejecutando el siguiente comando:
+
+[source,bash]
+----
+docker logs sync-gateway
+----
+
+Pruebe la interfaz de sincronización en su navegador accediendo al puerto 4984.
+
+Debería recibir una respuesta JSON, como la siguiente:
+
+[source,json]
+----
+{"couchdb":"Welcome","vendor":{"name":"Couchbase Sync Gateway","version":"2.6"},"version":"Couchbase Sync Gateway/2.6.1(1;4907fed) CE"}
+----
+
+= Couchbase Lite
+
+`Couchbase Lite` proporciona una base de datos integrada `NoSQL` para aplicaciones móviles. Dependiendo de la implementación, se puede usar en cualquiera de los siguientes modos, o combinándolos:
+
+* Como una base de datos integrada independiente dentro de sus aplicaciones móviles.
+* Permite que se puedan sincronizar los datos entre sus clientes móviles usando `Sync Gateway`.
+* Permite que usando `Sync Gateway` puedan sincronizarse datos entre los clientes móviles y el `Couchbase Server CE`.
+
+En este tutorial implementaremos una aplicación `Android`, usando el primer y tercer modo.
+
+= Aplicación de iOS
+
+La aplicación `iOS` se basará en `Couchbase Lite`, que trabajará junto a `Sync Gateway` para conservar los datos de `Couchbase Server CE` en la nube, ya sea pública o privada.
+
+Desarrollaremos una aplicación utilizando uno de los buckets de ejemplo incluidos en el `Couchbase Server CE`, el link:https://developer.couchbase.com/documentation/server/3.x/admin/Misc/sample-bucket-beer.html[beer-sample bucket].
+
+El objetivo de la aplicación será servir como un formulario de entrada para la base de datos, de modo que cualquier usuario pueda incluir nuevas cervecerías o cervezas. Además, de las búsquedas que el usuario podrá realizar en la base de datos.
+
+image::app1.png[,250]
+
+Para comenzar a usar `Couchbase Lite`, descargue nuestro `Beer Sampler Project` y ábralo con [Xcode] (https://developer.apple.com/xcode/).
+
+== Incluir la libreria
+
+El primer paso para incluir el soporte `Couchbase Lite` dentro de una aplicación `iOS` es declararlo como una dependencia en `Podfile`.
+
+Para resolver dependencias necesita _Cocoapods_ o _Carthage_.
+En esta guía, usaremos _Cocoapods_, ejecute el siguiente comando para verificar si ya está instalado en su Mac.
+
+[source,bash]
+----
+pod --version
+1.8.4
+----
+
+La salida será similar a la nuestra si Cocoapod ya está instalado. De lo contrario, puede aprender cómo instalarlo en su link:https://guides.cocoapods.org/using/getting-started.html[sitio oficial].
+
+Resumiendo, abra una aplicación de consola y escriba el siguiente comando para iniciar la instalación:
+
+ $ sudo gem install cocoapods
+
+Si encuentra algún problema durante la instalación, visite su link:https://guides.cocoapods.org/using/troubleshooting#installing-cocoapods[página de solución de problemas].
+
+Cuando haya terminado con esa parte, debe crear el podfile ejecutando el siguiente comando (asegúrese de estar en el mismo directorio del archivo de proyecto `Xcode`).
+
+[source,bash]
+----
+pod init
+----
+
+Se crea un archivo llamado _Podfile_ sin extensión con el contenido a continuación.
+
+[source,pod]
+----
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'BeerSampler' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for BeerSampler
+
+  target 'BeerSamplerTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+  target 'BeerSamplerUITests' do
+    # Pods for testing
+  end
+
+end
+----
+
+Luego agregue la dependencia de pod _CouchbaseLite-Swift_ al podfile de la siguiente manera (también agregue cualquier otra dependencia de pod requerida por su aplicación).
+
+[source,pod]
+----
+
+target 'BeerSampler' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for BeerSampler
+  # The below line was added to include CouchbaseLite-Swift framework in the application
+  pod 'CouchbaseLite-Swift'
+
+  (...)
+----
+
+Guarde el archivo, vaya a la consola (en el directorio del proyecto) y ejecute el siguiente comando:
+
+[source,bash]
+----
+pod install
+----
+
+La salida debería mostrar algo como esto:
+
+[source,bash]
+----
+Analyzing dependencies
+Downloading dependencies
+Installing CouchbaseLite-Swift (2.7.0)
+Installing IQKeyboardManagerSwift (6.5.5)
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 2 dependencies from the Podfile and 2 total pods installed.
+----
+
+Después de este paso, todos los métodos de `Couchbase Lite` estarán disponibles para la aplicación agregando el _import_ correspondiente.
+
+[source,swift]
+----
+import CouchbaseLiteSwift
+----
+
+== Base de datos local integrada: abrir y leer datos
+
+El segundo paso es implementar un método para abrir la base de datos. Como se indicó anteriormente, se implementarán dos modos: base de datos independiente y base de datos sincronizada. El primer caso estará cubierto con un usuario `guest`, que podrá almacenar, modificar o eliminar cervezas. El segundo caso se cubrirá con un usuario `demo` autenticado, cuyas credenciales se definieron anteriormente en la `Sync Gateway`.
+
+El manejo de la base de datos se define en el archivo `BeerSampler/Classes/Utils/DatabaseManager.swift`.
+
+[source,swift]
+----
+/// Opens standalone database for guest user. CRUD operations will be possible.
+func openGuestDatabase() {
+    NSLog("\(AppDelegate.appLogTag): Opening Guest Database")
+    // Create the `DatabaseConfiguration` to open database
+    let config: DatabaseConfiguration = DatabaseConfiguration()
+    // Set directory in documents folder to save the local database instance
+    config.directory = "\(documentsPathString())/guest"
+    do {
+        // Open the database with the defined configuration. If the database does not exists, it will be created.
+        database = try Database(name: "guest", config: config)
+    } catch let error {
+        NSLog("\(AppDelegate.appLogTag): Error opening database: \(error.localizedDescription)")
+    }
+}
+----
+
+Cuando el usuario abre la aplicación y pulsa `Access as Guest`, se invoca un método para abrir una nueva base de datos local. Desde este método se llama a la función anterior.
+
+[source,swift]
+----
+@IBAction func accessAsGuestAction(_ sender: Any) {
+
+    (...)
+
+    NSLog("\(AppDelegate.appLogTag): Opening local Database")
+    DatabaseManager.shared.openGuestDatabase()
+
+    (...)
+
+}
+----
+
+Luego, se ejecuta una consulta para recuperar las cervezas almacenadas en la base de datos local y se muestra la pantalla para cargar la lista de cervezas.
+
+Todos los métodos de consulta que buscan, insertan o actualizan datos en la base de datos se definen en el archivo `BeerSampler/Classes/Utils/BeerQueries.swift`.
+
+[source,swift]
+----
+
+(...)
+
+// Get the opened database instance
+if let database = DatabaseManager.shared.database {
+    NSLog("\(AppDelegate.appLogTag): Connected to database: \(database.name)")
+
+    // Create the database Query to select all documents of type "beer"
+    ///  - Note: If the opened database is standalone, the locally created beers are fetched. If there is an authenticated user, all the synchronized beers will be fetched from the cloud (or all beers already synchronized if the connection is not available)
+    let searchQuery: Query  = QueryBuilder
+        .select(SelectResult.expression(Expression.property("name")),
+                SelectResult.expression(Expression.property("style")),
+                SelectResult.expression(Expression.property("brewery_id")),
+                SelectResult.expression(Expression.property("category")),
+                SelectResult.expression(Expression.property("abv")),
+                SelectResult.expression(Meta.id))
+        .from(DataSource.database(database))
+        .where(
+            Expression.property("type").equalTo(Expression.string("beer"))
+    );
+
+    NSLog("\(AppDelegate.appLogTag): Query loaded")
+
+    do {
+        NSLog("\(AppDelegate.appLogTag): Ready to run query")
+        // Execute the query
+        rows = try searchQuery.execute()
+
+    } catch let error {
+        NSLog("\(AppDelegate.appLogTag): Failed to run query \(error.localizedDescription)")
+    }
+}
+
+(...)
+----
+
+Los logs de la aplicación se pueden ver en la parte inferior de `Xcode` mientras la aplicación se está ejecutando, en la pestaña de la consola.
+
+== Base de datos en la nube: abrir y leer datos
+
+Esta sección se cubrirá con el usuario `demo`, que se definió previamente en el archivo `sync-gateway-config-beersampler.json`. La secuencia de inicio de la base de datos será un poco diferente esta vez.
+
+[source,swift]
+----
+/// Login with a user. The database will be opened for the given user and the replicator to pull and push data to and from the cloud is started.
+/// - Parameter sender: Action sender
+@IBAction func loginAction(_ sender: Any) {
+    if (!(edtUsername.text?.isEmpty ?? true) && !(edtPassword.text?.isEmpty ?? true)) {
+        let user = edtUsername.text!
+        let password = edtPassword.text!
+
+        // Save username and password to user defaults
+        AppPreferenceManager.shared.setUsername(user)
+        AppPreferenceManager.shared.setPassword(password)
+
+        NSLog("\(AppDelegate.appLogTag): Opening Database for user \(user)")
+        // Open database for the given user
+        DatabaseManager.shared.openDatabaseForUser(username: user)
+        // Start the replicator to pull and push data from and to the cloud
+        DatabaseManager.shared.startPushAndPullReplicationForCurrentUser(username: user, password: password)
+
+        performSegue(withIdentifier: "showBrowseDataWithUser", sender: self)
+    } else {
+        NSLog("\(AppDelegate.appLogTag): Empty username or password")
+    }
+}
+----
+
+Observe `startPushAndPullReplicationForCurrentUser(nombre de usuario:  String,contraseña: String)`, este método se encarga de la replicación y se define en el archivo `DatabaseManager.swift`. Cuando el usuario inserta una cerveza, se refleja en el `Couchbase Server CE`, en la nube, a través del `Sync Gateway`. La puerta de enlace se define en `DatabaseManager.java`, con un hostname.
+
+[source,swift]
+----
+static let syncGatewayEndpoint: String = "ws://PUT-THE-GATEWAY-IP-HERE:4984/beer-sample"
+----
+
+Después de este paso, todas las operaciones son comunes para la base de datos integrada o remota.
+
+== Insertar un nuevo documento
+
+Para insertar una cerveza nueva, el usuario debe tocar el botón:
+
+image::app3.png[,250]
+
+Esto le permite ingresar los datos sobre la nueva cerveza.
+
+image::app4.png[,250]
+
+Por favor, inserte algunas cervezas y tome nota de los nombres insertados, por ejemplo, "Polar Dark".
+
+image::app2.png[,250]
+
+El código que inserta los datos simplemente crea un nuevo `MutableDocument` con una ID única (la combinación de los nombres de cervecería y cerveza, como `"\(cervecería)-\(beerName)"`) e invoca el método de guardado.
+
+[source,swift]
+----
+
+(...)
+
+// Create the MutableDocument to insert
+let mutableCopy: MutableDocument = MutableDocument(id: "\(brewery)-\(beerName)", data: properties)
+
+do {
+    NSLog("\(AppDelegate.appLogTag): Ready to insert")
+    // Save the document
+    try database.saveDocument(mutableCopy)
+    NSLog("\(AppDelegate.appLogTag): Inserted")
+
+    return true
+
+} catch let error {
+    NSLog("\(AppDelegate.appLogTag): Error \(error.localizedDescription)")
+}
+
+(...)
+----
+
+Si ha iniciado sesión con el usuario "demo", debería ver la nueva cerveza cargada en el `Couchbase Server CE`, a través del `Sync Gateway`. Tenga en cuenta las cervezas "Polar Blondie" y "Polar Dark".
+
+image::web-app1.png[,950]
+
+== Actualizar un documento existente
+
+Para actualizar un documento existente, toque el documento. En el cuadro de diálogo, el usuario actualiza cualquier valor (los nombres _beer_ y _brewery_ no pueden actualizarse porque la combinación de ambos conforma el _ID_ único del documento). Detrás de escena, el documento recuperado se modifica y se inserta nuevamente con la misma ID. El método que inserta los datos se encuentra en la clase `BeerQueries.swift`:
+
+[source,swift]
+----
+// Get the database in use
+if let database = DatabaseManager.shared.database {
+
+    // Filling the beer's data
+    var properties: Dictionary<String, String> = Dictionary<String, String>()
+    properties["type"] = "beer";
+    properties["name"] = beerName
+    properties["brewery_id"] = brewery
+    properties["category"] = category
+    properties["style"] = style
+    properties["abv"] = abv
+    properties["username"] = username
+
+    // Create the MutableDocument to insert
+    let mutableCopy: MutableDocument = MutableDocument(id: "\(brewery)-\(beerName)", data: properties)
+
+    do {
+        NSLog("\(AppDelegate.appLogTag): Ready to insert")
+        // Save the document
+        try database.saveDocument(mutableCopy)
+        NSLog("\(AppDelegate.appLogTag): Inserted")
+
+        return true
+
+    } catch let error {
+        NSLog("\(AppDelegate.appLogTag): Error \(error.localizedDescription)")
+    }
+}
+return false
+----
+
+= Próximos pasos
+
+Le recomendamos que siga nuestros próximos tutoriales, para encontrar la lista completa diríjase a link:../index_es.html[Home].
+
+Además, puede revisar link:https://docs.couchbase.com/home/index.html[Couchbase Documentation] para obtener más información sobre otros temas.

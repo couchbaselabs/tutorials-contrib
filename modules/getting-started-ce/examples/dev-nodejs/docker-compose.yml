@@ -1,0 +1,47 @@
+version: "3.7"
+
+
+networks:
+  couchbase-net:
+    name: couchbase-net
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.1.0/24
+
+
+services:
+
+  couchbase-server:
+    image: gsi/couchbase-server:6.5
+    container_name: couchbase-server
+    hostname: couchbase-server
+    volumes:
+        - /home/dexter/Documents/GSI/CouchBase/couchbase-tutorials:/home/couchbase-tutorials
+    restart: always
+    networks:
+      couchbase-net:
+        ipv4_address: 192.168.1.10
+
+  node:
+    image: node:lts
+    container_name: node
+    hostname: node
+    user: "node"
+    working_dir: /home/couchbase-tutorials/dev-nodejs/resources/rate-these-movies
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - /home/dexter/Documents/GSI/CouchBase/couchbase-tutorials:/home/couchbase-tutorials
+    expose:
+      - "8081"
+    # entrypoint:
+    #   - tail
+    #   - -f 
+    #   - /dev/null
+    command: "npm run dev"
+    restart: always
+    networks:
+      couchbase-net:
+        ipv4_address: 192.168.1.20

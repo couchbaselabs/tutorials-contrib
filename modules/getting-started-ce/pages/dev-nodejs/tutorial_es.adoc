@@ -1,0 +1,312 @@
+// :doctype: book
+
+link:tutorial_en.html[English] | Español
+
+== Desarrollando en Couchbase CE con Node.js
+
+En este tutorial aprenderá como instalar y utilizar `Couchbase Node SDK`. Este tutorial ha sido realizado utilizando `Couchbase Server CE` por lo que usted puede emplear esa distribución para seguir esta guía de forma gratuita.
+
+= Instalación de Node SDK
+
+Ahora, que usted ya tiene un servidor de `Couchbase` en funcionamiento, deberá permitir que sus aplicaciones interactúen con él. Los `SDK` de Couchbase proporcionan una `API` para ese propósito. Siga los pasos que se le indican a continuación para instalar el SDK en su proyecto.
+
+____
+Probado para `nvm 0.34.0`, `npm 6.13.4` y `Node 12.14.1`
+____
+
+Si aún no ha instalado `Node`, le recomendamos que lo haga utilizando  `Node Version Manager` (`nvm`). Para instalarlo, usted debe descargar el código fuente de `Github` de la siguiente forma.
+
+[source,bash]
+----
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
+----
+
+Una vez finalizada la instalación, usted debe volver a abrir su sesión de shell actual para utilizar el comando `nvm` desde la consola. Puede verificar que todo salió bien escribiendo este comando.
+
+[source,bash]
+----
+node --version
+----
+
+Ahora, instale `Node` junto con su administrador de paquetes estándar `npm` como se muestra en la siguiente línea.
+
+[source,bash]
+----
+nvm install --lts
+----
+
+Esta línea instalará la versión de `Long Term Support` (`lts`) de `Node`. Para verificar la versión actual instalada, escriba este comando.
+
+[source,bash]
+----
+nvm ls
+----
+
+Es posible que sea necesario compilar algunos paquetes `Node` antes de la instalación, por lo que se deben instalar las herramientas de desarrollo de la siguiente manera.
+
+[source,bash]
+----
+sudo apt install build-essential
+----
+
+Con estos pasos, `Node` debería estar listo para su uso. Usted podrá comenzar nuevos proyectos de la siguiente manera.
+
+[source,bash]
+----
+mkdir new_project
+cd new_project
+npm init
+----
+
+`Node` le pedirá algunos metadatos del proyecto, complételos como usted desee. Una vez terminado, usted podrá pasar al último paso, que sería instalar `Couchbase SDK`:
+
+[source,bash]
+----
+npm install couchbase
+----
+
+Su proyecto `Node` ahora está listo para interactuar con cualquier servidor de `Couchbase`.
+
+____
+Para obtener una guía de instalación más detallada, puede seguir la documentación oficial de Couchbase para link:https://docs.couchbase.com/nodejs-sdk/current/start-using-sdk.html[Node SDK]
+____
+
+= Proyecto ejemplo
+
+La mayoría de las aplicaciones en las que trabajamos, por lo general, requieren cierto nivel de abstracción para interactuar con los datos, especialmente para operaciones `CRUD`. En este proyecto ejemplo, implementaremos una colección de funciones capaces de administrar clasificaciones, usuarios y películas. Algo que necesitará si trabaja en un sitio de clasificación de películas, como `IMDb`, por ejemplo:
+
+== Poblar su servidor
+
+=== Buckets
+
+`Couchbase Server` usa link:https://docs.couchbase.com/server/6.5/learn/buckets-memory-and-storage/buckets-memory-and-storage.html[Buckets] y link:https://docs.couchbase.com/server/6.5/developer-preview/collections/collections-overview.html[Collections] para almacenar y guardar documentos respectivamente.
+
+Existen tres link:https://docs.couchbase.com/server/6.5/learn/buckets-memory-and-storage/buckets.html[tipos de buckets] según la persistencia, y tres link:https://docs.couchbase.com/server/6.5/clustersetup/create-bucket.html[formas de crearlos] (`CLI`, `REST API` y `Web UI`). Puedes tener múltiples `buckets`, y para cada uno, definir reglas de autenticación y autorización.
+
+Los buckets pueden contener hasta 1000 `collections` (grupos) de documentos y hasta 100 `scopes` para agrupar dichas colecciones. Cada bucket contiene una colección y un scope denominados `default`, que será utilizado por defecto si no se selecciona algún otro.
+
+Para este tutorial, crearemos un `Couchbase Bucket`, que se almacenará tanto en la memoria como en el disco, y tres colecciones, una para cada tipo de documentos (`movies`, `users` y `ratings`), agrupados bajo el scope `default`.  Las colecciones y scopes se encuentran todavía en fase de desarrollo, por tanto solo pueden ser usadas mediante el `SDK`. Sin embargo, los buckets se pueden crear utilizando la `Web UI` en el puerto `8091`.
+
+Seleccione la pestaña `Buckets`, haga click en `Add Bucket` y cree un `bucket` llamado `rate-these-movies` con 100 `Mb`, utilizando la configuración predeterminada.
+
+image::./media/create_bucket.gif[,750]
+
+Ya hemos creado un `bucket` de muestra con los datos del proyecto y lo hemos guardado en el disco utilizando la herramienta link:https://docs.couchbase.com/server/6.5/cli/cbtransfer-tool.html[cbtransfer]. Para importar el `bucket` de muestra a su servidor, debe utilizar la herramienta link:https://docs.couchbase.com/server/6.5/cli/cbrestore-tool.html[cbrestore]. Estas herramientas, como podrá observar, son útiles para crear y restaurar copias de seguridad de sus `buckets` o de todo su servidor en cualquier momento.
+
+Para importar los datos, abra una consola y escriba los siguientes comandos, asegúrese de sustituir los parámetros correctamente.
+
+[source,bash]
+----
+cd /opt/couchbase
+cbrestore /path/to/cbb couchbase://hostname:8091 -u username -p password
+----
+
+Si todo salió bien, debería ver el siguiente mensaje en la consola:
+
+[source,bash]
+----
+[####################] 100.0% (138/estimated 138 msgs)
+bucket: b'rate-these-movies', msgs transferred...
+       :                total |       last |    per sec
+ byte  :               198972 |     198972 |  3161194.6
+done
+----
+
+=== Índices
+
+Los link:https://docs.couchbase.com/server/6.5/learn/services-and-indexes/indexes/indexes.html[indexes] mejoran el rendimiento de las operaciones de búsqueda, especialmente a medida que los `buckets` crecen en tamaño. La creación de índices secundarios (`GSI`) también le permitirá realizar operaciones `JOIN`.
+
+Los `indexes` pueden gestionarse a través del `SDK`, esta vez sin embargo, lo haremos desde la `Web UI`. Haga clic en la pestaña `Query` y ejecute la siguiente línea.
+
+[source,SQL]
+----
+CREATE PRIMARY INDEX `movies_primary` ON `rate-these-movies`
+----
+
+Luego, para crear el índice primario de nuestro `bucket`.
+
+image::./media/execute_query.gif[,750]
+
+Luego, ejecute el siguiente comando para crear los índices secundarios necesarios para realizar ``JOIN``'s entre `movies`, `users` y `ratings`:
+
+[source,SQL]
+----
+CREATE INDEX `movies_secondary_movie` ON `rate-these-movies`(`id_movie`)
+----
+
+[source,SQL]
+----
+CREATE INDEX `movies_secondary_user` ON `rate-these-movies`(`id_user`)
+----
+
+Usted acaba de ejecutar consultas `N1QL` en su servidor. Más adelante, aprenderá cómo ejecutar otras consultas utilizando el `SDK`.
+
+=== Visualizar
+
+La forma más sencilla de verificar el estado de sus datos y acceder rápidamente a algún documento en particular, es utilizar la `Web UI`. Vaya a la pestaña `Buckets` y haga click en el botón `Documents`.
+
+image::./media/view_bucket.gif[,750]
+
+Se puede hacer click en cada documento para obtener una vista más detallada. También puede establecer filtros para realizar una búsqueda más detallada.
+
+image::./media/filter_documents.gif[,750]
+
+== Usando el SDK
+
+`Couchbase SDK` le proporciona múltiples formas de manipular datos, como son:
+
+* link:https://docs.couchbase.com/nodejs-sdk/current/core-operations.html#crud-overview[Core operations] u operaciones llave-valor, son bastante básicas y le permitirán trabajar con sus datos de manera similar a como lo harías con un diccionario. Pero, si usted desea realizar operaciones más complejas como filtros o uniones, deberá implementar esos comportamientos en el lado del cliente. Además, estas funcionan con el documento completo.
+* link:https://docs.couchbase.com/nodejs-sdk/current/subdocument-operations.html[Sub-document operations] puede apuntar a valores específicos en un documento. Usted puede utilizar estas operaciones para ahorrar ancho de banda y que sea más eficiente al consultar datos parciales.
+* link:https://docs.couchbase.com/nodejs-sdk/current/n1ql-queries-with-sdk.html[N1QL] es un dialecto `SQL` expresivo, potente y completo para consultar, transformar y manipular datos`` JSON``. Estas consultas serán interpretadas por el servidor y transformadas en operaciones llave-valor. La mayoría de las consultas requerirán la creación de índices para unir otros depósitos o disminuir la latencia de las consultas.
+
+=== Conectar
+
+Ahora veremos cómo establecer una conexión con el servidor usando el `SDK` para abrir nuestro `bucket` previamente creado `rate-these-movies`.
+
+Este paso requiere credenciales, usted podrá utilizar las que se usaron para configurar el clúster. Aunque no recomendamos esto para una implementación en producción, se ajusta al propósito de este tutorial. Si desea crear nuevas credenciales con permisos específicos, puede aprender cómo hacerlo en el siguiente link:https://docs.couchbase.com/server/6.5/manage/manage-security/manage-users-and-roles.html#creating-y-gestionando-usuarios-con-la-UI[enlace].
+
+Para acceder al servidor, puede usar la clase `Cluster`. Una instancia de esta clase le perimitirá ejecutar consultas y otras operaciones sobre los datos.
+
+[source,javascript]
+----
+var cluster = new couchbase.Cluster('couchbase://' + hostname,
+                {
+                    username: username,
+                    password: password
+                })
+var bucket = cluster.bucket(bucket_name)
+----
+
+No es necesario desconectarse del `bucket`, esto se realizará automáticamente cuando se considere apropiado.
+
+=== Operaciones llave-valor
+
+Cuando necesite insertar, eliminar o recuperar un documento en particular, del cual conoce su `ID`, el enfoque recomendado sería utilizar operaciones llave-valor.
+
+Para insertar, puede usar cualquiera de las siguientes operaciones, la única diferencia entre ellas es como reaccionan a los documentos previamente existentes:
+
+* `insert` solo creará el documento si la `ID` dada no se encuentra dentro de la base de datos.
+* `replace` solo reemplazará el documento si la `ID` dada ya existe dentro de la base de datos.
+* `upsert` siempre reemplazará el documento, ignorando si la `ID` ya ha existido o no.
+
+La mayoría de las veces, `upsert` es la opción más segura, usémosla para agregar un `rating`, una operación estándar en cualquier sitio con valoraciones.
+
+[source,javascript]
+----
+var rating_json = { movie_id: movie_id, user_id: user_id, value: value }
+
+var answer = await bucket
+                    .collection('ratings')
+                    .upsert(rating_id, rating_json)
+                    .catch((reason) => console.log(reason));
+if (answer) {
+    console.log('OK')
+}
+----
+
+Note el uso de colecciones para seleccionar una grupo específico de documentos. En todos los ejemplos de este tutorial se utilizará `console.log` para imprimir los resultados de las consultas. Si trabaja en un sitio web, ahí es donde generaría una vista con los datos devueltos por `Couchbase Server`.
+
+Operaciones como `replace` o `upsert` pueden usarse para actualizar un documento existente. Sin embargo, recuerde que esto enviará el documento completo al clúster, por lo que, como regla general, haga esto solo cuando haya cambiado más de la mitad de los valores. Más adelante, explicaremos cómo actualizar los datos de manera más eficiente cuando los cambios son mínimos.
+
+Para recuperar documentos previamente insertados en un `bucket` use las operaciones `get`. Puede usarlo ahora para verificar que el `rating` de prueba recién insertado se encuentra en el servidor.
+
+[source,javascript]
+----
+var answer = await bucket
+                    .collection('ratings')
+                    .get(rating_id)
+                    .catch((reason) => console.log(reason));
+if (answer) {
+    console.log(answer.value)
+}
+----
+
+Si un usuario desea eliminar su valoración de nuestro servidor, utilice la operación `remove`. Intente eliminar el `rating` que ha estado utilizando hasta ahora.
+
+[source,javascript]
+----
+var answer = await bucket
+                    .collection('ratings')
+                    .remove(rating_id)
+                    .catch((reason) => console.log(reason));
+if (answer) {
+    console.log('OK')
+}
+----
+
+=== Operaciones de subdocumento
+
+Las aplicaciones comúnmente necesitarán cambiar datos: clasificaciones, por ejemplo, o algún nombre mal escrito. La mayoría de las veces esto significa cambiar un valor en específico, no un documento completo. Por ejemplo, un documento de usuario puede contener el nombre, el país y la edad, pero solo se desea actualizar el país en el que vive actualmente el usuario. Cuando nos encontramos en presencia de esta situación, es hora de usar operaciones de subdocumentos, apuntar esos valores específicos y reducir el tráfico de red.
+
+El siguiente código le muestra cómo recuperar un valor en particular de algún usuario.
+
+[source,javascript]
+----
+var answer = await bucket
+                    .collection('users')
+                    .lookupIn(user_id, [couchbase.LookupInSpec.get('country')])
+                    .catch((reason) => console.log(reason));
+if (answer) {
+    answer.results.forEach((result) => {
+        console.log(result.value)
+    })
+}
+----
+
+Observe cómo seleccionamos un documento en particular con `lookupIn` y luego usamos `get` para recuperar el valor que queramos, en este caso, el país.
+
+Por otro lado, si un usuario se muda a otro país y desea actualizar su perfil, puede hacer algo como esto:
+
+[source,javascript]
+----
+var answer = await bucket
+                    .collection('users')
+                    .mutateIn(user_id, [couchbase.MutateInSpec.upsert('country', country)])
+                    .catch((reason) => console.log(reason));
+if (answer) {
+    console.log('OK')
+}
+----
+
+Ahora usamos `mutateIn` para apuntar al documento que queramos cambiar, y luego `upsert` para modificar su valor `country`.
+
+=== Consultas N1QL
+
+Estas consultas nos permitirán encontrar y trabajar mejor con los documentos asociados, como generalmente requiere la mayoría de las aplicaciones. Por ejemplo, eliminar una película, que tenga valoraciones referenciándola.
+
+Los parámetros para la consulta pueden pasarse en un `object`, agrupados en un `array`. Para usarlos en las consultas, utilice `$` y la posición del arreglo deseada más 1.
+
+[source,javascript]
+----
+var answer_single = await cluster
+                            .query('DELETE FROM `rate-these-movies` USE KEYS $1', { parameters: [movie_id] })
+                            .catch((reason) => console.log(reason));
+var answer_linked = await cluster
+                            .query('DELETE FROM `rate-these-movies` WHERE id_movie=$1', { parameters: [movie_id] })
+                            .catch((reason) => console.log(reason));
+if (answer_single && answer_linked) console.log('OK')
+----
+
+Aprecie la simplicidad y el parecido con una consulta `SQL`, simplemente refiera el bucket como lo haría con una tabla.
+
+Otro ejemplo, la mayoría de las operaciones de lectura apuntan a un subconjunto de datos o requieren alguna agregación o aumento. Entonces, una vez más, dependemos de las consultas `N1QL`, en este caso, para obtener las 5 películas mejor calificadas junto con su calificación promedio.
+
+Dado que estamos uniendo los datos de un bucket consigo mismo, usaremos alias.
+
+[source,javascript]
+----
+var answer = await cluster
+                    .query('SELECT a.name AS name, AVG(b.`value`) AS avg FROM `rate-these-movies` AS a JOIN `rate-these-movies` AS b ON META(a).id=b.id_movie GROUP BY a.name ORDER BY avg DESC LIMIT 5')
+                    .catch((reason) => console.log(reason));
+if (answer) {
+    answer.rows.forEach((row) => {
+        console.log(row.name + ' -> ' + row.avg.toFixed(2))
+    })
+}
+----
+
+= Próximos pasos
+
+Le recomendamos que siga nuestros próximos tutoriales, para encontrar la lista completa diríjase a link:../index_es.html[Home].
+
+Además, puede revisar link:https://docs.couchbase.com/home/index.html[Couchbase Documentation] para obtener más información sobre otros temas.
