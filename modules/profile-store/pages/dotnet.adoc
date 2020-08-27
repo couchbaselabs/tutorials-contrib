@@ -62,7 +62,7 @@ The rest of ths tutorial will walk you through the steps of using Couchbase to b
 
 * Configuring Couchbase for a user profile store
 
-* Creating a simple Java application
+* Creating a simple .NET application
 
 * How to query the Database
 
