@@ -89,7 +89,7 @@ Note that you can also set up Couchbase by using link:https://docs.couchbase.com
 Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[buckets], which are a collection of documents. Let's create a new bucket called *user_profile*:
 
 * Go to http://localhost:8091 and log in with user and password
-* Go to "Buckets" and click on "ADD BUCKET" in the top left corner of the page
+* Go to "Buckets" and click on "ADD BUCKET" in the top right corner of the page
 * Add the bucket name and memory quota:
 
 image:00101-add-bucket.png[Add Bucket Pop up]
