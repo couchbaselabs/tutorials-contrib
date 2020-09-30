@@ -128,7 +128,7 @@ If that's not your exact scenario, don't worry. Much of the important code will 
 
 If you'd like to follow along, the full source code for this example project is link:https://github.com/couchbaselabs/tutorials-contrib/tree/master/modules/profile-store/examples/dotnet/UserProfileExample[available on GitHub].
 
-Once you've created the application, let's add a few packages to it with NuGet. First, add the Couchbase .NET SDK (`dotnet add package CouchbaseNetClient` if you're using the command line). This package will give your application the ability to interact with the Couchbase cluster you created above. The next package is optional, but it will make some things easier: add the Couchbase.Extensions.DependencyInjection package (`dotnet add package Couchbase.Extensions.DependencyInjection`). This package will make it easy for the Couchbase SDK to be used throughout your .NET applications.
+Once you've created the application, let's add a few packages to it with NuGet. First, add the link:https://www.nuget.org/packages/CouchbaseNetClient[Couchbase .NET SDK] (`dotnet add package CouchbaseNetClient` if you're using the command line). This package will give your application the ability to interact with the Couchbase cluster you created above. The next package is optional, but it will make some things easier: add the link:https://www.nuget.org/packages/Couchbase.Extensions.DependencyInjection[Couchbase.Extensions.DependencyInjection] package (`dotnet add package Couchbase.Extensions.DependencyInjection`). This package will make it easy for the Couchbase SDK to be used throughout your .NET applications.
 
 Then, let's create a simple entity called User:
 
