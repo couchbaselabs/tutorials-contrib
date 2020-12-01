@@ -1,4 +1,5 @@
 = Getting Started with Couchbase Cloud Free Trial
+:imagesdir: ../assets/images
 
 [abstract]
 Couchbase Cloud is a fully managed database-as-a-service that makes it easy to deploy a clustered database in the public cloud.
@@ -23,6 +24,7 @@ image::getting-started/2.png[The sign up screen to create an account for Couchba
 . Provide your account details.
 +
 Enter the following information to create your account:
++
 * Full Name
 * Email Address
 * Password
@@ -36,6 +38,7 @@ Enter the following information to create your account:
 image::getting-started/3.png[Set up your organization, also known as your company account]
 +
 Provide the following information to set up your organization:
++
 * Company Name (this will be the name of your organization).
 * Website (optional)
 * Click “Create Organization”
@@ -143,7 +146,7 @@ This brings you to the Deploy Cluster screen.
 
 image::getting-started/14.png[The Deploy Cluster screen]
 
-The Deploy Cluster screen shows a summary of the configuration details. Review the configuration to ensure that it meets your expectations. You can click the Prev button at the bottom of the page to go back and make any necessary changes.
+The Deploy Cluster screen shows a summary of the configuration details. Review the configuration to ensure that it meets your expectations. You can click the btn:[Prev] button at the bottom of the page to go back and make any necessary changes.
 
 Further down the page, in the Select Support Plan section, you must select a Support Plan for the cluster.
 
@@ -153,7 +156,7 @@ Select “30-Day Trial”. Click Deploy.
 
 Couchbase Cloud will proceed with automatically deploying the cluster on your connected cloud.
 
-image::getting-started/15.png[Once you click Deploy, Couchbase Cloud will proceed with automatically deploying the cluster on your connected cloud]
+image::getting-started/15.png["Once you click Deploy, Couchbase Cloud will proceed with automatically deploying the cluster on your connected cloud"]
 
 A cluster will generally take up to 15 minutes to deploy.
 
@@ -209,13 +212,13 @@ A quick way to start interacting with data in your cluster is to load one or mor
 
 Go to the Clusters tab in the main navigation and click on your new cluster.
 
-Sample buckets can be found under each cluster’s Tools > Import tab.
+Sample buckets can be found under each cluster’s menu:Tools[Import] tab.
 
 image::getting-started/23c.png[Sample buckets are found under each cluster's Tools > Import tab]
 
-Under Sample Buckets, click the Import button next to the available sample buckets to load them into your cluster. (Note that it may take some time for a sample bucket to load and show up in the relevant areas of the Couchbase Cloud UI.
+Under Sample Buckets, click the Import button next to the available sample buckets to load them into your cluster. (Note that it may take some time for a sample bucket to load and show up in the relevant areas of the Couchbase Cloud UI.)
 
-In Couchbase, buckets serve as the mechanism for storing data, and are the principal component of the xref:cloud:clusters:data-service/data-service.adoc[Data Service] that runs on every cluster. Buckets are analogous to a database instance, and must be created before you can store any data on a cluster.
+In Couchbase, buckets serve as the mechanism for storing data, and are the principal component of the xref:cloud:clusters:data-service/data-service.adoc[Data Service] that runs on every cluster. Buckets are analogous to a database table space or file group, and must be created before you can store any data on a cluster.
 
 All of the buckets on a cluster can be viewed from the cluster’s Buckets tab.
 
@@ -229,13 +232,13 @@ Couchbase Cloud creates a small, empty bucket named `couchbasecloudbucket` on ev
 
 === Sample Indexes
 
-In Couchbase, _primary_ and _global secondary indexes_ — also known as just _indexes_ — are predefined subsets of bucket-data created by the xref:cloud:clusters:index-service/index-service.adoc[Index Service]. The sample buckets automatically created indexes upon import. All of the indexes in a cluster can be viewed under the cluster’s Tools > Indexes tab. For more information about viewing and interacting with indexes, refer to xref:cloud:clusters:index-service/index-service.adoc[Index Service].
+In Couchbase, _primary_ and _global secondary indexes_ — also known as just _indexes_ — are predefined subsets of bucket-data created by the xref:cloud:clusters:index-service/index-service.adoc[Index Service]. The sample buckets automatically created indexes upon import. All of the indexes in a cluster can be viewed under the cluster’s menu:Tools[Indexes] tab. For more information about viewing and interacting with indexes, refer to xref:cloud:clusters:index-service/index-service.adoc[Index Service].
 
 === Query Sample Data
 
-The Couchbase query language is called N1QL (aka “nickel”). On clusters running the xref:cloud:clusters:query-service/query-service.adoc[Query Service], the Couchbase Cloud UI provides an interactive query tool called the Query Workbench. Using the Query Workbench, you can conveniently explore data, create, edit, run, and save xref:server:n1ql:n1ql-language-reference/index.adoc[N1QL queries], view and save query results, and explore the document structures in a bucket — all in a single window.
+The Couchbase query language is called N1QL (pronounced “nickel”). On clusters running the xref:cloud:clusters:query-service/query-service.adoc[Query Service], the Couchbase Cloud UI provides an interactive query tool called the Query Workbench. Using the Query Workbench, you can conveniently explore data, create, edit, run, and save xref:server:n1ql:n1ql-language-reference/index.adoc[N1QL queries], view and save query results, and explore the document structures in a bucket — all in a single window.
 
-The Query Workbench is available under your cluster’s Tools > Query Workbench tab.
+The Query Workbench is available under your cluster’s menu:Tools[Query Workbench] tab.
 
 Try out the Query Workbench by entering the following N1QL query into the Query Editor:
 
@@ -244,7 +247,7 @@ Try out the Query Workbench by entering the following N1QL query into the Query 
 SELECT * FROM `travel-sample` WHERE type="airport" LIMIT 10;
 ----
 
-When executed, this query returns a maximum of 10 airport documents, and lists all of the fields that it contains. To execute the query, click Execute. The results are displayed in the Query Results field:
+When executed, this query returns a maximum of 10 airport documents, and lists all of the fields that it contains. To execute the query, click btn:[Execute]. The results are displayed in the Query Results field:
 
 image::getting-started/24.png[Results of a query are displayed in the Query Results field]
 
@@ -252,7 +255,7 @@ N1QL also supports ANSI JOIN syntax. Following is an example query with a JOIN c
 
 This query uses an inner join to list the source airports and airlines that fly into SFO, where only the non-null route documents join with matching airline documents.
 
-Copy and paste the following query into the Query Editor, then click Execute.
+Copy and paste the following query into the Query Editor, then click btn:[Execute].
 
 [source,n1ql]
 ----
@@ -275,7 +278,7 @@ To learn more about using the Query Workbench, refer to xref:cloud:clusters:quer
 
 Couchbase Cloud Full Text Search (FTS) lets you create, manage, and query specially purposed indexes, defined on JSON documents within a Couchbase bucket.
 
-The Full Text Search editor is available under each cluster’s Tools > Full Text Search tab.
+The Full Text Search editor is available under each cluster’s menu:Tools[Full Text Search] tab.
 
 image::getting-started/26.png[The Full Text Search editor is available under each cluster’s Tools > Full Text Search tab]
 
@@ -284,6 +287,7 @@ Click btn:[Add Index]; the Add Index fly-out appears.
 We will create a Full Text Search index on the “hotel” type documents in the “travel-sample” bucket. This will allow searching hotel document fields for terms like “free wifi” or “bed & breakfast”. This index will also be used by the sample application tutorial later in this tutorial series.
 
 Enter the following information and then click btn:[Continue to configuration]:
+
 * Name: “hotels”
 * Bucket: Select “travel-sample”
 
@@ -293,24 +297,24 @@ The Index Details for the hotels search index are displayed.
 
 image::getting-started/29.png[Index details for the hotels search index]
 
-Scroll down to the Index Settings
+Scroll down to the Index Settings.
 
-Under Type Mappings, click “Add Mapping”
+Under Type Mappings, click “Add Mapping”.
 
 image::getting-started/29a.png[Under Type Mappings, click Add Mapping]
 
 The “Add Mapping” fly-out appears.
 
-Under name, enter “hotel”
+Under name, enter “hotel”.
 
 image::getting-started/30.png[On the Add Mapping fly-out, provide the name "hotel" for the mapping]
 
-Click “Create Mapping”
+Click “Create Mapping”.
 The type mappings setting should look like so:
 
 image::getting-started/32.png[Screen displaying the type mappings setting]
 
-Click “Create Index”
+Click “Create Index”.
 
 The “hotels” Full Text index is displayed on the Full Text Search page.
 
@@ -320,7 +324,7 @@ Now we can test the search index.
 
 Click the “hotels” Full Text Index to view its details.
 
-image::getting-started/34.png [Click the “hotels” Full Text Index to view its details]
+image::getting-started/34.png[Click the “hotels” Full Text Index to view its details]
 
 Click the Search button, the Search fly-out appears.
 
@@ -347,8 +351,8 @@ Now that you have your environment established, lets gather some connection info
 . Go to the cluster’s Connect tab in the Couchbase Cloud Control Plane.
 .. Go to the Clusters tab in the main navigation.
 .. Find and click on your cluster.
-   +
-   This opens the cluster with its Overview tab selected.
++
+This opens the cluster with its Overview tab selected.
 .. Click the Connect tab.
 +
 image::getting-started/36.png[On the cluster's Connect tab, select your cluster and click the Connect tab]
