@@ -1,0 +1,380 @@
+= Getting Started with Couchbase Cloud Free Trial
+:imagesdir: ../assets/images
+
+[abstract]
+Couchbase Cloud is a fully managed database-as-a-service that makes it easy to deploy a clustered database in the public cloud.
+
+Couchbase Cloud works by creating a virtual private cloud (VPC) within your cloud provider account so that you can securely deploy, manage, and monitor clustered databases through a single user interface.
+
+This tutorial guides you through creating your first cluster, and using it for storing and accessing data.
+
+[horizontal]
+*Step 1*:: <<sign-up-free-trial>>
+*Step 2*:: <<deploy-free-trial-cluster>>
+*Step 3*:: <<configure-database-access>>
+*Step 4*:: <<load-sample-data-run-queries>>
+
+[#sign-up-free-trial]
+== Sign Up for Your Free Trial
+
+.  Go to https://cloud.couchbase.com/sign-up.
++
+image::getting-started/2.png[The sign up screen to create an account for Couchbase Cloud]
+
+. Provide your account details.
++
+Enter the following information to create your account:
++
+* Full Name
+* Email Address
+* Password
+
+. Review then click the checkbox to accept the Couchbase Cloud Services Agreement.
+
+. Click btn:[Sign Up] to create your account.
+
+. Set up your organization (also known as a company account).
++
+image::getting-started/3.png[Set up your organization, also known as your company account]
++
+Provide the following information to set up your organization:
++
+* Company Name (this will be the name of your organization).
+* Website (optional)
+* Click “Create Organization”
+
+. Confirm your account.
++
+An email will be sent to you asking you to confirm your email address. Once you click the confirmation link, your account will be confirmed and you’ll be able to sign into Couchbase Cloud at https://cloud.couchbase.com/[cloud.couchbase.com].
+
+[#deploy-free-trial-cluster]
+== Deploy Your First Free Trial Cluster 
+
+=== Create an Account
+
+After signing in, you’ll be brought to your organization’s Dashboard tab.
+
+image::getting-started/6.png[Your organization's dashboard with the "Start Trial" button]
+
+. Click “Start Trial”, the Get Started fly-out appears.
+.. Note: If you are starting a Sales Assisted or Proof-of-Concept account, and you have been provided an Activation ID, click the “Add your Activation ID” link.
+.. Add your Activation ID in the appropriate box.
+
+=== Connect a Cloud
+
+Couchbase Cloud needs to establish a connection to your cloud provider in order to create a virtual private cloud (VPC) within your cloud provider account. These VPCs are referred to as xref:cloud:clouds:clouds.adoc[Clouds], and they are leveraged by Couchbase Cloud to provision and manage clusters in your cloud provider account. Review the xref:cloud:clouds:cloud-providers.adoc[Cloud Provider Requirements] before continuing.
+
+image::getting-started/8.png[Select a Cloud Provider]
+
+. Enter the cloud connection details.
++
+--
+Service Provider::
+Select your cloud provider from the drop-down list.
+
+Cloud Name::
+Enter a name for the connected cloud.
+
+Available Regions::
+Select a cloud provider region from the drop-down list.
+This is the region in your cloud provider where Couchbase Cloud will set up a VPC environment.
+All clusters that use this connected cloud will be deployed in the selected region.
+
+CIDR Block::
+Enter an IP range in CIDR notation. In most cases, you can accept the default CIDR block. 
+--
+
+. Once you've configured the required fields, click btn:[Connect Cloud].
++
+Your cloud provider's console will open in a new browser tab.
+If the console doesn't open, make sure that your browser is configured to allow pop-up windows from Couchbase Cloud and then try clicking the button again.
+
+. Log into your cloud provider using an account that has xref:clouds:cloud-providers.adoc[sufficient privileges and capabilities] for deploying Couchbase Cloud resources.
+
+. Deploy the stack template.
++
+After logging into your cloud provider's console, a pre-configured resource template will be displayed in the region that you specified.
+This template contains the necessary configuration for Couchbase Cloud to be able to connect to your cloud provider and deploy a VPC under your account.
++
+For AWS, the resource template will be in the form of a CloudFormation template:
++
+image::cloud:get-started:connect-cloud-aws-template.png["AWS 'Quick create stack' template showing several pre-filled fields, a required IAM acknowledgment checkbox, and buttons at the bottom to 'Create change set' or 'Create stack'.",500]
++
+You must deploy the template to continue.
+In the case of AWS, deploy the template by checking the box labeled [.ui]*I acknowledge that AWS CloudFormation might create IAM resources with custom names* and then clicking btn:[Create stack].
++
+Once the stack begins to deploy, return to the Couchbase Cloud UI.
+(It's safe to close your cloud provider console.)
+The connection details in the [.ui]*Get Started* fly-out menu will indicate that Couchbase Cloud is waiting for your cloud provider.
+Once the basic stack deployment is complete, and the initial connection is established, a series of status bars will appear, each representing a different step in the VPC deployment process.
++
+You’ll know that the entire VPC deployment was successful once all of the steps are complete, and the Connection Status changes to _Connected_.
++
+image::getting-started/10a.png[You’ll know that the entire VPC deployment was successful once all of the steps are complete, and the Connection Status changes to Connected.]
+
+=== Name your Project and Cluster
+
+Each cluster must be created within a xref:cloud:projects:projects.adoc[_project_]. Projects are the logical mechanism for grouping and managing clusters within your organization.
+
+image::getting-started/12.png[Name your project and cluster]
+
+. Enter a name for the project in the Project Name field.
+. Enter a name for your cluster in the Cluster Name field. (Note that this isn’t the cluster’s hostname, and can be changed at any time.)
+. Once you’ve entered names for your project and cluster, click Create Project & Cluster.
+
+=== Configure and Deploy the Cluster
+
+Now that you’ve connected a cloud, created a project, and given a name to your cluster, the next step is to configure and deploy the cluster.
+
+The Cluster Sizing screen provides pre-defined cluster templates to make getting started easy. (You can read more about configuring a custom deployment in xref:cloud:clusters:sizing.adoc[Cluster Sizing].)
+
+image::getting-started/13.png[The Cluster Sizing screen provides pre-defined cluster templates to make getting started easy.]
+
+. Under Cluster Sizing, select the "Quick Start 30-Day Trial" cluster template.
++
+The Free Trial account is limited to setting up a single cluster with either 1 or 3 nodes. Other sizing templates and/or custom configurations require an activation code.
+
+. Under Deployment Configuration, select the “M” template size.
++
+Use the size toggle to switch between different sizes of the template.
++
+For the ‘Evaluation Optimized’ template, there are two sizes available: S(small) and M(medium). If you switch between these two sizes, you’ll notice that the only difference between them is the number of Nodes (one node vs. three nodes). We recommend selecting the medium (M) sizing configuration for the ‘Quick Start 30-Day Trial’ template.
+
+Click Next.
+
+This brings you to the Deploy Cluster screen.
+
+image::getting-started/14.png[The Deploy Cluster screen]
+
+The Deploy Cluster screen shows a summary of the configuration details. Review the configuration to ensure that it meets your expectations. You can click the btn:[Prev] button at the bottom of the page to go back and make any necessary changes.
+
+Further down the page, in the Select Support Plan section, you must select a Support Plan for the cluster.
+
+image::getting-started/14b.png[Select a Support Plan for the cluster]
+
+Select “30-Day Trial”. Click Deploy.
+
+Couchbase Cloud will proceed with automatically deploying the cluster on your connected cloud.
+
+image::getting-started/15.png["Once you click Deploy, Couchbase Cloud will proceed with automatically deploying the cluster on your connected cloud"]
+
+A cluster will generally take up to 15 minutes to deploy.
+
+[#configure-database-access]
+== Configure Database Access
+
+In Couchbase Cloud, only a _database user_ can read or write data on a cluster.
+You can either create a xref:security:manage-database-users.adoc#create-database-only-user[database-only user], or xref:security:manage-database-users.adoc#grant-database-access-existing-user[grant database permissions to an organization user]. 
+The following steps discuss how to grant database permissions directly to _yourself_.
+
+. Go to the [.ui]*Users* tab in the main navigation.
++
+image::getting-started/18.png["The 'Users' view."]
+
+. Click on your user name to open the user properties fly-out menu:
++
+image::getting-started/19.png["A user's fly-out menu.",500]
+
+. In the [.ui]*Database Users* section, click [.ui]*Add Another*.
+
+. Select a cluster.
++
+After selecting a cluster, multiple configurable fields appear.
+
+. Configure the database user.
++
+--
+.. Specify a username and password.
++
+In the [.ui]*Username* and [.ui]*Password* fields, enter the username and password for the database user entity.
+These will be the credentials that you will use for authenticating on the cluster when connecting remotely via the Couchbase SDK or other tools.
+Note that the username cannot exceed 128 UTF-8 characters in length and cannot contain the following characters: `( ) < > @ , ; : \ " / [ ]  ? = { }`
+
+.. Configure bucket access.
++
+Use the [.ui]*Choose Buckets* field to specify the data buckets on the cluster that you will have access to.
++
+For the purposes of this guide, it's recommended that you leave the [.ui]*Choose Buckets* field blank, as this grants you access to all current and future buckets.
++
+Select [.ui]*Read/Write* access. If you left the [.ui]*Choose Buckets* field blank, this means you'll have read/write permissions for all current and future buckets on the cluster.
++
+image::getting-started/21.png[Configure bucket access]
+--
+
+. Once you've finished making the desired configurations, click btn:[Save].
+
+. Note the database username and password, we will be using them in later tutorials!
+
+[#load-sample-data-run-queries]
+== Load Sample Data and Run Your First Query and Search Examples
+
+A quick way to start interacting with data in your cluster is to load one or more sample buckets. Sample buckets contain example data, as well as example indexes, for your experimentation.
+
+Go to the Clusters tab in the main navigation and click on your new cluster.
+
+Sample buckets can be found under each cluster’s menu:Tools[Import] tab.
+
+image::getting-started/23c.png[Sample buckets are found under each cluster's Tools > Import tab]
+
+Under Sample Buckets, click the Import button next to the available sample buckets to load them into your cluster. (Note that it may take some time for a sample bucket to load and show up in the relevant areas of the Couchbase Cloud UI.)
+
+In Couchbase, buckets serve as the mechanism for storing data, and are the principal component of the xref:cloud:clusters:data-service/data-service.adoc[Data Service] that runs on every cluster. Buckets are analogous to a database table space or file group, and must be created before you can store any data on a cluster.
+
+All of the buckets on a cluster can be viewed from the cluster’s Buckets tab.
+
+image::getting-started/23d.png[All of the buckets on a cluster can be viewed from the cluster’s Buckets tab]
+
+For more information about interacting with buckets, refer to xref:cloud:clusters:data-service/manage-buckets.adoc[Manage Buckets].
+
+=== About the Default Bucket
+
+Couchbase Cloud creates a small, empty bucket named `couchbasecloudbucket` on every deployed cluster to act as the default bucket. This bucket can be used for immediate experimentation with Couchbase features, including inserting and modifying data via the SDK.
+
+=== Sample Indexes
+
+In Couchbase, _primary_ and _global secondary indexes_ — also known as just _indexes_ — are predefined subsets of bucket-data created by the xref:cloud:clusters:index-service/index-service.adoc[Index Service]. The sample buckets automatically created indexes upon import. All of the indexes in a cluster can be viewed under the cluster’s menu:Tools[Indexes] tab. For more information about viewing and interacting with indexes, refer to xref:cloud:clusters:index-service/index-service.adoc[Index Service].
+
+=== Query Sample Data
+
+The Couchbase query language is called N1QL (pronounced “nickel”). On clusters running the xref:cloud:clusters:query-service/query-service.adoc[Query Service], the Couchbase Cloud UI provides an interactive query tool called the Query Workbench. Using the Query Workbench, you can conveniently explore data, create, edit, run, and save xref:server:n1ql:n1ql-language-reference/index.adoc[N1QL queries], view and save query results, and explore the document structures in a bucket — all in a single window.
+
+The Query Workbench is available under your cluster’s menu:Tools[Query Workbench] tab.
+
+Try out the Query Workbench by entering the following N1QL query into the Query Editor:
+
+[source,n1ql]
+----
+SELECT * FROM `travel-sample` WHERE type="airport" LIMIT 10;
+----
+
+When executed, this query returns a maximum of 10 airport documents, and lists all of the fields that it contains. To execute the query, click btn:[Execute]. The results are displayed in the Query Results field:
+
+image::getting-started/24.png[Results of a query are displayed in the Query Results field]
+
+N1QL also supports ANSI JOIN syntax. Following is an example query with a JOIN clause.
+
+This query uses an inner join to list the source airports and airlines that fly into SFO, where only the non-null route documents join with matching airline documents.
+
+Copy and paste the following query into the Query Editor, then click btn:[Execute].
+
+[source,n1ql]
+----
+SELECT route.airlineid, airline.name, route.sourceairport, route.destinationairport
+FROM `travel-sample` route
+INNER JOIN `travel-sample` airline
+ON route.airlineid = META(airline).id
+WHERE route.type = "route"
+AND route.destinationairport = "SFO"
+ORDER BY route.sourceairport;
+----
+
+The results are displayed in the Query Results field:
+
+image::getting-started/25.png[Results of the query]
+
+To learn more about using the Query Workbench, refer to xref:cloud:clusters:query-service/query-workbench.adoc[Query Workbench].
+
+=== Configure Full Text Search
+
+Couchbase Cloud Full Text Search (FTS) lets you create, manage, and query specially purposed indexes, defined on JSON documents within a Couchbase bucket.
+
+The Full Text Search editor is available under each cluster’s menu:Tools[Full Text Search] tab.
+
+image::getting-started/26.png[The Full Text Search editor is available under each cluster’s Tools > Full Text Search tab]
+
+Click btn:[Add Index]; the Add Index fly-out appears.
+
+We will create a Full Text Search index on the “hotel” type documents in the “travel-sample” bucket. This will allow searching hotel document fields for terms like “free wifi” or “bed & breakfast”. This index will also be used by the sample application tutorial later in this tutorial series.
+
+Enter the following information and then click btn:[Continue to configuration]:
+
+* Name: “hotels”
+* Bucket: Select “travel-sample”
+
+image::getting-started/28.png[Enter the basic details for your Search index]
+
+The Index Details for the hotels search index are displayed.
+
+image::getting-started/29.png[Index details for the hotels search index]
+
+Scroll down to the Index Settings.
+
+Under Type Mappings, click “Add Mapping”.
+
+image::getting-started/29a.png[Under Type Mappings, click Add Mapping]
+
+The “Add Mapping” fly-out appears.
+
+Under name, enter “hotel”.
+
+image::getting-started/30.png[On the Add Mapping fly-out, provide the name "hotel" for the mapping]
+
+Click “Create Mapping”.
+The type mappings setting should look like so:
+
+image::getting-started/32.png[Screen displaying the type mappings setting]
+
+Click “Create Index”.
+
+The “hotels” Full Text index is displayed on the Full Text Search page.
+
+image::getting-started/33.png[The “hotels” Full Text index is displayed on the Full Text Search page]
+
+Now we can test the search index.
+
+Click the “hotels” Full Text Index to view its details.
+
+image::getting-started/34.png[Click the “hotels” Full Text Index to view its details]
+
+Click the Search button, the Search fly-out appears.
+
+image::getting-started/35.png[Click the Search button, the Search fly-out appears]
+
+Under Settings, enter “free wifi” then click the Search button.
+
+image::getting-started/35a.png[Enter "free wifi" and then click Search]
+
+All hotel documents with matching terms are listed.
+
+image::getting-started/35b.png[All hotel documents with matching terms are listed]
+
+Experiment with other search terms. Click the x in the upper right to close the Search fly-out screen.
+
+Learn more about Couchbase Cloud Full Text Search xref:server:fts:full-text-intro.adoc[here].
+
+Now that you have your environment established, lets gather some connection information for the next tutorial exercises.
+
+== Next Steps
+
+=== Prepare for Connecting from an SDK
+
+. Go to the cluster’s Connect tab in the Couchbase Cloud Control Plane.
+.. Go to the Clusters tab in the main navigation.
+.. Find and click on your cluster.
++
+This opens the cluster with its Overview tab selected.
+.. Click the Connect tab.
++
+image::getting-started/36.png[On the cluster's Connect tab, select your cluster and click the Connect tab]
+
+. The Endpoint will be used for connecting to this cluster in the subsequent tutorial exercises. For now, copy and paste the endpoint to a text file and set aside.
+
+. Next download the Security Certificate for connecting to your cluster using BI tools. Under Security Certificate, click Download. Your Security Certificate .pem file will download, save in a local folder for use in subsequent exercises.
+
+. You must also add your own IP address to connect to your cluster. Go to https://www.whatsmyip.org/ (or any IP identification site) and note your IP address. Copy your IP address.
+
+. Click the Allowed IPs button. The Allowed IPs fly-out appears.
+
+image::getting-started/37.png[Note and add your own IP to the list of Allowed IPs]
+
+. Under Allow an IP, enter your IP address.
+
+. Uncheck “Save as temporary”.
+
+. Optionally add a descriptive comment, then click the Add IP button.
+
+. Click the Save button, your IP address is saved as an Allowed IP for connecting to your cluster.
+
+Congratulations! You are now ready for the next set of exercises in the next “First Timers” tutorial, xref:cbc-self-service-trials:connect-application.adoc[Connecting an Application to Couchbase Cloud].
+
+
