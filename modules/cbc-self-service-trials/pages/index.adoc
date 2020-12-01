@@ -1,0 +1,14 @@
+= Get Started with Couchbase Cloud Free Trial
+:description: Getting started with the 30-day free trial of Couchbase Cloud.
+
+Congratulations on your decision to try Couchbase Cloud!
+
+This series of “first-timer” tutorials is intended to get you going quickly with your Couchbase Cloud FREE Trial. 
+
+By following the steps in order, you will get a whirlwind tour of important Couchbase Cloud capabilities at a high level, and take advantage of developer resources to create quick and easy examples that illustrate the power of Couchbase. Let's get started!
+
+== Tutorials in this Series
+
+. xref:cbc-first-timer:getting-started.adoc[]
+
+
