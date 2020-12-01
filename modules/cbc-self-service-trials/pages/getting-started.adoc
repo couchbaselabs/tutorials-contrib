@@ -18,7 +18,7 @@ This tutorial guides you through creating your first cluster, and using it for s
 
 .  Go to https://cloud.couchbase.com/sign-up.
 +
-image:getting-started:2.png[The sign up screen to create an account for Couchbase Cloud]
+image::getting-started/2.png[The sign up screen to create an account for Couchbase Cloud]
 
 . Provide your account details.
 +
@@ -33,7 +33,7 @@ Enter the following information to create your account:
 
 . Set up your organization (also known as a company account).
 +
-image:getting-started:3.png[Set up your organization, also known as your company account]
+image::getting-started/3.png[Set up your organization, also known as your company account]
 +
 Provide the following information to set up your organization:
 * Company Name (this will be the name of your organization).
@@ -51,7 +51,7 @@ An email will be sent to you asking you to confirm your email address. Once you 
 
 After signing in, you’ll be brought to your organization’s Dashboard tab.
 
-image:getting-started:6.png[Your organization's dashboard with the "Start Trial" button]
+image::getting-started/6.png[Your organization's dashboard with the "Start Trial" button]
 
 . Click “Start Trial”, the Get Started fly-out appears.
 .. Note: If you are starting a Sales Assisted or Proof-of-Concept account, and you have been provided an Activation ID, click the “Add your Activation ID” link.
@@ -61,7 +61,7 @@ image:getting-started:6.png[Your organization's dashboard with the "Start Trial"
 
 Couchbase Cloud needs to establish a connection to your cloud provider in order to create a virtual private cloud (VPC) within your cloud provider account. These VPCs are referred to as xref:cloud:clouds:clouds.adoc[Clouds], and they are leveraged by Couchbase Cloud to provision and manage clusters in your cloud provider account. Review the xref:cloud:clouds:cloud-providers.adoc[Cloud Provider Requirements] before continuing.
 
-image:getting-started:8.png[Select a Cloud Provider]
+image::getting-started/8.png[Select a Cloud Provider]
 
 . Enter the cloud connection details.
 +
@@ -95,7 +95,7 @@ This template contains the necessary configuration for Couchbase Cloud to be abl
 +
 For AWS, the resource template will be in the form of a CloudFormation template:
 +
-image:cloud:getting-started:connect-cloud-aws-template.png["AWS 'Quick create stack' template showing several pre-filled fields, a required IAM acknowledgment checkbox, and buttons at the bottom to 'Create change set' or 'Create stack'.",500]
+image::cloud:getting-started:connect-cloud-aws-template.png["AWS 'Quick create stack' template showing several pre-filled fields, a required IAM acknowledgment checkbox, and buttons at the bottom to 'Create change set' or 'Create stack'.",500]
 +
 You must deploy the template to continue.
 In the case of AWS, deploy the template by checking the box labeled [.ui]*I acknowledge that AWS CloudFormation might create IAM resources with custom names* and then clicking btn:[Create stack].
@@ -107,13 +107,13 @@ Once the basic stack deployment is complete, and the initial connection is estab
 +
 You’ll know that the entire VPC deployment was successful once all of the steps are complete, and the Connection Status changes to _Connected_.
 +
-image:getting-started:10a.png[You’ll know that the entire VPC deployment was successful once all of the steps are complete, and the Connection Status changes to Connected.]
+image::getting-started/10a.png[You’ll know that the entire VPC deployment was successful once all of the steps are complete, and the Connection Status changes to Connected.]
 
 === Name your Project and Cluster
 
 Each cluster must be created within a xref:cloud:projects:projects.adoc[_project_]. Projects are the logical mechanism for grouping and managing clusters within your organization.
 
-image:getting-started:12.png[Name your project and cluster]
+image::getting-started/12.png[Name your project and cluster]
 
 . Enter a name for the project in the Project Name field.
 . Enter a name for your cluster in the Cluster Name field. (Note that this isn’t the cluster’s hostname, and can be changed at any time.)
@@ -125,7 +125,7 @@ Now that you’ve connected a cloud, created a project, and given a name to your
 
 The Cluster Sizing screen provides pre-defined cluster templates to make getting started easy. (You can read more about configuring a custom deployment in xref:cloud:clusters:sizing.adoc[Cluster Sizing].)
 
-image:getting-started:13.png[The Cluster Sizing screen provides pre-defined cluster templates to make getting started easy.]
+image::getting-started/13.png[The Cluster Sizing screen provides pre-defined cluster templates to make getting started easy.]
 
 . Under Cluster Sizing, select the "Quick Start 30-Day Trial" cluster template.
 +
@@ -141,19 +141,19 @@ Click Next.
 
 This brings you to the Deploy Cluster screen.
 
-image:getting-started:14.png[The Deploy Cluster screen]
+image::getting-started/14.png[The Deploy Cluster screen]
 
 The Deploy Cluster screen shows a summary of the configuration details. Review the configuration to ensure that it meets your expectations. You can click the Prev button at the bottom of the page to go back and make any necessary changes.
 
 Further down the page, in the Select Support Plan section, you must select a Support Plan for the cluster.
 
-image:getting-started:14b.png[Select a Support Plan for the cluster]
+image::getting-started/14b.png[Select a Support Plan for the cluster]
 
 Select “30-Day Trial”. Click Deploy.
 
 Couchbase Cloud will proceed with automatically deploying the cluster on your connected cloud.
 
-image:getting-started:15.png[Once you click Deploy, Couchbase Cloud will proceed with automatically deploying the cluster on your connected cloud]
+image::getting-started/15.png[Once you click Deploy, Couchbase Cloud will proceed with automatically deploying the cluster on your connected cloud]
 
 A cluster will generally take up to 15 minutes to deploy.
 
@@ -166,11 +166,11 @@ The following steps discuss how to grant database permissions directly to _yours
 
 . Go to the [.ui]*Users* tab in the main navigation.
 +
-image:getting-started:18.png["The 'Users' view."]
+image::getting-started/18.png["The 'Users' view."]
 
 . Click on your user name to open the user properties fly-out menu:
 +
-image:getting-started:19.png["A user's fly-out menu.",500]
+image::getting-started/19.png["A user's fly-out menu.",500]
 
 . In the [.ui]*Database Users* section, click [.ui]*Add Another*.
 
@@ -195,7 +195,7 @@ For the purposes of this guide, it's recommended that you leave the [.ui]*Choose
 +
 Select [.ui]*Read/Write* access. If you left the [.ui]*Choose Buckets* field blank, this means you'll have read/write permissions for all current and future buckets on the cluster.
 +
-image:getting-started:21.png[Configure bucket access]
+image::getting-started/21.png[Configure bucket access]
 --
 
 . Once you've finished making the desired configurations, click btn:[Save].
@@ -211,7 +211,7 @@ Go to the Clusters tab in the main navigation and click on your new cluster.
 
 Sample buckets can be found under each cluster’s Tools > Import tab.
 
-image:getting-started:23c.png[Sample buckets are found under each cluster's Tools > Import tab]
+image::getting-started/23c.png[Sample buckets are found under each cluster's Tools > Import tab]
 
 Under Sample Buckets, click the Import button next to the available sample buckets to load them into your cluster. (Note that it may take some time for a sample bucket to load and show up in the relevant areas of the Couchbase Cloud UI.
 
@@ -219,7 +219,7 @@ In Couchbase, buckets serve as the mechanism for storing data, and are the princ
 
 All of the buckets on a cluster can be viewed from the cluster’s Buckets tab.
 
-image:getting-started:23d.png[All of the buckets on a cluster can be viewed from the cluster’s Buckets tab]
+image::getting-started/23d.png[All of the buckets on a cluster can be viewed from the cluster’s Buckets tab]
 
 For more information about interacting with buckets, refer to xref:cloud:clusters:data-service/manage-buckets.adoc[Manage Buckets].
 
@@ -246,7 +246,7 @@ SELECT * FROM `travel-sample` WHERE type="airport" LIMIT 10;
 
 When executed, this query returns a maximum of 10 airport documents, and lists all of the fields that it contains. To execute the query, click Execute. The results are displayed in the Query Results field:
 
-image:getting-started:24.png[Results of a query are displayed in the Query Results field]
+image::getting-started/24.png[Results of a query are displayed in the Query Results field]
 
 N1QL also supports ANSI JOIN syntax. Following is an example query with a JOIN clause.
 
@@ -267,7 +267,7 @@ ORDER BY route.sourceairport;
 
 The results are displayed in the Query Results field:
 
-image:getting-started:25.png[Results of the query]
+image::getting-started/25.png[Results of the query]
 
 To learn more about using the Query Workbench, refer to xref:cloud:clusters:query-service/query-workbench.adoc[Query Workbench].
 
@@ -277,7 +277,7 @@ Couchbase Cloud Full Text Search (FTS) lets you create, manage, and query specia
 
 The Full Text Search editor is available under each cluster’s Tools > Full Text Search tab.
 
-image:getting-started:26.png[The Full Text Search editor is available under each cluster’s Tools > Full Text Search tab]
+image::getting-started/26.png[The Full Text Search editor is available under each cluster’s Tools > Full Text Search tab]
 
 Click btn:[Add Index]; the Add Index fly-out appears.
 
@@ -287,52 +287,52 @@ Enter the following information and then click btn:[Continue to configuration]:
 * Name: “hotels”
 * Bucket: Select “travel-sample”
 
-image:getting-started:28.png[Enter the basic details for your Search index]
+image::getting-started/28.png[Enter the basic details for your Search index]
 
 The Index Details for the hotels search index are displayed.
 
-image:getting-started:29.png[Index details for the hotels search index]
+image::getting-started/29.png[Index details for the hotels search index]
 
 Scroll down to the Index Settings
 
 Under Type Mappings, click “Add Mapping”
 
-image:getting-started:29a.png[Under Type Mappings, click Add Mapping]
+image::getting-started/29a.png[Under Type Mappings, click Add Mapping]
 
 The “Add Mapping” fly-out appears.
 
 Under name, enter “hotel”
 
-image:getting-started:30.png[On the Add Mapping fly-out, provide the name "hotel" for the mapping]
+image::getting-started/30.png[On the Add Mapping fly-out, provide the name "hotel" for the mapping]
 
 Click “Create Mapping”
 The type mappings setting should look like so:
 
-image:getting-started:32.png[Screen displaying the type mappings setting]
+image::getting-started/32.png[Screen displaying the type mappings setting]
 
 Click “Create Index”
 
 The “hotels” Full Text index is displayed on the Full Text Search page.
 
-image:getting-started:33.png[The “hotels” Full Text index is displayed on the Full Text Search page]
+image::getting-started/33.png[The “hotels” Full Text index is displayed on the Full Text Search page]
 
 Now we can test the search index.
 
 Click the “hotels” Full Text Index to view its details.
 
-image:getting-started:34.png [Click the “hotels” Full Text Index to view its details]
+image::getting-started/34.png [Click the “hotels” Full Text Index to view its details]
 
 Click the Search button, the Search fly-out appears.
 
-image:getting-started:35.png[Click the Search button, the Search fly-out appears]
+image::getting-started/35.png[Click the Search button, the Search fly-out appears]
 
 Under Settings, enter “free wifi” then click the Search button.
 
-image:getting-started:35a.png[Enter "free wifi" and then click Search]
+image::getting-started/35a.png[Enter "free wifi" and then click Search]
 
 All hotel documents with matching terms are listed.
 
-image:getting-started:35b.png[All hotel documents with matching terms are listed]
+image::getting-started/35b.png[All hotel documents with matching terms are listed]
 
 Experiment with other search terms. Click the x in the upper right to close the Search fly-out screen.
 
@@ -351,7 +351,7 @@ Now that you have your environment established, lets gather some connection info
    This opens the cluster with its Overview tab selected.
 .. Click the Connect tab.
 +
-image:getting-started:36.png[On the cluster's Connect tab, select your cluster and click the Connect tab]
+image::getting-started/36.png[On the cluster's Connect tab, select your cluster and click the Connect tab]
 
 . The Endpoint will be used for connecting to this cluster in the subsequent tutorial exercises. For now, copy and paste the endpoint to a text file and set aside.
 
@@ -361,7 +361,7 @@ image:getting-started:36.png[On the cluster's Connect tab, select your cluster a
 
 . Click the Allowed IPs button. The Allowed IPs fly-out appears.
 
-image:getting-started:37.png[Note and add your own IP to the list of Allowed IPs]
+image::getting-started/37.png[Note and add your own IP to the list of Allowed IPs]
 
 . Under Allow an IP, enter your IP address.
 
