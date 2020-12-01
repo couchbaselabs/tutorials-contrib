@@ -1,0 +1,2 @@
+* xref:cbc-self-service-trials:index.adoc[Overview]
+* xref:cbc-self-service-trials:getting-started.adoc[Get Started with Your Trial Cluster]
