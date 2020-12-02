@@ -1,0 +1,156 @@
+= Using SDKs with Couchbase Cloud
+:imagesdir: ../assets/images
+
+This is the second tutorial in the series of “First Timer” tutorials. By following the steps in order, you will end up with a sample application that illustrates how Couchbase Cloud can power your own applications. Let's get going!
+
+[horizontal]
+*Step 1*:: <<install-couchbase-sdk>>
+*Step 2*:: <<connect-sdk-to-cloud>>
+*Step 3*:: <<your-first-app-hello-couchbase>>
+*Step 4*:: <<run-sample-app>>
+
+[#install-couchbase-sdk]
+== Install Couchbase Node.js SDK 
+
+. Visit the xref:home::sdk.adoc[Couchbase SDK] page on Couchbase Documentation site.
++
+image::connect-sdk-cbc/sdk1a.png[This page gives you an overview of the SDKs available for you to develop Couchbase Cloud powered applications]
++
+This page gives you an overview of the SDKs available for you to develop Couchbase Cloud powered applications.
++
+For the purpose of this tutorial, we will be using the Couchbase Node.js SDK.
+
+. Click the Node.js SDK link. 
++
+image::connect-sdk-cbc/sdk2a.png[Select the Node.js SDK]
++
+This takes you to the Node.js SDK documentation. In the left-hand navigation, select xref:nodejs-sdk:hello-world:start-using-sdk.adoc[Start Using the Node.js SDK].
++
+image::connect-sdk-cbc/sdk3.png[In the left-hand navigation of the Node.js SDK documentation, select "Start Using the Node.js SDK"]
++
+
+. Follow the instructions to xref:nodejs-sdk:hello-world:start-using-sdk.adoc#installing-the-sdk[install the Node.js SDK].
++
+Copy and paste the code snippets into your IDE of choice.
+
+[#connect-sdk-to-cloud]
+== Connect Couchbase Node.js SDK to Couchbase Cloud
+
+. Once you have installed Couchbase Node.js SDK, proceed to the step titled xref:nodejs-sdk:hello-world:start-using-sdk.adoc#hello-couchbase[Hello Couchbase].
++
+When copying and pasting the code to your own code editor, substitute your own Couchbase Cloud endpoint and database username and password.
+
+.. Replace the word "localhost" in the following line with your cluster endpoint.
++
+----
+const cluster = new couchbase.Cluster("couchbase://localhost", 
+{
+----
++
+To the end of your endpoint URL, paste this parameter string:
++
+----
+?ssl=no_verify&console_log_level=5
+----
++
+The cluster URL now looks something like this:
++
+----
+couchbase://922de0-d289-455e-a873-2597aa59.dp.cloud.couchbase.com?ssl=no_verify&console_log_level=5
+----
+
+.. Replace the word "Administrator" with your cluster database user in the following line:
++
+----
+username: "Administrator",
+----
+
+.. Replace the word "password" with your cluster database user password in the following line:
++
+----
+password: "password",
+----
++
+image::connect-sdk-cbc/sdk4.png[Provide details to connect to your cluster]
++
+NOTE: For the purpose of this tutorial, you can safely ignore the text referring to an alternate “Cloud section” on the documentation page and referring to the localhost installation - they do not apply in this exercise.
+
+
+[#your-first-app-hello-couchbase]
+== Run your First App: Hello Couchbase
+
+Move to the next code block and continue copying and pasting the code from the exercise into your code editor.
+
+Complete all the steps on the xref:nodejs-sdk:hello-world:start-using-sdk.adoc[Install and Start Using the Node.js SDK with Couchbase Server] page (making the appropriate changes to the connection endpoint and database username and password for your Couchbase Cloud cluster).
+
+When you run the index.js sample code, it should successfully upload a new document to your Couchbase Cloud “travel-sample” bucket, specifically for a new airline called “Couchbase Airways”
+
+Congratulations, you’ve just developed your first application that interacts with Couchbase Cloud!
+
+
+[#run-sample-app]
+== Run Couchbase Node.js SDK Sample Application
+
+Now we will connect a more fully developed Node.js sample application to your Couchbase Cloud cluster.
+
+Go to the Node.js SDK documentation page for xref:nodejs-sdk:hello-world:sample-application.adoc[sample application].
+
+image::connect-sdk-cbc/sdk5.png[Node.js SDK documentation page for sample application]
+
+The Couchbase Cloud Node.js Sample Application shows you how to program interactions with the Couchbase Server via the data, Query, and search services — using the Travel Sample Application called CB Travel with the travel-sample data bucket on your Couchbase Cloud cluster.
+
+The sample app requires the “hotels” Full Text Seach index that you created in the previous tutorial in the series: xref:cbc-self-service-trials:getting-started.adoc[Getting Started with Couchbase Cloud Free Trial].
+
+NOTE: Because you are using Couchbase Cloud, and your Full Text Search index is already created, you can ignore the preamble on the page about server installation and search index.
+
+=== Install the Sample Application
+
+On the Node.js Sample Application page under “Preparation”, follow the instructions to get the sample app from github.
+
+In the section “Running the Travel Sample Application”, follow these instructions to edit the `index.js` file in the application code.
+
+. Open `index.js` for editing.
+
+. Find the commented line that says “// Create a Couchbase Cluster connection” (around line 13). You will edit the cluster URL, username and password under the commented line.
+
+. Find and replace “localhost” with your Couchbase Cloud cluster endpoint.
+
+. Paste the following parameter string to end of the endpoint URL: 
++
+`?ssl=no_verify&console_log_level=5`
++
+The cluster URL now looks something like the following:
++
+----
+couchbase://922de0-d289-455e-a873-2597aa59.dp.cloud.couchbase.com?ssl=no_verify&console_log_level=5
+----
+
+. Find and replace “Administrator” with your cluster database username.
+
+. Find and replace “password” with your cluster database user password.
++
+image::connect-sdk-cbc/sdk6.png[Screenshot highlighting the updates to cluster creation details]
+
+. After making the adjustments to `index.js`, save the file.
+
+. Follow the remaining instructions on the Node.js Sample Application page to build and run the Sample Application, then log in to the app at http://localhost:8080.
++
+image::connect-sdk-cbc/sdk7.png[Run the sample application and log in to the app]
+
+. Under “Please Take a Moment to Create an Account”, check the “New User” box and enter any arbitrary username and password to create an account and sign in.
++
+image::connect-sdk-cbc/sdk8.png[Create an account and sign in to the app]
+
+. Click the globe icon in the upper right corner to go to the hotel search page.
++
+image::connect-sdk-cbc/sdk9.png[Go to the hotel search page]
+
+. Enter a search term such as “bed & breakfast” in “San Francisco”, then click btn:[Find Hotels].
++
+image::connect-sdk-cbc/sdk10.png[Enter a search term and click the Find Hotels button]
++
+The hotel search feature in the Sample Application uses the “hotels” Full Text Search index you created on your Couchbase Cloud cluster in the xref:cbc-self-service-trials:getting-started.adoc[previous tutorial].
+
+Congratulations, you have successfully connected a working Node.js application to your cluster on Couchbase Cloud!
+
+// In the next tutorial, we will walk through the process of setting up an Analytics dataset, then show how to connect to and visualize the data using a BI tool.
