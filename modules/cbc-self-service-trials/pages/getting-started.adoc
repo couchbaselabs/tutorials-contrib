@@ -6,7 +6,7 @@ Couchbase Cloud is a fully managed database-as-a-service that makes it easy to d
 
 Couchbase Cloud works by creating a virtual private cloud (VPC) within your cloud provider account so that you can securely deploy, manage, and monitor clustered databases through a single user interface.
 
-This tutorial guides you through creating your first cluster, and using it for storing and accessing data.
+This is the first tutorial in the series of “First Timer” tutorials. It guides you through creating your first cluster, and using it for storing and accessing data.
 
 [horizontal]
 *Step 1*:: <<sign-up-free-trial>>
@@ -375,6 +375,6 @@ image::getting-started/37.png[Note and add your own IP to the list of Allowed IP
 
 . Click the Save button, your IP address is saved as an Allowed IP for connecting to your cluster.
 
-Congratulations! You are now ready for the next set of exercises in the next “First Timers” tutorial, xref:cbc-self-service-trials:connect-application.adoc[Connecting an Application to Couchbase Cloud].
+Congratulations! You are now ready for the next set of exercises in the next “First Timers” tutorial, xref:cbc-self-service-trials:using-sdks-with-couchbase-cloud.adoc[Using SDKs with Couchbase Cloud].
 
 
