@@ -10,5 +10,6 @@ By following the steps in order, you will get a whirlwind tour of important Couc
 == Tutorials in this Series
 
 . xref:cbc-self-service-trials:getting-started.adoc[]
+. xref:cbc-self-service-trials:using-sdks-with-couchbase-cloud.adoc[]
 
 
