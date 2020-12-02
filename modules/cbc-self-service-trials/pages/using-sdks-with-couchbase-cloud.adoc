@@ -47,7 +47,11 @@ const cluster = new couchbase.Cluster("couchbase://localhost",
 {
 ----
 +
-To the end of your endpoint URL, paste this parameter string `?ssl=no_verify&console_log_level=5`.
+To the end of your endpoint URL, paste this parameter string:
++
+----
+?ssl=no_verify&console_log_level=5
+----
 +
 The cluster URL now looks something like this:
 +
