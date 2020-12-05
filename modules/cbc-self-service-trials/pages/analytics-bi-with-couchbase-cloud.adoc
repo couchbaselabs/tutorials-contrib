@@ -1,0 +1,104 @@
+= Analytics and BI with Couchbase Cloud
+:imagesdir: ../assets/images
+
+This is the third tutorial in the series of “First Timer” tutorials. By following the steps in order, you will end up with an analytics report that illustrates how Couchbase Cloud can power analysis and data visualization. Let's get going!
+
+[horizontal]
+*Step 1*:: <<run-first-analytics-query>>
+*Step 2*:: <<connect-sdk-to-cloud>>
+*Step 3*:: <<your-first-app-hello-couchbase>>
+*Step 4*:: <<run-sample-app>>
+
+[#run-first-analytics-query]
+== Run Your First Analytics Query
+
+Couchbase Cloud comes equipped with a powerful MPP-based analytics service that provides a parallel data-management capability; allowing the running of complex queries against millions of records without any impact to overall database performance. 
+
+. Create Analytics datasets
++
+Analytics datasets are containers that hold collections of JSON objects. They are similar to tables in an RDBMS or keyspaces in N1QL. 
+A dataset is linked to a Couchbase bucket, so that the dataset can ingest data from Couchbase Server.
++
+Create an analytics dataset using data from the `beer-sample` bucket by following these steps.
+
+.. Log in to your Couchbase Cloud account, then click Clusters in the side navigation. 
++
+Click your cluster name to display the cluster overview screen. 
+
+.. In the Tools menu, select Analytics Workbench.
++
+image::analytics-bi/abi3.png[Select the Analytics Workbench from the Tools menu on your cluster overview screen.]
++
+The Analytics Editor is displayed.
++
+image::analytics-bi/abi4.png[The Analytics Editor is displayed]
+
+.. In the Analytics Editor, paste this statement to create a dataset of breweries made up of all “brewery” type documents in the beer-sample bucket.
++
+[source,n1ql]
+----
+CREATE DATASET breweries ON `beer-sample` WHERE `type` = "brewery";
+----
++
+Click Execute to create the dataset.
++
+You will see the brewery dataset with a yellow indicator to the right of the editor.
++
+image::analytics-bi/abi6.png[The brewery dataset with a yellow indicator is displayed to the right of the Analytics Editor]
+
+.. Next create a dataset of beers made up of all “beer” type documents in the beer-sample bucket.
++
+[source,n1ql]
+----
+CREATE DATASET beers ON `beer-sample` WHERE `type` = "beer";
+----
++
+Click Execute. The beers dataset appears with a yellow indicator to the right of the editor
++
+image::analytics-bi/abi7.png[The beers dataset with a yellow indicator is displayed to the right of the Analytics Editor]
+
+. Link the Analytics Datasets to Your Local 
++
+To link the datasets to your local beer-sample bucket, paste the following statement into the Analytics Editor:
++
+[source,n1ql]
+----
+CONNECT LINK Local;
+----
++
+Click Execute. The datasets should display to the right of the Analytics Editor each with a green icon, indicating successful dataset creation.
++
+image::analytics-bi/abi8.png[When the datasets are created, they are displayed to the right of the Analytics Editor, each with a green icon.]
++
+You have just created 2 datasets linked to your local beer-sample bucket. 
+
+. Now you can analyze the data using N1QL for Analytics.
++
+A big advantage is that N1QL for Analytics can construct new objects to return based on combinations of variable bindings. 
+This gives it the power to do projections and joins much like those done using multi-table FROM clauses in SQL. 
+For example, suppose that you wanted a list of all breweries paired with their associated beers, with the list enumerating the brewery name and the beer name for each such pair. You can do this as follows in N1QL for Analytics while also limiting the answer set size to 3 results.
++
+Copy and paste the following query into to the Analytics Editor:
++
+[source,n1ql]
+----
+SELECT bw.name AS brewer, br.name AS beer
+FROM breweries bw, beers br
+WHERE br.brewery_id = meta(bw).id
+ORDER BY bw.name, br.name
+LIMIT 3;
+----
++
+Click Execute.
++
+image::analytics-bi/abi10.png[The results of your first analytics query are displayed]
++
+Congratulations! You just ran your first analytics query and see the results in the Analytics Editor.
+
+== Run an Analytics Query with JOINs 
+
+Now let's try a more advanced N1QL for Analytics query using JOINs. JOINs enable you to join datasets for richer analysis.
+
+
+
+

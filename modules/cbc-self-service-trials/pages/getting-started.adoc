@@ -216,7 +216,7 @@ Sample buckets can be found under each cluster’s menu:Tools[Import] tab.
 
 image::getting-started/23c.png[Sample buckets are found under each cluster's Tools > Import tab]
 
-Under Sample Buckets, click the Import button next to the available sample buckets to load them into your cluster. (Note that it may take some time for a sample bucket to load and show up in the relevant areas of the Couchbase Cloud UI.)
+Under Sample Data, click the Import button next to the available sample buckets to load them into your cluster. (Note that it may take some time for a sample bucket to load and show up in the relevant areas of the Couchbase Cloud UI.)
 
 In Couchbase, buckets serve as the mechanism for storing data, and are the principal component of the xref:cloud:clusters:data-service/data-service.adoc[Data Service] that runs on every cluster. Buckets are analogous to a database table space or file group, and must be created before you can store any data on a cluster.
 
