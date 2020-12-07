@@ -5,16 +5,15 @@ This is the third tutorial in the series of “First Timer” tutorials. By foll
 
 [horizontal]
 *Step 1*:: <<run-first-analytics-query>>
-*Step 2*:: <<connect-sdk-to-cloud>>
-*Step 3*:: <<your-first-app-hello-couchbase>>
-*Step 4*:: <<run-sample-app>>
+*Step 2*:: <<run-analytics-query-joins>>
+*Step 3*:: <<visualizing-data-on-cloud-using-bi-tools>>
 
 [#run-first-analytics-query]
 == Run Your First Analytics Query
 
 Couchbase Cloud comes equipped with a powerful MPP-based analytics service that provides a parallel data-management capability; allowing the running of complex queries against millions of records without any impact to overall database performance. 
 
-. Create Analytics datasets
+. Create Analytics datasets.
 +
 Analytics datasets are containers that hold collections of JSON objects. They are similar to tables in an RDBMS or keyspaces in N1QL. 
 A dataset is linked to a Couchbase bucket, so that the dataset can ingest data from Couchbase Server.
@@ -53,11 +52,11 @@ image::analytics-bi/abi6.png[The brewery dataset with a yellow indicator is disp
 CREATE DATASET beers ON `beer-sample` WHERE `type` = "beer";
 ----
 +
-Click Execute. The beers dataset appears with a yellow indicator to the right of the editor
+Click Execute. The beers dataset appears with a yellow indicator to the right of the editor.
 +
 image::analytics-bi/abi7.png[The beers dataset with a yellow indicator is displayed to the right of the Analytics Editor]
 
-. Link the Analytics Datasets to Your Local 
+. Link the Analytics Datasets to your local. 
 +
 To link the datasets to your local beer-sample bucket, paste the following statement into the Analytics Editor:
 +
@@ -95,6 +94,7 @@ image::analytics-bi/abi10.png[The results of your first analytics query are disp
 +
 Congratulations! You just ran your first analytics query and see the results in the Analytics Editor.
 
+[#run-analytics-query-joins]
 == Run an Analytics Query with JOINs 
 
 Now let's try a more advanced N1QL for Analytics query using JOINs. 
@@ -126,6 +126,7 @@ Congratulations, you have successfully created analytics datasets using data in 
 
 Go xref:server:analytics:primer-beer.adoc[here] for more information and examples about the Couchbase Analytics Service.
 
+[#visualizing-data-on-cloud-using-bi-tools]
 == Visualizing Data on Couchbase Cloud Using Business Intelligence Tools
 
 Couchbase Cloud Analytics can be analyzed directly using popular business intelligence tools.
@@ -152,7 +153,7 @@ To review the database username and password, click Users in the left navigation
 
 . Download and follow the instructions to install the https://www.cdata.com/drivers/couchbase/jdbc/[CData JDBC Driver For Couchbase] (you can use the free trial).
 
-image::analytics-bi/cdata-page.png[Download and install the CData JDBC Driver for Couchbase]
+image::analytics-bi/cdata_page.png[Download and install the CData JDBC Driver for Couchbase]
 
 . Download and follow the instructions to install https://www.tableau.com/products/desktop/download[Tableau Desktop] (you can use the free trial).
 
@@ -194,13 +195,13 @@ Copy the file `cdata.jdbc.couchbase.jar`.
 * ConnectionMode: Cloud
 * DNSServer: 8.8.8.8
 +
-image::analytics-bi/cdata-jdbc-aa.png[Add the authentication connection properties]
+image::analytics-bi/cdatajdbc_aa.png[Add the authentication connection properties]
 
 . Under Misc connection properties, add the following setting:
 +
 * SSLServerCert: Paste your copied cluster Server Certificate
 +
-image::analytics-bi/cdata-jdbc-bb.png[Paste your copied cluster Server certificate]
+image::analytics-bi/cdatajdbc_bb.png[Paste your copied cluster Server certificate]
 
 . Click btn:[Test Connection] to verify the connection.
 
