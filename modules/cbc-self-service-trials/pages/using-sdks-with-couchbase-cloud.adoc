@@ -91,7 +91,7 @@ Congratulations, you’ve just developed your first application that interacts w
 [#run-sample-app]
 == Run Couchbase Node.js SDK Sample Application
 
-Now we will connect a more fully developed Node.js sample application to your Couchbase Cloud cluster.
+Now we will connect a fully developed Node.js sample application to your Couchbase Cloud cluster.
 
 Go to the Node.js SDK documentation page for xref:nodejs-sdk:hello-world:sample-application.adoc[sample application].
 
