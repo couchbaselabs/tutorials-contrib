@@ -84,9 +84,9 @@ image::eventing/event7.png[There are two documents in the source bucket, each wi
 +
 image::eventing/event3.png[Create an Eventing function]
 +
-The [.ui]*Eventing* screen appears*.
+The [.ui]*Eventing* screen appears.
 +
-image::eventing/event7.png[The Eventing screen is displayed]
+image::eventing/event8.png[The Eventing screen is displayed]
 
 . Click the btn:[Add Function] button. The [.ui]*Add New Function* fly out appears.
 +
