@@ -16,9 +16,9 @@ Let's set up the example!
 
 . Log in to your Couchbase Cloud account, then click [.ui]*Clusters* in the side navigation. Click your cluster name to display the cluster [.ui]*Overview* screen then click the [.ui]*Buckets* tab.
 +
-image::eventing/eventing1.png[Click the buckets tab on your cluster's Overview screen]
+image::eventing/event1.png[Click the buckets tab on your cluster's Overview screen]
 
-. Click the btn:[Add Bucket] button. The [.ui]*Add Bucket* fly out displays
+. Click the btn:[Add Bucket] button. The [.ui]*Add Bucket* fly out appears.
 +
 For this example, two buckets, `source` and `metadata`, are required. (Note that the metadata bucket for Eventing can be shared with other Eventing functions).
 +
@@ -26,23 +26,23 @@ Create the `source` bucket with the default minimum size of 100 MB and click btn
 +
 Repeat the step for the `metadata` bucket.
 +
-image::eventing/eventing2.png[Create two buckets, "source" and "metadata", each with the default minimum size of 100 MB]
+image::eventing/event2.png[Create two buckets, "source" and "metadata", each with the default minimum size of 100 MB]
 +
 You now have 2 new buckets: `source` and `metadata`.
 +
-image::eventing/eventing2a.png[The two buckets, "source" and "metadata", have been created.]
+image::eventing/event2a.png[The two buckets, "source" and "metadata", have been created.]
 +
 IMPORTANT: The `metadata` bucket is for the sole use of the Eventing service. Do not add, modify, or delete documents from this bucket. In addition do not drop, flush, or delete the bucket while you have any deployed Eventing functions.
 
 . Now let's add some data to the source bucket. In the cluster [.ui]*Tools* menu, select [.ui]*Documents*.
 +
-image::eventing/eventing4.png[Add some data to the source bucket]
+image::eventing/event4.png[Add some data to the source bucket]
 
 . In the [.ui]*Bucket* dropdown menu, select `source`.
 +
-image::eventing/eventing5.png[Select source from the bucket drop-down menu]
+image::eventing/event5.png[Select source from the bucket drop-down menu]
 
-. Click the btn:[Add Document] button. The [.ui]*Add Document* fly out displays.
+. Click the btn:[Add Document] button. The [.ui]*Add Document* fly out appears.
 
 . We will give our document a simple ID. Under [.ui]*Document ID* enter `SampleDocument`.
 
@@ -56,7 +56,7 @@ image::eventing/eventing5.png[Select source from the bucket drop-down menu]
 }
 ----
 +
-image::eventing/eventing6.png[Copy the code into the code window]
+image::eventing/event6.png[Copy the code into the code window]
 +
 Click Save.
 
@@ -84,11 +84,11 @@ image::eventing/event7.png[There are two documents in the source bucket, each wi
 +
 image::eventing/event3.png[Create an Eventing function]
 +
-[.ui]*The Eventing screen displays*.
+The [.ui]*Eventing* screen appears*.
 +
-image::eventing/event7.png[The Eventing screen displays]
+image::eventing/event7.png[The Eventing screen is displayed]
 
-. Click the btn:[Add Function] button. The [.ui]*Add New Function* fly out displays.
+. Click the btn:[Add Function] button. The [.ui]*Add New Function* fly out appears.
 +
 image::eventing/event9.png[The Add New Functions fly out is displayed]
 +
@@ -103,15 +103,15 @@ In this example, if any created or altered document contains two specifically na
 *Metqdata Bucket drop-down: Select `metadata`.
 * Settings: Use the default values.
 * Bindings: Click [.ui]*Add one binding*. Under Bindings, click [.ui]*Add* and add the following settings:
-** Bucket Alias: src
-** Bucket: source
-** Permission: "read and write"
+** Bucket Alias: `src`
+** Bucket: `source`
+** Permission: `read and write`
 + 
 After configuring your settings your screen should look like:
 +
 image::eventing/event10.png[Configure your settings for individual function elements]
 +
-Click btn:[Save]. The Javascript code window displays.
+Click btn:[Save]. The Javascript code window appears.
 +
 image::eventing/event11.png[Once you configure and save your settings, the Javascript code window is displayed]
 
@@ -145,29 +145,29 @@ The new fields will be called `ip_num_start` and `ip_num_end`, and their values 
 +
 This effectively automates data mutation whenever a document is added or modified, adding new data to the document based on IP range data it contains.
 +
-Click Save.
+Click btn:[Save].
 
 . In the Eventing screen, click the ellipsis next to the `enrich_ips` function and select [.ui]*Deploy*.
 +
 image::eventing/event13.png[Deploy the enrich_ips function]
 +
-The [.ui]*Confirm Deploy Function* fly out displays. Accept the default feed boundary of `Everything` (which means it will execute against any existing and future documents) and click [.ui]*Deploy*.
+The [.ui]*Confirm Deploy Function* fly out appears. Accept the default feed boundary of `Everything` (which means it will execute against any existing and future documents) and click [.ui]*Deploy*.
 +
 image::eventing/event14.png[Confirm deploy function]
 
-. In the Eventing screen you will see the enrich_ip function has been deployed
+. In the Eventing screen you will see the `enrich_ip` function has been deployed.
 +
-image::eventing/event15.png[The Eventing screen displays that the enrich_ip function has been deployed]
+image::eventing/event15.png[The Eventing screen shows that the enrich_ip function has been deployed]
 +
 Now let's see what changes to the data has been made by the function.
 
 . In the cluster [.ui]*Tools* menu select [.ui]*Documents*.
 
-. In the [.ui]*Documents* screen under [.ui]*Buckets*, select `source`. You will see the two sample documents you created earlier listed.
+. In the [.ui]*Documents* screen under [.ui]*Buckets*, select `source`. The two sample documents you created earlier are listed here.
 +
 image::eventing/event16.png[The two sample documents created earlier are available on the Documents screen]
 +
-Click SampleDocument to open the document for editing. You will see 2 new fields have been created by the Eventing function: `ip_num_start` and `ip_num_end`
+Click `SampleDocument` to open the document for editing. You will see two new fields have been created by the Eventing function: `ip_num_start` and `ip_num_end`
 +
 image::eventing/event17.png[Two new fields have been created by the Eventing functions]
 
