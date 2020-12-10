@@ -1,0 +1,191 @@
+= Working with the Eventing Service in Couchbase Cloud
+:imagesdir: ../assets/images
+
+This is the fourth tutorial in the series of “First Timer” tutorials. By following the steps in order, you will use the Couchbase Cloud Eventing Service to automate actions based on changes to data.
+
+The Couchbase Eventing Service is a framework to automate operations based on changes to data in real time. “Events” are triggered by changes to data (known as “mutations”) in the Couchbase Cloud cluster. The Couchbase Cloud cluster considers create, update, expiry, or delete operations as a data mutation. Natively integrated with Couchbase Cloud, the Eventing Service does not require any third party solutions to manage and respond to data mutations. In an event-based architecture, all data changes are reacted to in real-time.
+
+[#eventing-data-enrichment]  
+== Use Case: Eventing for Data Enrichment
+
+In this simple example we will show you how to enrich data with new searchable attributes by automatically adding them to the document. These new attributes are related to and can be calculated from the original attributes. On any mutation (a document creation or modification) the new attributes should automatically be created (or updated).
+
+Let's set up the example!
+
+=== Setting up the example data buckets
+
+. Log in to your Couchbase Cloud account, then click [.ui]*Clusters* in the side navigation. Click your cluster name to display the cluster [.ui]*Overview* screen then click the [.ui]*Buckets* tab.
++
+image::eventing/event1.png[Click the buckets tab on your cluster's Overview screen]
+
+. Click the btn:[Add Bucket] button. The [.ui]*Add Bucket* fly out appears.
++
+For this example, two buckets, `source` and `metadata`, are required. (Note that the metadata bucket for Eventing can be shared with other Eventing functions).
++
+Create the `source` bucket with the default minimum size of 100 MB and click btn:[Save]. 
++
+Repeat the step for the `metadata` bucket.
++
+image::eventing/event2.png[Create two buckets, "source" and "metadata", each with the default minimum size of 100 MB]
++
+You now have 2 new buckets: `source` and `metadata`.
++
+image::eventing/event2a.png[The two buckets, "source" and "metadata", have been created.]
++
+IMPORTANT: The `metadata` bucket is for the sole use of the Eventing service. Do not add, modify, or delete documents from this bucket. In addition do not drop, flush, or delete the bucket while you have any deployed Eventing functions.
+
+. Now let's add some data to the source bucket. In the cluster [.ui]*Tools* menu, select [.ui]*Documents*.
++
+image::eventing/event4.png[Add some data to the source bucket]
+
+. In the [.ui]*Bucket* dropdown menu, select `source`.
++
+image::eventing/event5.png[Select source from the bucket drop-down menu]
+
+. Click the btn:[Add Document] button. The [.ui]*Add Document* fly out appears.
+
+. We will give our document a simple ID. Under [.ui]*Document ID* enter `SampleDocument`.
+
+. Copy the following code and paste it into the code window:
++
+----
+{
+"country": "AD",
+  "ip_start": "5.62.60.1",
+  "ip_end": "5.62.60.9"
+}
+----
++
+image::eventing/event6.png[Copy the code into the code window]
++
+Click Save.
+
+. Repeat the steps for another document in the `source` bucket:
++
+Under [.ui]*Document ID* enter `AnotherSampleDocument`.
++
+Copy and paste the following code into the code window:
++
+----
+{
+  "country": "RU",
+  "ip_start": "7.12.60.1",
+  "ip_end": "7.62.60.9"
+}
+----
++
+Click Save.
++
+You should now see two documents in the `source` bucket, each with simple IP address data.
++
+image::eventing/event7.png[There are two documents in the source bucket, each with a simple IP address data]
+
+. Now we will create our Eventing function. In the cluster [.ui]*Tools* menu, select [.ui]*Eventing*.
++
+image::eventing/event3.png[Create an Eventing function]
++
+The [.ui]*Eventing* screen appears.
++
+image::eventing/event8.png[The Eventing screen is displayed]
+
+. Click the btn:[Add Function] button. The [.ui]*Add New Function* fly out appears.
++
+image::eventing/event9.png[The Add New Functions fly out is displayed]
++
+We will create a JavaScript function that contains an OnUpdate handler. The handler listens for data changes within a specified source bucket. When any document within the bucket is created or modified, the handler executes a user-defined routine.
++
+In this example, if any created or altered document contains two specifically named fields containing IP addresses (these respectively corresponding to the beginning and end of an address-range), the handler-routine converts each of the IP addresses to an integer and upserts them as new fields in the document.
+
+. In the [.ui]*ADD FUNCTION* dialog, for individual Function elements provide the below information:
++
+* `enrich_ips` : Enter the name of the Function you are creating in the Function Name text-box.
+* Source Bucket drop-down: Select `source`.
+*Metqdata Bucket drop-down: Select `metadata`.
+* Settings: Use the default values.
+* Bindings: Click [.ui]*Add one binding*. Under Bindings, click [.ui]*Add* and add the following settings:
+** Bucket Alias: `src`
+** Bucket: `source`
+** Permission: `read and write`
++ 
+After configuring your settings your screen should look like:
++
+image::eventing/event10.png[Configure your settings for individual function elements]
++
+Click btn:[Save]. The Javascript code window appears.
++
+image::eventing/event11.png[Once you configure and save your settings, the Javascript code window is displayed]
+
+. Copy the following code and paste it to the Javascript code window (paste over the default text in the code window):
++
+[source,javascript]
+----
+function OnUpdate(doc, meta) {
+  log('document', doc);
+  doc["ip_num_start"] = get_numip_first_3_octets(doc["ip_start"]);
+  doc["ip_num_end"]   = get_numip_first_3_octets(doc["ip_end"]);
+  // !!! write back to the source bucket !!!
+  src[meta.id]=doc;
+}
+function get_numip_first_3_octets(ip) {
+  var return_val = 0;
+  if (ip) {
+    var parts = ip.split('.');
+    //IP Number = A x (256*256*256) + B x (256*256) + C x 256 + D
+    return_val = (parts[0]*(256*256*256)) + (parts[1]*(256*256)) + (parts[2]*256) + parseInt(parts[3]);
+    return return_val;
+  }
+}
+----
++
+image::eventing/event12.png[Copy the code provided and paste it to the Javascript code window]
++
+The code will automatically create two new fields when it encounters the fields `ip_start` or `ip_end`.
++
+The new fields will be called `ip_num_start` and `ip_num_end`, and their values will be created by converting each of the IP addresses to an integer and upserting them as new fields in the document. The `get_numip_first_3_octets` routine splits the IP address, converts each fragment to a numeral, and adds the numerals together, to form a single value; which it returns.
++
+This effectively automates data mutation whenever a document is added or modified, adding new data to the document based on IP range data it contains.
++
+Click btn:[Save].
+
+. In the Eventing screen, click the ellipsis next to the `enrich_ips` function and select [.ui]*Deploy*.
++
+image::eventing/event13.png[Deploy the enrich_ips function]
++
+The [.ui]*Confirm Deploy Function* fly out appears. Accept the default feed boundary of `Everything` (which means it will execute against any existing and future documents) and click [.ui]*Deploy*.
++
+image::eventing/event14.png[Confirm deploy function]
+
+. In the Eventing screen you will see the `enrich_ip` function has been deployed.
++
+image::eventing/event15.png[The Eventing screen shows that the enrich_ip function has been deployed]
++
+Now let's see what changes to the data has been made by the function.
+
+. In the cluster [.ui]*Tools* menu select [.ui]*Documents*.
+
+. In the [.ui]*Documents* screen under [.ui]*Buckets*, select `source`. The two sample documents you created earlier are listed here.
++
+image::eventing/event16.png[The two sample documents created earlier are available on the Documents screen]
++
+Click `SampleDocument` to open the document for editing. You will see two new fields have been created by the Eventing function: `ip_num_start` and `ip_num_end`
++
+image::eventing/event17.png[Two new fields have been created by the Eventing functions]
+
+. Optionally open the AnotherSampleDocument document to see its changes.
+
+. Experiment! In either document, make a minor edit to the `ip_start` field by changing the IP address slightly. Once you save it, the `ip_num_start` field will update accordingly.
+
+Congratulations! You have just created and deployed an Eventing Function to your Couchbase Cloud cluster. The function automates the update of data based on changes in the document. Eventing can just as easily perform other useful functions like cascading deletes or calling external REST services for more advanced automatic responses to data changes.
+
+. Once you are done with this example, it’s best practice to clean up the demo by undeploying the function and deleting the `source` and `metadata` buckets. In the [.ui]*Eventing* menu, click on the ellipsis next to `enrich_ip` and select [.ui]*Undeploy*. 
++
+image::eventing/event18.png[As a best practice, clean up the demo by undeploying the function and deleting the source and metadata buckets.]
++
+Once it shows [.ui]*Undeployed*, click the ellipsis next to the function and select [.ui]*Delete*.
+
+. Next, you can safely delete the source and metadata buckets.
+
+To learn more about the Eventing Service on Couchbase Cloud and try other examples, check out the documentation https://docs.couchbase.com/server/current/eventing/eventing-overview.html[here].
+
+
+
