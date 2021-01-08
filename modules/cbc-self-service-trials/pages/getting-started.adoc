@@ -1,10 +1,13 @@
 = Getting Started with Couchbase Cloud Free Trial
 :imagesdir: ../assets/images
+:tabs:
 
 [abstract]
 Couchbase Cloud is a fully managed database-as-a-service that makes it easy to deploy a clustered database in the public cloud.
 
 Couchbase Cloud works by creating a virtual private cloud (VPC) within your cloud provider account so that you can securely deploy, manage, and monitor clustered databases through a single user interface.
+
+NOTE: Deploying Couchbase Cloud to Microsoft Azure? Make sure to complete the Azure account prerequisites xref:cbc-azure-cloud:azure-cloud-connection-prerequisites.adoc[HERE] before continuing!
 
 This is the first tutorial in the series of “First Timer” tutorials. It guides you through creating your first cluster, and using it for storing and accessing data.
 
@@ -96,12 +99,26 @@ If the console doesn't open, make sure that your browser is configured to allow 
 After logging into your cloud provider's console, a pre-configured resource template will be displayed in the region that you specified.
 This template contains the necessary configuration for Couchbase Cloud to be able to connect to your cloud provider and deploy a VPC under your account.
 +
+[{tabs}]
+====
+AWS::
+--
 For AWS, the resource template will be in the form of a CloudFormation template:
-+
+
 image::cloud:get-started:connect-cloud-aws-template.png["AWS 'Quick create stack' template showing several pre-filled fields, a required IAM acknowledgment checkbox, and buttons at the bottom to 'Create change set' or 'Create stack'.",500]
-+
-You must deploy the template to continue.
-In the case of AWS, deploy the template by checking the box labeled [.ui]*I acknowledge that AWS CloudFormation might create IAM resources with custom names* and then clicking btn:[Create stack].
+--
+
+Azure::
+--
+For Azure, the resource template will be in the form of a Custom Deployment template:
+
+image::cbc-azure-cloud:azure-template-deployment.png[The Azure resource template will be in the form of a custom deployment template]
+--
+====
+
+. You must deploy the template to continue.
+* In AWS, deploy the template by checking the box labeled [.ui]*I acknowledge that AWS CloudFormation might create IAM resources with custom names* and then clicking btn:[Create stack].
+* In Azure, click Review + create, then on the next screen deploy the template by clicking Create
 +
 Once the stack begins to deploy, return to the Couchbase Cloud UI.
 (It's safe to close your cloud provider console.)

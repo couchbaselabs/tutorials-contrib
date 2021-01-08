@@ -1,0 +1,218 @@
+= Couchbase Cloud: Azure Cloud Connection Prerequisites
+:imagesdir: ../assets/images
+:tabs:
+
+There are three prerequisites for the Azure Cloud connection with Couchbase Cloud.
+
+. You must register the Microsoft.ContainerService Resource Provider for your subscription. This provider is necessary to enable Couchbase Cloud to use the Azure Kubernetes Service (AKS).
+. You must register the Enterprise Application from Couchbase Cloud. This enables the
+registration of an Application in the Azure Tenant at the time of connecting Couchbase Cloud with Azure. The Application in the Tenant allows Couchbase Cloud to provision infrastructure within the Tenant level. There will be one Enterprise Application and one Application per Tenant that Couchbase Cloud has a cloud connection to.
+. You must ensure that the Azure account used when making a connection between Couchbase Cloud and Azure has “Owner” privilege on the subscription in that user's tenant. This is necessary for the Azure Resource Manager (ARM) Template to execute and create the infrastructure necessary for Couchbase Cloud to use Azure.
+
+Before starting this process, make sure you have the following:
+
+* An Azure user account with the Global Administrator role on the tenant that will be used with Couchbase Cloud.
+* An Azure user account that will be used when creating Azure cloud connections for Couchbase Cloud.
+* The Azure CLI installed or use of Azure Cloud Shell Feature (more information on the CLI here: https://docs.microsoft.com/en-us/azure/cloud-shell/overview).
+
+[#register-microsoft-containerservice-resource-provider]
+== Register the Microsoft.ContainerService Resource Provider
+
+. Go to the Azure portal and login with a user account that has the Global Administrator role.
+
+. On the Home dashboard, click Subscriptions.
++
+image::azure-home-select-subscriptions.png[Select subscriptions on the Home dashboard]
+
+. On the Subscriptions screen, select the subscription you want to use with Couchbase Cloud by clicking its name.
++
+image::azure-subscriptions-list.png[Select the subscription you want to use with Couchbase Cloud]
++
+The properties for your subscription will display.
+
+. In the left side navigation, select “Resource Providers”. A list of resource providers will display in the main panel.
++
+In the “Filter by name” text box, type “Microsoft.ContainerService”, this will filter the list to just that service.
++
+Click on “Microsoft.ContainerService” in the Provider list, then click “Register” to register the service.
++
+image::azure-register-resource.png[Select the Microsoft.ContainerService from the list of resource providers and click "Register".]
+
+
+[#register-couchbase-cloud-enterprise-application]
+== Register the Couchbase Cloud Enterprise Application
+
+. Install the Azure CLI
++
+NOTE: If you are using Azure Cloud Shell or the Azure CLI is already installed, this step can be skipped.
++
+Copy, paste and run the following code in a terminal shell:
++
+[{tabs}]
+====
+Mac OS::
++
+--
+[source,bash]
+----
+brew update && brew install azure-cli
+----
+--
+
+Windows Powershell(as Administrator)::
++
+--
+[source,bash]
+----
+Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; rm .\AzureCLI.msi
+----
+--
+====
++
+For more information on the Azure CLI or to install on other OS’s, go the Azure CLI page https://docs.microsoft.com/en-us/cli/azure/install-azure-cli[here].
+
+. Login to Azure
++
+Once the CLI is installed, you can log in to Azure. 
++
+At the command prompt, type `az login` and press the Enter key.
++
+Your browser window will open and you will be prompted to login to Azure. You must use an account that has the *Global Administrator* role for your Azure tenant.
++
+Once you are authenticated, the terminal window displays a message as shown:
++
+image::azure-cli-login.png[Upon successful authentication, the terminal window displays a message with status Enabled.]
+
+. Register Couchbase Azure Enterprise Application
++
+The Couchbase Cloud app needs to be registered as an Enterprise Application
+(service principal) in your Azure tenant.
++
+The Couchbase Azure App ID is: *8e365e8c-03f4-4f5e-ae3f-b432805a56e5*
++
+At the command prompt, copy, paste and run the following command:
++
+[source,bash]
+----
+az ad sp create --id 8e365e8c-03f4-4f5e-ae3f-b432805a56e5
+----
++
+You should see information about the Couchbase Cloud Enterprise App on the terminal window as shown:
++
+image::azure-cli-register-app.png[Information about the Couchbase Cloud Enterprise App is displayed on the terminal]
++
+NOTE: An error message `Insufficient privileges to complete the operation.` at this point indicates that your Azure login lacks the Global Administrator role. You must try again with the appropriate role. 
+
+
+[#grant-admin-consent-for-couchbase-cloud-enterprise-app]
+== Grant Admin Consent for Couchbase Cloud Enterprise Application
+
+Once the Couchbase Cloud Enterprise Application is registered, you must grant Admin Consent for the application. This enables the registration of an Application in the Azure Tenant at the time of connecting Couchbase Cloud with Azure. The Application in the Tenant allows Couchbase Cloud to provision infrastructure within the Tenant level.
+
+. Log in to the Azure Portal as a user who has the Global Administrator role.
+
+. In the portal, select Enterprise Applications , in the left side navigation select “All Applications”.
++
+All Enterprise Applications will be listed.
++
+image::azure-select-ent-app.png[The Enterprise Applications are listed]
+
+. In the filter text box above the list of Enterprise Applications, enter the application ID *8e365e8c-03f4-4f5e-ae3f-b432805a56e5*.
++
+The “Couchbase Cloud” Enterprise Application will be listed.
++
+image::azure-ent-app-search.png[The Couchbase Cloud Enterprise Application is listed]
+
+. Click on the “Couchbase Cloud” Enterprise Application in the list, the Overview screen displays.
++
+Click “Permissions” in the left side navigation.
++
+image::azure-ent-app-select-permissions.png[Click "Permissions" on the Overview screen]
+
+. Click the button labeled “Grant Admin Consent for Couchbase, Inc.”
++
+image::azure-ent-app-grant-admin-consent.png[Click the button "Grant Admin Consent for Couchbase, Inc.”]
+
+. You will be prompted to log in to your account again. Ensure that you are using the same Azure user account with the *Global Administrator* role. After logging in, you will see a permission acceptance dialog.
++
+image::azure-admin-consent-request.png[After logging in, you will be presented with a permission acceptance dialog]
++
+Click “Accept”.
+
+. In the Azure portal on the Enterprise Applications Permissions screen, click “Refresh”. The permissions for the Couchbase Cloud Enterprise Application are displayed.
++
+image::azure-admin-consent-granted.png[The permissions for the Couchbase Cloud Enterprise Application are displayed.]
+
+[#grant-azure-user-owner-privilege-to-subscription]
+== Grant Azure User Owner Privilege to Subscription
+
+Lastly, you must grant the “Owner” privilege to the Azure user account that will be creating the connection to Azure in Couchbase Cloud (this assumes that you will be using a different Azure user account to create a connection in Couchbase Cloud.)
+
+. Login to your Azure Cloud Portal as an existing administrator of the subscription that will be used with Couchbase Cloud.
+
+. Click “Subscriptions”.
++
+image::azure-home-select-subscriptions.png[Select subscriptions on your Azure Cloud Portal home]
+
+. On the Subscriptions screen, click on your account subscription name in the subscriptions list.
++
+image::azure-subscriptions-list.png[Select your account subscription]
++
+The properties for your subscription are displayed.
++
+image::azure-sub-properties.png[The properties for your subscription are displayed]
+
+
+[#grant-azure-user-as-owner-of-subscription]
+== Add Azure User as an Owner of the Subscription
+
+. In the left side navigation, select “Access Control (IAM)" and click “Add”.
++
+image::azure-add-sub-role.png[Select “Access Control (IAM)" in the left navigation and click “Add”]
+
+. In the dropdown menu select “Add role assignment”.
++
+image::azure-sub-add-role-assignment.png[Select “Add role assignment” from the drop-down menu]
++
+The Add Role Assignment fly-out displays.
+
+. Under “Role” select “Owner”, then search for and select the user you want to grant the “Owner” role to from the list.
++
+image::azure-sub-select-user-role.png[Select the user you want to grant the owner role to.]
+
+. Click Save.
++
+image::azure-sub-owner-save.png[Click Save]
+
+. To verify, select Access Control (IAM ) once more and then click View from the View access to this resource box.
++
+image::azure-view-access-to-sub.png[Verify by clicking View from the "View access to this resource" box]
++
+You should see the user listed as an Owner.
++
+image::azure-review-user-access.png[Verify that the user is listed as an Owner]
++
+Use this account when adding an Azure cloud to Couchbase Cloud.
+
+
+Here are some additional notes on this process:
+
+* Couchbase Cloud Enterprise Application has the following roles assigned to it
+** Application administrator
+** Cloud application administrator
+** Reports reader
+
+* The Application, created from the Couchbase Cloud Enterprise Application, has the following roles assigned to it:
+** Application administrator
+** Cloud application administrator
+
+* The Application is created at the moment when you connect your Azure cloud to Couchbase Cloud.
+
+* If the Couchbase Cloud Enterprise Application is later deleted, no new Cloud connections can be created to your Azure Cloud; existing connections will still function so long as the Application within each Tenant has also not been deleted.
+
+Well done! Now you are ready to go through the xref:cbc-self-service-trials:getting-started.adoc[Getting Started with Couchbase Cloud Free Trial] tutorial and deploy a cloud on your Azure account!
+
+
+
+
+ 
