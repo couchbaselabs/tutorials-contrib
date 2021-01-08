@@ -1,5 +1,6 @@
 * xref:cbc-self-service-trials:index.adoc[Overview]
 * xref:cbc-self-service-trials:getting-started.adoc[Get Started with Your Trial Cluster]
+** xref:cbc-azure-cloud:azure-cloud-connection-prerequisites.adoc[Azure Cloud Connection Prerequisites]
 * xref:cbc-self-service-trials:using-sdks-with-couchbase-cloud.adoc[Using SDKs with Couchbase Cloud]
 * xref:cbc-self-service-trials:analytics-bi-with-couchbase-cloud.adoc[Analytics and BI with Couchbase Cloud]
 * xref:cbc-self-service-trials:eventing-with-couchbase-cloud.adoc[Eventing with Couchbase Cloud]
