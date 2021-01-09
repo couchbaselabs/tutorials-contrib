@@ -102,13 +102,14 @@ This template contains the necessary configuration for Couchbase Cloud to be abl
 [{tabs}]
 ====
 AWS::
++
 --
 For AWS, the resource template will be in the form of a CloudFormation template:
 +
 image::cloud:get-started:connect-cloud-aws-template.png["AWS 'Quick create stack' template showing several pre-filled fields, a required IAM acknowledgment checkbox, and buttons at the bottom to 'Create change set' or 'Create stack'.",500]
 --
-
 Azure::
++
 --
 For Azure, the resource template will be in the form of a Custom Deployment template:
 +
