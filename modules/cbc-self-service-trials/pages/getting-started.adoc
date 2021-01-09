@@ -105,14 +105,14 @@ AWS::
 +
 --
 For AWS, the resource template will be in the form of a CloudFormation template:
-+
+
 image::cloud:get-started:connect-cloud-aws-template.png["AWS 'Quick create stack' template showing several pre-filled fields, a required IAM acknowledgment checkbox, and buttons at the bottom to 'Create change set' or 'Create stack'.",500]
 --
 Azure::
 +
 --
 For Azure, the resource template will be in the form of a Custom Deployment template:
-+
+
 image::cbc-azure-cloud:azure-template-deployment.png[The Azure resource template will be in the form of a custom deployment template]
 --
 ====
