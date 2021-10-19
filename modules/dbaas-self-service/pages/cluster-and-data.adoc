@@ -1,0 +1,168 @@
+= Cluster and Data
+:imagesdir: ../assets/images
+:tabs:
+
+Having followed the sign up process and deployed your first cluster, follow the steps below to explore Couchbase Capella -- loading data, configuring your cluster, and connecting to it along the way.
+
+* *Step 1*: <<#cluster>>
+* *Step 2*: <<#metrics>>
+* *Step 3*: <<#import>>
+* *Step 4*: <<#configuration>>
+* *Step 5*: <<#buckets>>
+* *Step 6*: <<#connect>>
+* *Step 7*: <<#allowed>>
+* *Step 8*: <<#sdk>>
+* *Step 9*: <<#credentials>>
+
+[#cluster]
+=== Cluster
+
+Click on the btn:[Projects] tab on the left.
+This will show all the projects for your account. 
+Projects are a great way to link clusters and users together for easier management. 
+You can open a project by clicking on its name. 
+With a project open, you will see a list of all clusters in the project, along with cluster health, cloud provider, and region information for each. 
+ 
+Now click on btn:[Trial-Cluster].
+
+image::cluster-and-data/4.png[]
+
+
+[#metrics]
+=== Metrics
+
+You will now see multiple tabs below the cluster name. 
+It will default to btn:[Metrics]. 
+As this is your first time examining the cluster, no metrics are shown. 
+So let’s add some.
+
+You can add metrics one-by-one by clicking in the _Add Metrics_ area. 
+The easier path is to use the template that is set up with several predefined metrics. 
+Click the blue btn:[Data Services] link in the middle of the screen. 
+
+This will add several metrics to your dashboard. 
+
+image::cluster-and-data/5.png[]
+
+
+[#import]
+=== Import Data
+
+To start looking at some data, we first need to import a sample. 
+Let’s do that now. 
+
+. Click on the Tools tab and choose Import.
++
+Here you will see three sample data sets and their descriptions.
+ We will use the Travel Sample. 
+If you want to get a detailed description of the data, data model, and other information about the data set, click on the btn:[Learn More] link. 
+
+. Press the btn:[Import] button within the Travel Sample area.
+This will start loading the data. 
+It takes about a minute to load all the data. 
+
+image::cluster-and-data/6.png[]
+
+
+[#configuration]
+=== Configuration
+
+Click on the Configuration tab.
+
+The configuration tab shows settings like services, nodes, compute, and disk type. 
+Following the free trial, and in a real account, you will be able to add & remove nodes and very easily make changes to hardware, memory, and storage.
+
+This makes it easy to scale horizontally and vertically. 
+Following configuration changes, Capella will automatically rebalance your data across nodes. 
+No changes are needed on the application side. 
+Also, services can be assigned per node, a feature we call Multi-Dimensional Scaling. 
+For example, you may want compute-optimized hardware for one service and memory-optimized hardware for another.
+This helps you performance match your application’s needs to the database and its infrastructure. 
+By more efficiently using your hardware, you improve performance while also bringing down TCO.
+
+image::cluster-and-data/7.png[]
+
+
+[#buckets]
+=== Buckets
+
+Click on the btn:[Buckets] tab.
+
+A bucket is a database within Couchbase. 
+You can have more than one bucket. 
+If you load all three datasets, then you will see them all here. 
+You can see lots of information about each bucket.
+
+image::cluster-and-data/8.png[]
+
+
+We are going to make a change to the memory allocated to this bucket.
+
+. Click on the name of the bucket. 
+This will open a flyout with more details. 
+
+. Click on the Memory tab and change the default of 200 to 1000. 
+Then click btn:[Update]. 
+This will make our queries faster later on.
+
+image::cluster-and-data/9.png[]
+
+
+[#connect]
+=== Connect
+
+Click on the Connect tab. 
+This is where we will find information to establish an external connection to your Capella cluster.
+
+Listed in the Wide Area Network area, you will see your database endpoint. 
+The endpoint in the screenshot below has been changed, so your endpoint will look a little different. 
+
+image::cluster-and-data/10.png[]
+
+
+[#allowed]
+=== Allowed IP Addresses
+
+Click on the btn:[Manage Allowed IP] link to enter your IP address. 
+You must add your own IP address to connect to your cluster
+
+. Click btn:[Add Allowed IP]
+. For this exercise, choose the Add Permanent IP block. 
+. Beside the IP Address/CIDR Block field, click btn:[Add My IP]
+. The IP address your computer is currently using will be filled into the IP Address/CIDR Block field.
+. Optionally add a descriptive comment, then click the btn:[Add IP] button.
+Your IP address is saved as an _Allowed IP_ for connecting to your cluster.
+
+image::cluster-and-data/11.png[]
+
+
+[#sdk]
+=== SDK Examples
+
+Click on the btn:[SDK examples] link. 
+This will open a flyout that provides details and sample connection code on the many SDKs for Capella. 
+
+image::cluster-and-data/12.png[]
+
+
+[#credentials]
+=== Database Credentials
+
+In order to connect an external application to Capella, you must define at least one set of credentials. 
+Click on the btn:[Manage Credentials] link. 
+Then click the btn:[Create Database Credentials] on the right.
+
+image::cluster-and-data/13.png[]
+
+
+This will allow you to set up new credentials. 
+
+. Enter a username and password. 
+
+. Now choose your buckets, scopes, and access type. 
+Choose _All Buckets_, _All Scopes_, and _Read/Write_. 
+Press btn:[Create].
+
+Congratulations. 
+You finished this part of the tutorial. 
+Now move on to the next section, xref:run-first-queries.adoc[run your first query].
