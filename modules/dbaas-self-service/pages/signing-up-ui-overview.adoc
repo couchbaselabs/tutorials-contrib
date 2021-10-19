@@ -1,0 +1,78 @@
+= Signing Up and UI Overview
+:imagesdir: ../assets/images
+:tabs:
+
+[abstract]
+Couchbase Capella is a fully managed database-as-a-service that makes it easy to deploy a clustered database.
+
+Capella allows you to securely deploy, manage, and monitor database clusters through a single user interface.
+
+NOTE: The fastest, easiest, and most affordable way to get started is to trial Capella with the _Couchbase’s Cloud Account_ option.
+If you choose to trial Capella managed in _Your Cloud Provider_, please see xref:cloud:get-started:deploy-first-cluster.adoc[here] for additional prerequisites and set-up steps.
+
+This is the first tutorial in the series of "First Timer" tutorials. 
+It guides you through creating your first cluster and using it for storing and accessing data.
+
+
+[#sign-up-free-trial]
+== Sign Up for Your Free Trial
+
+.  Go to https://cloud.couchbase.com/sign-up.
++
+image::signing-up-ui-overview/1.png[The sign-up page for the 45-day free trial of Couchbase Capella]
+
+. Provide your account details.
+Enter the following information to create your account:
++
+* Full Name
+* Email Address
+* Password
+* Organization Name
+
+. Review, then click the checkbox to accept the Couchbase Capella Services Agreement.
+. Click btn:[Sign Up] to create your account.
+. Verify your email.
++
+An email will be sent to you asking you to confirm your email address. 
+Once you click the confirmation link, your account will be confirmed and you’ll be able to sign into Couchbase Capella at https://cloud.couchbase.com/[cloud.couchbase.com].
+
+
+==  Your Deployment Choice 
+
+After signing in, you’ll be brought to a Getting Started page where you will have a choice of deployment options.
+
+image::signing-up-ui-overview/2.png[]
+
+. For the fastest, easiest, and most affordable way to get started, choose the _Couchbase’s Cloud Account_ option.
+. Select your preferred region for the trial and leave the CIDR block to the default.
+. Click btn:[Deploy Now].
+. You will now be taken to the _Getting Started with Your Free Trial_ page.
+
+
+== Control Plane UI Overview
+
+. Couchbase Capella will proceed with automatically deploying the cluster.
+. A cluster will generally take under 2 minutes to deploy.
+
+
+image::signing-up-ui-overview/3.png[]
+
+In the middle section, you will see three sections: _Set Up_, _Access_, and _Work With Data_.
+
+* *Set Up*: Provides a link to the Clusters area, the Welcome Video, and this tutorial.
+* *Access*: Provides links to establishing credentials for external database access and the area for setting up allowed IP addresses.
+* *Work With Data*: Links to the sample data import tool.
+
+On the right, you will see three sections: _Cluster Status_, _What’s Next_, and _Want to Know More?_.
+
+* *Cluster Status*: Links to where you can see all of your database clusters.
+* *What’s Next*: Links to many helpful resources and access to the Capella Forum.
+* *Want to Know More?*: Here, you can contact the Couchbase Team.
+
+On the left, you will see the main navigation items like _Clusters_, _Projects_, and _Users_.
+
+Congratulations. 
+You finished this part of the tutorial. 
+
+To move to the next section, click xref:cluster-and-data.adoc[here].
+

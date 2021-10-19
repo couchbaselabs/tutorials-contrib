@@ -1,3 +1,14 @@
+
+* xref:dbaas-self-service:index.adoc[Overview]
+* xref:dbaas-self-service:signing-up-ui-overview.adoc[Get Started with Your Trial Cluster]
+* xref:dbaas-self-service:cluster-and-data.adoc[Configure Capella]
+* xref:dbaas-self-service:run-first-queries.adoc[Run Your First Query]
+* xref:dbaas-self-service:other-data-tools.adoc[Other Data Tools]
+
+
+// All need updating apart from above
+
+////
 * xref:cbc-self-service-trials:index.adoc[Overview]
 * xref:cbc-self-service-trials:getting-started.adoc[Get Started with Your Trial Cluster]
 ** xref:cbc-azure-cloud:azure-cloud-connection-prerequisites.adoc[Azure Cloud Connection Prerequisites]
@@ -5,3 +16,4 @@
 * xref:cbc-self-service-trials:analytics-bi-with-couchbase-cloud.adoc[Analytics and BI with Couchbase Cloud]
 * xref:cbc-self-service-trials:eventing-with-couchbase-cloud.adoc[Eventing with Couchbase Cloud]
 * xref:cloud::index.adoc[Go to Couchbase Cloud Documentation]
+////

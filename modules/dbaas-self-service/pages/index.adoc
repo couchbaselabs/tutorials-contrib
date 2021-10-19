@@ -1,4 +1,23 @@
-= Tutorial
-:page-status: Under Construction
+= Beginning with your Couchbase Capella Free Trial
+:page-aliases: cbc-self-service-trials:index.adoc
+:description: Getting started with the 45-day free trial of Couchbase Capella.
 
-Tutorial to appear in the Autumn.
+Congratulations on your decision to try Couchbase Capella!
+
+This "First Timer" tutorial is intended to get you going quickly with your Couchbase Capella free trial. 
+
+By following the steps in order, you will get a whirlwind tour of important Couchbase Capella capabilities at a high level, and take advantage of developer resources to create quick and easy examples that illustrate the power of Couchbase. 
+Let's get started!
+
+NOTE: The fastest, easiest, and most affordable way to get started is to trial Capella with the _Couchbase’s Cloud Account_ option.
+If you choose to trial Capella managed in _Your Cloud Provider_, please see xref:cloud:get-started:deploy-first-cluster.adoc[here] for additional prerequisites and set-up steps.
+
+
+== Tutorials in this Series
+
+. xref:signing-up-ui-overview.adoc[]
+. xref:cluster-and-data.adoc[]
+. xref:run-first-queries.adoc[]
+. xref:other-data-tools.adoc[]
+
+

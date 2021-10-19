@@ -1,0 +1,87 @@
+= Run Your First Queries
+:imagesdir: ../assets/images
+:tabs:
+
+* *Step 1*: <<#query-workbench>>
+* *Step 2*: <<#first-query>>
+* *Step 3*: <<#index>>
+
+
+[#query-workbench]
+=== Query Workbench
+
+On clusters running the xref:cloud:clusters:query-service/query-service.adoc[Query Service], Couchbase Capella provides an interactive query tool called the Query Workbench. 
+Using the Query Workbench, you can conveniently explore data, create, edit, run, and save query results.
+You can also explore the document structures in a bucket — all in a single window.
+
+The Query Workbench is available under your cluster’s menu:Tools[Query Workbench] menu.
+
+image::run-first-queries/16.png[]
+
+
+[#first-query]
+=== First Query
+
+Couchbase makes it easy for teams to leverage their SQL knowledge. 
+The power of SQL as a declarative language, combined with our cost-based optimizer, makes data access simple, even for JOINS across documents - which is complex in other document databases.
+
+Let’s run our first query. 
+The following query uses an inner join to list the source airports and airlines that fly into SFO, where only the non-null route documents join with matching airline documents. 
+Copy and paste the following query into the Query Editor, then click btn:[Execute]. 
+Please note the execution time of the query. 
+It will be displayed in milliseconds.
+
+[source,n1ql]
+====
+SELECT route.airlineid, airline.name, route.sourceairport, route.destinationairport
+FROM `travel-sample` route
+INNER JOIN `travel-sample` airline
+ON route.airlineid = META(airline).id
+WHERE route.type = "route"
+AND route.destinationairport = "SFO"
+ORDER BY route.sourceairport;
+====
+
+image::run-first-queries/17.png[]
+
+The results are displayed in JSON format in the Query Results field.
+
+If you select the Plan button, Capella will show how the query was executed. 
+We can look at the data-flow diagram to see query operators. 
+Initial scans at the right, final output on the left.
+Potentially expensive operators are highlighted. 
+Fetch represents almost 90% of the time spent.
+
+To learn more about using the Query Workbench, refer to the xref:cloud:clusters:query-service/query-workbench.adoc[Query Workbench] page.
+
+
+[#index]
+=== Build an Index
+
+Let’s speed this query up with our Indexing Service.
+To determine the right index, we’ll press the Advise button.
+This gives us a lot of information and recommends an index.
+You can either copy the recommended `CREATE INDEX` command from the results or use the statement below. 
+Select the Select statement, paste the `CREATE INDEX` statement, and press Execute. 
+This will take a few seconds to run. 
+
+[source,n1ql]
+====
+CREATE INDEX adv_destinationairport_sourceairport_airlineid_type ON `travel-sample`(`destinationairport`,`sourceairport`,`airlineid`) WHERE `type` = 'route'
+====
+
+image::run-first-queries/18.png[]
+
+
+Now let’s re-run the Select statement. 
+Press the btn:[History]  button. 
+This will show you all previous queries. 
+Choose the Select statement. 
+In doing so, Capella will automatically rerun the query on your behalf. 
+
+Now take a look at the execution time. 
+It is radically lower, and should be around 10 milliseconds.
+
+Congratulations. 
+You finished this part of the tutorial. 
+We round off this tutorial with a look at xref:other-data-tools.adoc[other data tools], for documents, indexes, and Full-Text Search.

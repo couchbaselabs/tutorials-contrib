@@ -1,0 +1,94 @@
+= Other Data Tools
+:imagesdir: ../assets/images
+:tabs:
+
+[horizontal]
+* *Step 1*: <<#doc-viewer>>
+* *Step 2*: <<#indexes>>
+* *Step 3*: <<#full-text-search>>
+
+
+[#doc-viewer]
+=== Document Viewer
+
+Another simple and fast way to find and look at documents is by selecting Tools, then Documents.  
+
+image::other-data-tools/19.png[]
+
+Here are a few things you can do with the document viewer: 
+
+* Change your buckets, scopes, and collections to see documents segmented in those ways.
+Set bucket to Travel Sample, scope to Inventory and collection to Hotel
+* Click on a document name in the ID column to open and edit that document. 
+From within the flyout, at the top, it shows you the document hierarchy.
+* Change the default doc limit from 5, to see more documents
+* Change the offset to skip the first X documents. 
+Change it to 25 and see your list change.
+* Search documents by document ID. 
+In the Id box, paste “hotel_21725” and press retrieve. 
+This will pull up a hotel in Paris near the Louvre Metro.
+* In the N1QL Where box, paste the following: `city='Half Moon Bay'` -- this will bring up the hotel located in this California town.
+
+
+[#indexes]
+=== Sample Indexes
+
+Now let's look at the cluster indexes. 
+Choose the Tools tab then Indexes.
+
+In Couchbase, _primary_ and _global secondary indexes_ -- also known as just _indexes_  -- are predefined subsets of bucket-data created by the xref:cloud:clusters:index-service/index-service.adoc[Index Service]. 
+
+The sample buckets automatically created indexes upon import. 
+For more information about viewing and interacting with indexes, refer to xref:cloud:clusters:index-service/index-service.adoc[Index Service].
+
+image::other-data-tools/20.png[]
+
+If you select an index, it will open a flyout with more details about that index. 
+Here you can see the number of items covered by that index and how it is performing. 
+ 
+image::other-data-tools/21.png[]
+ 
+
+[#full-text-search]
+=== Full Text Search
+
+Couchbase Capella Full Text Search (FTS) lets you create, manage, and query specially purposed indexes, defined on JSON documents within a Couchbase bucket.
+
+The Full Text Search editor is available under each cluster’s menu:Tools[Full Text Search] tab.
+To do a search, we must first create an index. 
+
+. Click btn:[Add Index]. 
+The _Add Index_ flyout appears.
+
+. Type the name "hotel-description" and choose the "travel-sample" bucket and press btn:[continue].
+
+. In the index settings, press btn:[Add a Mapping].
+
+. For the name, type: "description", and click btn:[Create Mapping].
+
+. For your newly created type mapping, click the ellipsis … (3 dots) for a submenu, and click btn:[Insert Child Field].
+
+. For the Field, type: "description", and tick all the boxes at the bottom. 
+Now press btn:[Create Child Field].
+
+. For the last step of the add index process, scroll to the bottom and click btn:[Create Index].
+Your new Index should now appear.
+ 
+. Click on the name of your new index and press the btn:[Search] button.
+A Search fly-out appears.
+
+. Now on the search bar enter “free wifi” then click the btn:[Search] button.
+
+. All hotel documents with matching terms are listed. 
+Also, the execution time is also displayed. 
+
+. Experiment with other search terms. 
+Click the "x" in the upper right to close the Search flyout screen.
+
+. Learn more about Couchbase Capella Full Text Search xref:server:fts:fts-introduction.adoc[here].
+
+Congratulations! 
+You have completed all the steps in this "First timer" tutorial.
+
+Want to learn more about Capella? 
+Go to the main Capella page on the Couchbase website at https://www.couchbase.com/products/capella[couchbase.com/products/capella] or within the Docs site at https://docs.couchbase.com/cloud/index.html[docs.couchbase.com/cloud/].
