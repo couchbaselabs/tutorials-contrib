@@ -32,7 +32,7 @@ Please note the execution time of the query.
 It will be displayed in milliseconds.
 
 [source,n1ql]
-====
+----
 SELECT route.airlineid, airline.name, route.sourceairport, route.destinationairport
 FROM `travel-sample` route
 INNER JOIN `travel-sample` airline
@@ -40,7 +40,7 @@ ON route.airlineid = META(airline).id
 WHERE route.type = "route"
 AND route.destinationairport = "SFO"
 ORDER BY route.sourceairport;
-====
+----
 
 image::run-first-queries/17.png[]
 
@@ -66,9 +66,9 @@ Select the Select statement, paste the `CREATE INDEX` statement, and press Execu
 This will take a few seconds to run. 
 
 [source,n1ql]
-====
+----
 CREATE INDEX adv_destinationairport_sourceairport_airlineid_type ON `travel-sample`(`destinationairport`,`sourceairport`,`airlineid`) WHERE `type` = 'route'
-====
+----
 
 image::run-first-queries/18.png[]
 
