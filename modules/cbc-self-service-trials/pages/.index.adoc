@@ -1,5 +1,5 @@
-= Get Started with Couchbase Cloud Free Trial
-:description: Getting started with the 30-day free trial of Couchbase Cloud.
+= Get Started with Couchbase Capella Free Trial
+:description: Getting started with the 30-day free trial of Couchbase Capella.
 
 Congratulations on your decision to try Couchbase Cloud!
 
