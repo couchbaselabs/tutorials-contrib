@@ -64,7 +64,7 @@ The _Add Index_ flyout appears.
 
 . In the index settings, press btn:[Add a Mapping].
 
-. For the name, type: "description", and click btn:[Create Mapping].
+. For the name, type: "hotel", and click btn:[Create Mapping].
 
 . For your newly created type mapping, click the ellipsis … (3 dots) for a submenu, and click btn:[Insert Child Field].
 
@@ -77,7 +77,7 @@ Your new Index should now appear.
 . Click on the name of your new index and press the btn:[Search] button.
 A Search fly-out appears.
 
-. Now on the search bar enter “free wifi” then click the btn:[Search] button.
+. Now on the search bar enter “description:free wifi” then click the btn:[Search] button.
 
 . All hotel documents with matching terms are listed. 
 Also, the execution time is also displayed. 
