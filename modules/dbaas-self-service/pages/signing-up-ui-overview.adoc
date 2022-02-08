@@ -37,14 +37,14 @@ An email will be sent to you asking you to confirm your email address.
 Once you click the confirmation link, your account will be confirmed and you’ll be able to sign into Couchbase Capella at https://cloud.couchbase.com/[cloud.couchbase.com].
 
 
-==  Your Deployment Choice 
+== Deploying Your Cluster
 
-After signing in, you’ll be brought to a Getting Started page where you will have a choice of deployment options.
+After signing in, you’ll be brought to a Getting Started page.
 
-image::signing-up-ui-overview/2.png[]
+image::signing-up-ui-overview/2B.png[]
 
-. For the fastest, easiest, and most affordable way to get started, choose the _Couchbase’s Cloud Account_ option.
-. Select your preferred region for the trial and leave the CIDR block to the default.
+. Select your preferred region for the trial.
+. Leave the CIDR block to the default.
 . Click btn:[Deploy Now].
 . You will now be taken to the _Getting Started with Your Free Trial_ page.
 
