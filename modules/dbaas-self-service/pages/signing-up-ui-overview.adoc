@@ -19,7 +19,7 @@ It guides you through creating your first cluster and using it for storing and a
 
 .  Go to https://cloud.couchbase.com/sign-up.
 +
-image::signing-up-ui-overview/1.png[The sign-up page for the 45-day free trial of Couchbase Capella]
+image::signing-up-ui-overview/1b.png[The sign-up page for the 30-day free trial of Couchbase Capella]
 
 . Provide your account details.
 Enter the following information to create your account:
