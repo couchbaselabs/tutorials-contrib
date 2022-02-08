@@ -122,8 +122,8 @@ image::filter_documents.gif[,750]
 `Couchbase SDK` provides you with multiple ways to manipulate data:
 
 * https://docs.couchbase.com/java-sdk/current/core-operations.html#crud-overview[Core operations] or key-value operations, are quite basic and will allow you to work with your data similar to how you would do with a dictionary. But, if you want to perform more complex operations like filters or joins, you would have to implement those behaviors on the client-side. Also, they work with the full document, rather than the exact values you may need.
-* https://docs.couchbase.com/java-sdk/current/subdocument-operations.html[Sub-document operations] can target specific values in a document. Use these operations to save bandwidth, and be more efficient when consulting partial data.
-* https://docs.couchbase.com/java-sdk/current/n1ql-queries-with-sdk.html[N1QL] is an expressive, powerful, and complete `SQL` dialect for querying, transforming, and manipulating `JSON` data. These queries will be interpreted by the server and transformed into core operations. Most queries will require the creation of indexes to join other buckets or decreasing query latency.
+* https://docs.couchbase.com/java-sdk/current/howtos/subdocument-operations.html[Sub-document operations] can target specific values in a document. Use these operations to save bandwidth, and be more efficient when consulting partial data.
+* https://docs.couchbase.com/java-sdk/current/howtos/n1ql-queries-with-sdk.html[N1QL] is an expressive, powerful, and complete `SQL` dialect for querying, transforming, and manipulating `JSON` data. These queries will be interpreted by the server and transformed into core operations. Most queries will require the creation of indexes to join other buckets or decreasing query latency.
 
 ==== Connect
 
