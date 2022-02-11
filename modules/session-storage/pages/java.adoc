@@ -60,20 +60,15 @@ In addition, Couchbase Server has more capabilities that make it an ideal choice
 
 == Session Store Step-by-step
 
-The rest of ths tutorial will walk you through the steps of using Couchbase as a session store:
+The rest of this tutorial will walk you through the steps of using Couchbase as a session store:
 
 ****
-☐ Installing and setting up Couchbase
-
-☐ Configuring Couchbase for session storage
-
-☐ Creating an Java application
-
-☐ Integrating Java with Couchbase
-
-☐ Reading/Writing session data
-
-☐ Querying session data with N1QL for business insights
+* [ ] Installing and setting up Couchbase
+* [ ] Configuring Couchbase for session storage
+* [ ] Creating an Java application
+* [ ] Integrating Java with Couchbase
+* [ ] Reading/Writing session data
+* [ ] Querying session data with N1QL for business insights
 ****
 
 === Installing Couchbase
@@ -96,7 +91,7 @@ image:00105-create-bucket-dialog.png[Create session store bucket]
 
 * Then, go to "Security" and click on "ADD USER" 
 * Fill out the form with the following data:
-
++
 *Username:* sessionstore  +
 *Full Name:* sessionstore  +
 *Password:* password  +
@@ -124,24 +119,19 @@ For more details about the different bucket types, check out xref:server:learn:b
 
 ==== Replication
 
-To start with, your Couchbase Server cluster may only consist of a single instance of Couchbase Server. One of Couchbase Server's strengths is its ability to horizontally scale to accomodate large scale applications. As you add more "nodes" to a cluster, you gain the ability to *replicate* data across the cluster. This means that if a single node goes down, you can (automatically) recover data from replicas.
+To start with, your Couchbase Server cluster may only consist of a single instance of Couchbase Server. One of Couchbase Server's strengths is its ability to horizontally scale to accommodate large scale applications. As you add more "nodes" to a cluster, you gain the ability to *replicate* data across the cluster. This means that if a single node goes down, you can (automatically) recover data from replicas.
 
 When creating a bucket, if you enable replicas, then you will need to select how many total replicas you want: "1", "2", or "3". Note that you will need to have at least that many servers for replication to work properly.
 
 At this point, Couchbase should be ready to go. We'll look at a Java application next.
 
 ****
-🗹 Installing and setting up Couchbase
-
-🗹 Configuring Couchbase for session storage
-
-☐ Creating a Java application
-
-☐ Integrating Java with Couchbase
-
-☐ Reading/Writing session data
-
-☐ Querying session data with N1QL for business insights
+* [x] Installing and setting up Couchbase
+* [x] Configuring Couchbase for session storage
+* [ ] Creating a Java application
+* [ ] Integrating Java with Couchbase
+* [ ] Reading/Writing session data
+* [ ] Querying session data with N1QL for business insights
 ****
 
 == Web server integration
@@ -226,17 +216,12 @@ Now, the HttpSession will automatically be saved in Couchbase. You can view all 
 
 
 ****
-🗹 Installing and setting up Couchbase
-
-🗹 Configuring Couchbase for session storage
-
-🗹 Creating a Java application
-
-🗹 Integrating Java with Couchbase
-
-☐ Reading/Writing session data
-
-☐ Querying session data with N1QL for business insights
+* [x] Installing and setting up Couchbase
+* [x] Configuring Couchbase for session storage
+* [x] Creating a Java application
+* [x] Integrating Java with Couchbase
+* [ ] Reading/Writing session data
+* [ ] Querying session data with N1QL for business insights
 ****
 
 
@@ -267,9 +252,8 @@ SessionCart sc = session.getAttribute(SESSION_CART);
 User user = sc.getUser();
 ----
 
-_Note:_
-
-* link:https://github.com/couchbaselabs/session-store-java/blob/master/src/main/java/com/cb/sessionstore/controller/DataGenerator.java[DataGenerator] is being used to set random data to these session objects for example purposes.
+[NOTE]
+link:https://github.com/couchbaselabs/session-store-java/blob/master/src/main/java/com/cb/sessionstore/controller/DataGenerator.java[DataGenerator] is being used to set random data to these session objects for example purposes.
 
 Finally, the session data will be erased automatically after 30 minutes (you can change this behavior via the attribute *maxInactiveIntervalInSeconds* in the *@EnableCouchbaseHttpSession* annotation ), you can also reset the session at any time using the `invalidate` method:
 
@@ -291,17 +275,12 @@ image:java-session-store-demo.gif[Session storage example in action]
 To simulate multiple users, you can use different browsers, clear your cookies, etc. There's also a link in the sample application to "Start a new session". Before proceeding into exploring session data, it would be helpful to have a bunch of sessions created already in your session store bucket.
 
 ****
-🗹 Installing and setting up Couchbase
-
-🗹 Configuring Couchbase for session storage
-
-🗹 Creating a Java application
-
-🗹 Integrating Java with Couchbase
-
-🗹 Reading/Writing session data
-
-☐ Querying session data with N1QL for business insights
+* [x] Installing and setting up Couchbase
+* [x] Configuring Couchbase for session storage
+* [x] Creating a Java application
+* [x] Integrating Java with Couchbase
+* [x] Reading/Writing session data
+* [ ] Querying session data with N1QL for business insights
 ****
 
 == Exploring Session Data
@@ -454,7 +433,7 @@ But you can also create it manually via N1QL:
 
 [source,SQL,indent=0]
 ----
-`CREATE PRIMARY INDEX sessionstore_idx ON sessionstore
+CREATE PRIMARY INDEX sessionstore_idx ON sessionstore
 ----
 
 
@@ -494,17 +473,12 @@ These examples just scratch the surface of the analysis that can be done on the 
 The step-by-step instructions for using Couchbase Server for session storage with ASP.NET Core is now complete. 
 
 ****
-🗹 Installing and setting up Couchbase
-
-🗹 Configuring Couchbase for session storage
-
-🗹 Creating a Java application
-
-🗹 Integrating Java with Couchbase
-
-🗹 Reading/Writing session data
-
-🗹 Querying session data with N1QL for business insights
+* [x] Installing and setting up Couchbase
+* [x] Configuring Couchbase for session storage
+* [x] Creating a Java application
+* [x] Integrating Java with Couchbase
+* [x] Reading/Writing session data
+* [x] Querying session data with N1QL for business insights
 ****
 
 But your journey with Couchbase is just beginning. Depending on your requirements, you may also want to look into xref:server:eventing:eventing-overview.adoc[Couchbase Eventing], to respond to data changes on the cluster directly. xref:server:fts:full-text-intro.adoc[Full Text Search] may also be useful for searching through any text that is being stored in your sessions. xref:server:analytics:introduction.adoc[Analytics] can help with bigger sets and more complex queries against long-term/historical session store data. All of these services are available on a single platform: no extra integration is required.

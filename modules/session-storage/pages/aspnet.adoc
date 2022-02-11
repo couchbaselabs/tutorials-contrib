@@ -60,20 +60,15 @@ In addition, Couchbase Server has more capabilities that make it an ideal choice
 
 == Session Store Step-by-step
 
-The rest of ths tutorial will walk you through the steps of using Couchbase as a session store:
+The rest of this tutorial will walk you through the steps of using Couchbase as a session store:
 
 ****
-☐ Installing and setting up Couchbase
-
-☐ Configuring Couchbase for session storage
-
-☐ Creating an ASP.NET Core application
-
-☐ Integrating ASP.NET Core with Couchbase
-
-☐ Reading/Writing session data
-
-☐ Querying session data with N1QL for business insights
+* [ ] Installing and setting up Couchbase
+* [ ] Configuring Couchbase for session storage
+* [ ] Creating an ASP.NET Core application
+* [ ] Integrating ASP.NET Core with Couchbase
+* [ ] Reading/Writing session data
+* [ ] Querying session data with N1QL for business insights
 ****
 
 === Installing Couchbase
@@ -111,24 +106,19 @@ For more details about the different bucket types, check out xref:server:learn:b
 
 ==== Replication
 
-To start with, your Couchbase Server cluster may only consist of a single instance of Couchbase Server. One of Couchbase Server's strengths is its ability to horizontally scale to accomodate large scale applications. As you add more "nodes" to a cluster, you gain the ability to *replicate* data across the cluster. This means that if a single node goes down, you can (automatically) recover data from replicas.
+To start with, your Couchbase Server cluster may only consist of a single instance of Couchbase Server. One of Couchbase Server's strengths is its ability to horizontally scale to accommodate large scale applications. As you add more "nodes" to a cluster, you gain the ability to *replicate* data across the cluster. This means that if a single node goes down, you can (automatically) recover data from replicas.
 
 When creating a bucket, if you enable replicas, then you will need to select how many total replicas you want: "1", "2", or "3". Note that you will need to have at least that many servers for replication to work properly.
 
 At this point, Couchbase should be ready to go. We'll look at an ASP.NET Core application next.
 
 ****
-🗹 Installing and setting up Couchbase
-
-🗹 Configuring Couchbase for session storage
-
-☐ Creating an ASP.NET Core application
-
-☐ Integrating ASP.NET Core with Couchbase
-
-☐ Reading/Writing session data
-
-☐ Querying session data with N1QL for business insights
+* [x] Installing and setting up Couchbase
+* [x] Configuring Couchbase for session storage
+* [ ] Creating an ASP.NET Core application
+* [ ] Integrating ASP.NET Core with Couchbase
+* [ ] Reading/Writing session data
+* [ ] Querying session data with N1QL for business insights
 ****
 
 == Web server integration
@@ -189,17 +179,12 @@ You can specify options like session timeout and cookie name here. In this examp
 The integration between Couchbase Server and ASP.NET Core is now ready. Let's start putting some data into session.
 
 ****
-🗹 Installing and setting up Couchbase
-
-🗹 Configuring Couchbase for session storage
-
-🗹 Creating an ASP.NET Core application
-
-🗹 Integrating ASP.NET Core with Couchbase
-
-☐ Reading/Writing session data
-
-☐ Querying session data with N1QL for business insights
+* [x] Installing and setting up Couchbase
+* [x] Configuring Couchbase for session storage
+* [x] Creating an ASP.NET Core application
+* [x] Integrating ASP.NET Core with Couchbase
+* [ ] Reading/Writing session data
+* [ ] Querying session data with N1QL for business insights
 ****
 
 
@@ -243,17 +228,12 @@ image:00102-session-example.gif[Session storage example in action]
 To simulate multiple users, you can use different browsers, clear your cookies, etc. There's also a link in the sample application to "Start a new session". Before proceeding into exploring session data, it would be helpful to have a bunch of sessions created already in your session store bucket.
 
 ****
-🗹 Installing and setting up Couchbase
-
-🗹 Configuring Couchbase for session storage
-
-🗹 Creating an ASP.NET Core application
-
-🗹 Integrating ASP.NET Core with Couchbase
-
-🗹 Reading/Writing session data
-
-☐ Querying session data with N1QL for business insights
+* [x] Installing and setting up Couchbase
+* [x] Configuring Couchbase for session storage
+* [x] Creating an ASP.NET Core application
+* [x] Integrating ASP.NET Core with Couchbase
+* [x] Reading/Writing session data
+* [ ] Querying session data with N1QL for business insights
 ****
 
 == Exploring Session Data
@@ -344,17 +324,12 @@ These examples just scratch the surface of the analysis that can be done on the 
 The step-by-step instructions for using Couchbase Server for session storage with ASP.NET Core is now complete. 
 
 ****
-🗹 Installing and setting up Couchbase
-
-🗹 Configuring Couchbase for session storage
-
-🗹 Creating an ASP.NET Core application
-
-🗹 Integrating ASP.NET Core with Couchbase
-
-🗹 Reading/Writing session data
-
-🗹 Querying session data with N1QL for business insights
+* [x] Installing and setting up Couchbase
+* [x] Configuring Couchbase for session storage
+* [x] Creating an ASP.NET Core application
+* [x] Integrating ASP.NET Core with Couchbase
+* [x] Reading/Writing session data
+* [x] Querying session data with N1QL for business insights
 ****
 
 But your journey with Couchbase is just beginning. Depending on your requirements, you may also want to look into xref:server:eventing:eventing-overview.adoc[Couchbase Eventing], to respond to data changes on the cluster directly. xref:server:fts:full-text-intro.adoc[Full Text Search] may also be useful for searching through any text that is being stored in your sessions. xref:server:analytics:introduction.adoc[Analytics] can help with bigger sets and more complex queries against long-term/historical session store data. All of these services are available on a single platform: no extra integration is required.

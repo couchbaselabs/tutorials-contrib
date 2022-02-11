@@ -1,5 +1,5 @@
-:imagesdir: ../assets/images
 = Using Couchbase Server to Build a User Profile Store
+:imagesdir: ../assets/images
 
 == Overview
 
@@ -55,23 +55,16 @@ Some of the key non-functional requirements of a successful system are:
 
 = User Profile Store Step-by-step
 
-The rest of ths tutorial will walk you through the steps of using Couchbase to build a User Profile Store:
+The rest of this tutorial will walk you through the steps of using Couchbase to build a User Profile Store:
 
 ****
-* Installing and setting up Couchbase
-
-* Configuring Couchbase for a user profile store
-
-* Creating a simple .NET application
-
-* How to query the Database
-
-* How to search natural-language text with CB FTS
-
-* How to use reactive programming to improve your throughput
-
-* How to distribute your data globally with XDCR
-
+* [ ] Installing and setting up Couchbase
+* [ ] Configuring Couchbase for a user profile store
+* [ ] Creating a simple .NET application
+* [ ] How to query the Database
+* [ ] How to search natural-language text with CB FTS
+* [ ] How to use reactive programming to improve your throughput
+* [ ] How to distribute your data globally with XDCR
 ****
 
 == Installing Couchbase
@@ -189,13 +182,13 @@ The code above might look trivial for you, especially if you are coming from the
 
 * Couchbase is xref:server:learn:buckets-memory-and-storage/vbuckets.adoc#understanding-vbuckets[automatically sharding the data], and this process is totally transparent for the developer.
 * You can read after write.
-* The document is automaticaly cached.
+* The document is automatically cached.
 * Operations like findById and save use internally the Key-Value Store Engine, which is, from a 10,000 foot view, a big distributed hash map. This kind of structure is fast for reads and writes and as Couchbase already has a totally transparent manage cache internally, you will get a very good performance without any extra effort.
 
 Even though we haven't written a lot of code yet, we already achieved 3 of our initial Non-functional requirements:
 
 ****
-*  *Strong Consistenncy:* - Core operations like Updates/Save/getById are strongly consistent.
+*  *Strong Consistency:* - Core operations like Updates/Save/getById are strongly consistent.
 
 * *High read and write throughput* - Writes are asynchronous, reads by key uses internally the key value store, queries can use Memory Optimized Indexes (MOI)
 
@@ -299,7 +292,7 @@ Creating the right indexes can be difficult. If you are having trouble creating 
 Now that you know how to query your user profile store, let's revisit our list of non-functional requirements:
 
 ****
-*  *Strong Consistenncy:* - Core operations like Updates/Save/getById are strong consistent.
+*  *Strong Consistency:* - Core operations like Updates/Save/getById are strong consistent.
 
 * *High read and write throughput* - Writes are asynchronous,reads by key uses internally the key value store, queries can use Memory Optimized Indexes (MOI)
 
@@ -418,7 +411,7 @@ Couchbase Full-Text Search should be the primary choice link:https://blog.couchb
 Lastly, let's add a new item to our list of non-functional requirements:
 
 ****
-*  *Strong Consistenncy:* - Core operations like Updates/Save/getById are strong consistent.
+*  *Strong Consistency:* - Core operations like Updates/Save/getById are strong consistent.
 
 * *High read and write throughput* - Writes are asynchronous,reads by key uses internally the key value store, queries can use Memory Optimized Indexes (MOI)
 

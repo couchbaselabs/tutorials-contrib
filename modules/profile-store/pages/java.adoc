@@ -60,23 +60,16 @@ Some of the key non-functional requirements of a successful system are:
 
 = User Profile Store Step-by-step
 
-The rest of ths tutorial will walk you through the steps of using Couchbase to build a User Profile Store:
+The rest of this tutorial will walk you through the steps of using Couchbase to build a User Profile Store:
 
 ****
-* Installing and setting up Couchbase
-
-* Configuring Couchbase for a user profile store
-
-* Creating a simple Java application
-
-* How to query the Database
-
-* How to search natural-language text with CB FTS
-
-* How to use reactive programming to improve your throughput
-
-* How to distribute your data globally with XDCR
-
+* [ ] Installing and setting up Couchbase
+* [ ] Configuring Couchbase for a user profile store
+* [ ] Creating a simple Java application
+* [ ] How to query the Database
+* [ ] How to search natural-language text with CB FTS
+* [ ] How to use reactive programming to improve your throughput
+* [ ] How to distribute your data globally with XDCR
 ****
 
 == Installing Couchbase
@@ -102,18 +95,19 @@ image:00101-add-bucket.png[Add Bucket Pop up]
 
 * Click on "Add Bucket";
 * Go to "Query" and create the following primary index:
-[source,]
++
+[source,sql]
 ----
 create primary index `primary_user_profile_index` on `user_profile` using GSI;
 ----
-
++
 TIP: In a production environment you should create proper xref:server:learn:services-and-indexes/indexes/global-secondary-indexes.adoc[secondary indexes] for your data instead of relying on a the primary index.
 
 * Then, go to "Security" and click on "ADD USER" 
 * Fill out the form with the following data:
-
++
 image:00102-create-user.png[Add Bucket Pop up]
-
++
 *Username:* user_profile  +
 *Full Name:* user_profile  +
 *Password:* password  +
@@ -211,7 +205,7 @@ The code above might look trivial for you, especially if you are coming from the
 Even though we haven't written a lot of code yet, we already achieved 3 of our initial Non-functional requirements:
 
 ****
-*  *Strong Consistenncy:* - Core operations like Updates/Save/getById are strong consistent.
+*  *Strong Consistency:* - Core operations like Updates/Save/getById are strong consistent.
 
 * *High read and write throughput* - Writes are asynchronous,reads by key uses internally the key value store, queries can use Memory Optimized Indexes (MOI)
 
@@ -282,7 +276,7 @@ List<SimpleUserVO> findByTenantIdOrderByFirstNameAsc(Integer tenantId, Pageable 
 ----
 
 
-==== Maximizing Schema Flexibility
+=== Maximizing Schema Flexibility
 
 Although we do not need to change anything in the database when we add a new attribute to our entity, in the example above the schema of your data is limited to the schema described in your class. Therefore, if you need to be even more flexible, the standard link:https://docs.couchbase.com/java-sdk/2.7/start-using-sdk.html[Couchbase Java SDK] might be a better solution for you as it takes a more generic approach.
 
@@ -291,7 +285,7 @@ Now that you know how to query your user profile store, let's revisit our list o
 
 
 ****
-*  *Strong Consistenncy:* - Core operations like Updates/Save/getById are strong consistent.
+*  *Strong Consistency:* - Core operations like Updates/Save/getById are strong consistent.
 
 * *High read and write throughput* - Writes are asynchronous,reads by key uses internally the key value store, queries can use Memory Optimized Indexes (MOI)
 
@@ -410,7 +404,7 @@ Couchbase Full-Text Search should be the primary choice link:https://blog.couchb
 Lastly, let's add a new item to our list of non-functional requirements:
 
 ****
-*  *Strong Consistenncy:* - Core operations like Updates/Save/getById are strong consistent.
+*  *Strong Consistency:* - Core operations like Updates/Save/getById are strong consistent.
 
 * *High read and write throughput* - Writes are asynchronous,reads by key uses internally the key value store, queries can use Memory Optimized Indexes (MOI)
 
