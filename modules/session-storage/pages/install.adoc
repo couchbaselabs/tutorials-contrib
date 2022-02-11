@@ -1,6 +1,7 @@
 = Session Storage Tutorial
 :navtitle: Getting Started
 :reftext: Session Storage Tutorial: Getting Started
+:description: This tutorial teaches you how to use Couchbase Server for a session store.
 
 To use Couchbase as a session store, you must first install Couchbase (somewhere). Then, you must set up the Couchbase cluster. Finally, you'll need to create a bucket to store the session data.
 
