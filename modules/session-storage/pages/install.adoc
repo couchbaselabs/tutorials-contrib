@@ -1,6 +1,7 @@
 = Session Storage Tutorial
-:navitle: Getting Started
+:navtitle: Getting Started
 :reftext: Session Storage Tutorial: Getting Started
+:description: This tutorial teaches you how to use Couchbase Server for a session store.
 
 To use Couchbase as a session store, you must first install Couchbase (somewhere). Then, you must set up the Couchbase cluster. Finally, you'll need to create a bucket to store the session data.
 
@@ -8,7 +9,7 @@ To use Couchbase as a session store, you must first install Couchbase (somewhere
 
 There are a number of options for getting started with Couchbase Server:
 
-* Directly on your computer: follow the link:https://docs.couchbase.com/server/6.0/install/install-intro.html[Install] guide.
-* Docker: follow the link:https://docs.couchbase.com/server/6.0/getting-started/do-a-quick-install.html[Quick Install] guide
-* Kubernetes or OpenShift: use the link:https://docs.couchbase.com/operator/1.0/install-kubernetes.html[Couchbase Autonomous Operator] to create and manage a Couchbase cluster.
-* Cloud: Couchbase has partnered with link:https://www.couchbase.com/partners/amazon[Amazon AWS], link:https://www.couchbase.com/partners/microsoft[Microsoft Azure], and link:https://www.couchbase.com/partners/google[Google Cloud Platform]
+* Directly on your computer: follow the xref:server:install:install-intro.adoc[Install] guide.
+* Docker: follow the xref:server:getting-started:do-a-quick-install.adoc[Quick Install] guide.
+* Kubernetes or OpenShift: use the xref:operator::overview.adoc[Couchbase Autonomous Operator] to create and manage a Couchbase cluster.
+* Cloud: Couchbase has partnered with https://www.couchbase.com/partners/amazon[Amazon AWS], https://www.couchbase.com/partners/microsoft[Microsoft Azure], and https://www.couchbase.com/partners/google[Google Cloud Platform].
