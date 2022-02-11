@@ -66,9 +66,9 @@ For more details on loading this sample data set, see the xref:building-indexes.
 
 Window functions are useful for reporting aggregations or cumulative data. The `OVER` clause defines a *window* over which these values will be calculated.
 
-There are a number of window functions available in Couchbase Server 6.5+. This tutorial will only be showing basic usage of `OVER`, but please refer to the full link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/windowfun.html[window functions documentation] for details about functions like `CUME_DIST`, `DENSE_RANK`, `ROW_NUMBER`, and much more.
+There are a number of window functions available in Couchbase Server 6.5+. This tutorial will only be showing basic usage of `OVER`, but please refer to the full xref:server:n1ql:n1ql-language-reference/windowfun.adoc[window functions documentation] for details about functions like `CUME_DIST`, `DENSE_RANK`, `ROW_NUMBER`, and much more.
 
-Within link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/window.html[the `OVER` clause], `PARTITION` specifies the field that describes the window. For example, to get a sum of the number of activities by a time segment:
+Within xref:server:n1ql:n1ql-language-reference/window.adoc[the `OVER` clause], `PARTITION` specifies the field that describes the window. For example, to get a sum of the number of activities by a time segment:
 
 [source,SQL,indent=0]
 ----
@@ -82,7 +82,7 @@ FROM /* ... etc ... */
 
 A common table expression is a way to define a temporary set of results which can be referenced later in the query. Most often this is used to simplify a query when a result set is used several times.
 
-Use the `WITH` clause to create a common table expression. Please refer to the complete link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/with.html[documentation on the `WITH` clause] for more information.
+Use the `WITH` clause to create a common table expression. Please refer to the complete xref:server:n1ql:n1ql-language-reference/with.adoc[documentation on the `WITH` clause] for more information.
 
 For this tutorial, notice that each user event has a `createdDate` field which contains a timestamp. However, for reporting purposes, it would be more useful to group these events into some segment (like a 15 minute interval).
 
@@ -160,8 +160,8 @@ In this mini-tutorial, we looked at some of the tools available in N1QL to perfo
 
 For more information about the full capabilities of window functions and common table expressions in N1QL, check out the documentation:
 
-* link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/windowfun.html[Window Functions]
-* link:https://docs.couchbase.com/server/6.5/n1ql/n1ql-language-reference/with.html[WITH for Common Table Expressions]
+* xref:server:n1ql:n1ql-language-reference/windowfun.adoc[Window Functions]
+* xref:server:n1ql:n1ql-language-reference/with.adoc[WITH for Common Table Expressions]
 
 If you have questions or problems, you can always get help from humans on the https://forums.couchbase.com/c/n1ql[N1QL category on the Couchbase Forums].
 

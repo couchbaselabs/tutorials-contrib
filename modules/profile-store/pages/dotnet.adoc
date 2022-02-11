@@ -44,13 +44,13 @@ Some of the key non-functional requirements of a successful system are:
 
 * *A flexible data model*: User data can vary a lot depending on the needs of different roles, levels, etc.
 
-* *Easy and fast querying*: with link:https://docs.couchbase.com/server/6.0/n1ql/n1ql-language-reference/index.html[N1QL], you can query all your data with a powerful SQL-like language. In addition, you can also keep your indexes in memory with link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/storage-modes.html[Memory Optimized Indexes (MOI)]
+* *Easy and fast querying*: with xref:server:n1ql:n1ql-language-reference/index.adoc[N1QL], you can query all your data with a powerful SQL-like language. In addition, you can also keep your indexes in memory with xref:server:learn:services-and-indexes/indexes/storage-modes.adoc[Memory Optimized Indexes (MOI)]
 
-* *Natural-Language matching*: with link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] you can easily implement advanced searches on natural-language texts.
+* *Natural-Language matching*: with xref:server:fts:full-text-intro.adoc[FTS] you can easily implement advanced searches on natural-language texts.
 
-* *High Scalability*: Couchbase makes it link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/services/services.html[easy to scale] horizontally, and it makes it easy to scale individual services vertically with multi-dimensional scaling (MDS)
+* *High Scalability*: Couchbase makes it xref:server:learn:services-and-indexes/services/services.adoc[easy to scale] horizontally, and it makes it easy to scale individual services vertically with multi-dimensional scaling (MDS)
 
-* *High Availability*: link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/vbuckets.html[No single point of failure]. Data can also be located in one or multiple data centers (link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-overview.html[XDCR]). 
+* *High Availability*: xref:server:learn:buckets-memory-and-storage/vbuckets.adoc[No single point of failure]. Data can also be located in one or multiple data centers (xref:server:learn:clusters-and-availability/xdcr-overview.adoc[XDCR]). 
 
 
 = User Profile Store Step-by-step
@@ -76,17 +76,17 @@ The rest of ths tutorial will walk you through the steps of using Couchbase to b
 
 == Installing Couchbase
 
-There are a number of different ways to get started with Couchbase. Choose the method that's easiest for you. Check out link:https://docs.couchbase.com/tutorials/session-storage-tutorial/install.html[How to Setup and Configure a Couchbase Cluster] to review the options.
+There are a number of different ways to get started with Couchbase. Choose the method that's easiest for you. Check out xref:profile-store:install.adoc[] to review the options.
 
 == Setting up Couchbase Server
 
-You will need to start by accessing the Couchbase Server Console with a web browser on port 8091 (for example, \http://localhost:8091). Once there, you will see a "Welcome" screen that will start to walk you through the process of setting up a new cluster. For complete details, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-nodes/create-cluster.html[Create Cluster] documentation.
+You will need to start by accessing the Couchbase Server Console with a web browser on port 8091 (for example, \http://localhost:8091). Once there, you will see a "Welcome" screen that will start to walk you through the process of setting up a new cluster. For complete details, check out the xref:server:manage:manage-nodes/create-cluster.adoc[Create Cluster] documentation.
 
-Note that you can also set up Couchbase by using link:https://docs.couchbase.com/server/6.0/cli/cli-intro.html[command line tools] and/or link:https://docs.couchbase.com/server/6.0/rest-api/rest-intro.html[a REST API] instead of the UI. Using the UI for this tutorial will help you get comfortable with Couchbase, but in the long run you may want to script/automate cluster management using CLI/REST. If you are using the Kubernetes Operator, these settings can also be configured in a YAML file.
+Note that you can also set up Couchbase by using xref:server:cli:cli-intro.adoc[command line tools] and/or xref:server:rest-api:rest-intro.adoc[a REST API] instead of the UI. Using the UI for this tutorial will help you get comfortable with Couchbase, but in the long run you may want to script/automate cluster management using CLI/REST. If you are using the Kubernetes Operator, these settings can also be configured in a YAML file.
 
 === Creating a bucket
 
-Couchbase clusters contain link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/buckets.html[buckets], which are a collection of documents. Let's create a new bucket called *user_profile*:
+Couchbase clusters contain xref:server:learn:buckets-memory-and-storage/buckets.adoc[buckets], which are a collection of documents. Let's create a new bucket called *user_profile*:
 
 * Go to http://localhost:8091 and log in with user and password
 * Go to "Buckets" and click on "ADD BUCKET" in the top right corner of the page
@@ -114,7 +114,7 @@ image:00102-create-user.png[Add Bucket Pop up]
 * *Roles:* under "user_profile", select "Application Access"
 * Finally, click on "Add User".
 
-For more details on how to create a bucket and all of the advanced settings, check out the link:https://docs.couchbase.com/server/6.0/manage/manage-buckets/create-bucket.html[Create Bucket] documentation.
+For more details on how to create a bucket and all of the advanced settings, check out the xref:server:manage:manage-buckets/create-bucket.adoc[Create Bucket] documentation.
 
 == How to Create a Simple User Profile Store
 
@@ -187,7 +187,7 @@ Where did the `_userRepository` come from? Check out the link:https://github.com
 
 The code above might look trivial for you, especially if you are coming from the relational world. But there is a lot going on under the hood:
 
-* Couchbase is link:https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/vbuckets.html#understanding-vbuckets[automatically sharding the data], and this process is totally transparent for the developer.
+* Couchbase is xref:server:learn:buckets-memory-and-storage/vbuckets.adoc#understanding-vbuckets[automatically sharding the data], and this process is totally transparent for the developer.
 * You can read after write.
 * The document is automaticaly cached.
 * Operations like findById and save use internally the Key-Value Store Engine, which is, from a 10,000 foot view, a big distributed hash map. This kind of structure is fast for reads and writes and as Couchbase already has a totally transparent manage cache internally, you will get a very good performance without any extra effort.
@@ -273,7 +273,7 @@ As you can see in the code above, you can query the database in two different wa
 
 You can learn more about link:https://github.com/couchbaselabs/Linq2Couchbase[Linq2Couchbase on GitHub] and more about the link:https://docs.couchbase.com/dotnet-sdk/2.7/start-using-sdk.html[Couchbase .NET SDK in documentation].
 
-One more important note about querying. When we were setting up the bucket earlier, we created a single index. That was a *primary index*. This index is fine for development or small sets of data. But as more users and other data is added to the bucket, this index will become slower and slower. The queries will basically have to scan every document in the bucket. For this reason, link:https://docs.couchbase.com/server/6.0/learn/services-and-indexes/indexes/indexing-and-query-perf.html[creating the right indexes] is critical.
+One more important note about querying. When we were setting up the bucket earlier, we created a single index. That was a *primary index*. This index is fine for development or small sets of data. But as more users and other data is added to the bucket, this index will become slower and slower. The queries will basically have to scan every document in the bucket. For this reason, xref:server:learn:services-and-indexes/indexes/indexing-and-query-perf.adoc[creating the right indexes] is critical.
 
 To avoid that, let's create a couple of indexes to make the above two methods more performant. First, for the N1QL in the `ListTenantUsers` method:
 
@@ -337,7 +337,7 @@ The results should be similar to the following:
 
 image:00205-index-results-listing.png[Index results Listing]
 
-You can read more about link:https://docs.couchbase.com/server/6.0/fts/fts-creating-indexes.html#specifying-fields[how to index only specific fields here].
+You can read more about xref:server:fts:fts-creating-indexes.adoc#specifying-fields[how to index only specific fields here].
 
 Now that we already have our index in place, let's see how we can make the same US users query using Couchbase FTS Engine:
 
@@ -411,9 +411,9 @@ For instance, a search for the term *Alex* would return a result similar to the 
 ]
 ----
 
-The users will be automatically sorted by their score, but you can still link:https://docs.couchbase.com/server/6.0/fts/fts-sorting.html[sort the results by a specific field] if needed.
+The users will be automatically sorted by their score, but you can still xref:server:fts:fts-sorting.adoc[sort the results by a specific field] if needed.
 
-Couchbase Full-Text Search should be the primary choice link:https://blog.couchbase.com/why-you-should-avoid-like-deep-dive-on-fts-part-1/[whenever you need to search for complex strings or any type of fuzzy matching]. You can read more about it link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[in the documentation's 'full text intro'].
+Couchbase Full-Text Search should be the primary choice link:https://blog.couchbase.com/why-you-should-avoid-like-deep-dive-on-fts-part-1/[whenever you need to search for complex strings or any type of fuzzy matching]. You can read more about it xref:server:fts:full-text-intro.adoc[in the documentation's 'full text intro'].
 
 Lastly, let's add a new item to our list of non-functional requirements:
 
@@ -428,7 +428,7 @@ Lastly, let's add a new item to our list of non-functional requirements:
 
 * *A flexible data model* – No need to specify a schema, no need to change the database when a new column is added.
 
-* *Natural-Language matching*: link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] is a powerful search engine framework which allows you to query natural-language text at scale.
+* *Natural-Language matching*: xref:server:fts:full-text-intro.adoc[FTS] is a powerful search engine framework which allows you to query natural-language text at scale.
 
 ****
 
@@ -502,11 +502,11 @@ NOTE: For more on User Events, read the xref:window-functions.adoc[Querying Time
 
 == How to configure Cross Data Center Replication (XDCR)
 
-link:https://docs.couchbase.com/server/6.0/manage/manage-xdcr/xdcr-management-overview.html[Cross Data Center Replication] is one of the most appealing features in Couchbase, with it you can easily distribute and replicate your data globally using a secure and reliable protocols that can be paused and resumed at any time.
+xref:server:manage:manage-xdcr/xdcr-management-overview.adoc[Cross Data Center Replication] is one of the most appealing features in Couchbase, with it you can easily distribute and replicate your data globally using a secure and reliable protocols that can be paused and resumed at any time.
 
 image:00501-xdcr.png[XDCR]
 
-XDCR supports replication between clusters of different sizes, and it is configured on the bucket level (between buckets of two or more clusters). You can also configure the link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/xdcr-overview.html#xdcr-direction-and-topology[direction of the replication].
+XDCR supports replication between clusters of different sizes, and it is configured on the bucket level (between buckets of two or more clusters). You can also configure the xref:server:learn:clusters-and-availability/xdcr-overview.adoc#xdcr-direction-and-topology[direction of the replication].
 
 In our User Profile Store example, we will have 2 datacenters: one in the US and the other in Europe. Therefore, if a user living in the USA travels to Europe, he will connect to our European Datacenter.
 
@@ -536,7 +536,7 @@ image:00503-remote-cluster.png[Remote Cluster]
 
 image:00504-add-rep-dotnet.png[Add replication]
 
-Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated. Since Couchbase 6.5 you can filter documents using multiple attributes of your document using a syntax very similar to N1QL. You can read more about it link:https://docs.couchbase.com/server/6.5/xdcr-reference/xdcr-filtering-expressions.html[here]
+Note that we have checked the option *Enable advanced filtering*. It will allow you to filter which documents should be replicated. Since Couchbase 6.5 you can filter documents using multiple attributes of your document using a syntax very similar to N1QL. You can read more about it xref:server:xdcr-reference:xdcr-filtering-expressions.adoc[here]
 
 In the case above, only documents with the attribute *type* equals to *user* will be replicated.
 
@@ -572,7 +572,7 @@ image:00508-repl-result2.png[Replication EU to US]
 
 XDCR is also commonly used in disaster recovery plans (DRP). In this scenario, all you need to do is to set up a new Couchbase cluster in your DRP environment, then create a replication from your maib cluster to your DRP. On the top of it, you could still use the link:https://blog.couchbase.com/couchbase-high-availability-disaster-recovery-java-multi-cluster-aware-client/[multi-cluster aware (MCA) SDK] which can automatically redirect traffic to a different cluster according to a set of rules.
 
-With XDCR, the MCA SDK and all Couchbase internal features, like replication and link:https://docs.couchbase.com/server/6.0/learn/clusters-and-availability/automatic-failover.html[AutoFailover], we can update our list of non-functional requirements:
+With XDCR, the MCA SDK and all Couchbase internal features, like replication and xref:server:learn:clusters-and-availability/automatic-failover.adoc[AutoFailover], we can update our list of non-functional requirements:
 
 ****
 *  *Strong Consistency:* - Core operations like Updates/Save/getById are strong consistent.
@@ -585,7 +585,7 @@ With XDCR, the MCA SDK and all Couchbase internal features, like replication and
 
 * *A flexible data model* – No need to specify a schema, no need to change the database when a new column is added.
 
-* *Natural-Language matching*: link:https://docs.couchbase.com/server/6.0/fts/full-text-intro.html[FTS] is a powerful search engine framework which allows you to query natural-language text at scale.
+* *Natural-Language matching*: xref:server:fts:full-text-intro.adoc[FTS] is a powerful search engine framework which allows you to query natural-language text at scale.
 
 * *High Availability* - XDCR, MCA and https://docs.couchbase.com/server/6.0/learn/buckets-memory-and-storage/vbuckets.html[No single point of failure]  
 
