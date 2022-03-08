@@ -16,8 +16,3 @@ Let's get started!
 . xref:cluster-and-data.adoc[]
 . xref:run-first-queries.adoc[]
 . xref:other-data-tools.adoc[]
-
-
-
-NOTE: The fastest, easiest, and most affordable way to get started is to trial Capella with the _Couchbase’s Cloud Account_ option.
-If you choose to trial Capella managed in _Your Cloud Provider_, please see xref:cloud:get-started:deploy-first-cluster.adoc[here] for additional prerequisites and set-up steps.
