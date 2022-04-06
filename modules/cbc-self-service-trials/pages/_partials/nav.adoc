@@ -1,9 +1,9 @@
 
 * xref:dbaas-self-service:index.adoc[Overview]
-* xref:dbaas-self-service:signing-up-ui-overview.adoc[Get Started with Your Trial Cluster]
-* xref:dbaas-self-service:cluster-and-data.adoc[Configure Capella]
-* xref:dbaas-self-service:run-first-queries.adoc[Run Your First Query]
-* xref:dbaas-self-service:other-data-tools.adoc[Other Data Tools]
+* xref:dbaas-self-service:signing-up-ui-overview.adoc[Creating Free Account and Cluster]
+* xref:dbaas-self-service:cluster-and-data.adoc[Connecting to Your Database]
+* xref:dbaas-self-service:run-first-queries.adoc[Query Data with Query Workbench]
+* xref:dbaas-self-service:other-data-tools.adoc[Other Utilities and Services]
 
 
 // All need updating apart from above
