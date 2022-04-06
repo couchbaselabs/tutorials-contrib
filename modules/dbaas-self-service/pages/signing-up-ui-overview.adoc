@@ -7,9 +7,6 @@ Couchbase Capella is a fully managed database-as-a-service that makes it easy to
 
 Capella allows you to securely deploy, manage, and monitor database clusters through a single user interface.
 
-NOTE: The fastest, easiest, and most affordable way to get started is to trial Capella with the _Couchbase’s Cloud Account_ option.
-If you choose to trial Capella managed in _Your Cloud Provider_, please see xref:cloud:get-started:deploy-first-cluster.adoc[here] for additional prerequisites and set-up steps.
-
 This is the first tutorial in the series of "First Timer" tutorials. 
 It guides you through creating your first cluster and using it for storing and accessing data.
 
