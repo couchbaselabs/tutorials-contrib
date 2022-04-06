@@ -74,5 +74,5 @@ On the left, you will see the main navigation items like _Clusters_, _Projects_,
 Congratulations. 
 You finished this part of the tutorial. 
 
-To move to the next section, click xref:cluster-and-data.adoc[here].
-
+* Next Topic: xref:cluster-and-data.adoc[Connecting to Your Database]
+* Need a trial account? -- https://cloud.couchbase.com/sign-up[Sign up]
