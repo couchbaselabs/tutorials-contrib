@@ -1,4 +1,4 @@
-= Run Your First Queries
+= Query Data with Query Workbench
 :imagesdir: ../assets/images
 :tabs:
 
@@ -8,22 +8,22 @@
 
 
 [#query-workbench]
-=== Query Workbench
+== Query Workbench
 
 On clusters running the xref:cloud:clusters:query-service/query-service.adoc[Query Service], Couchbase Capella provides an interactive query tool called the Query Workbench. 
 Using the Query Workbench, you can conveniently explore data, create, edit, run, and save query results.
-You can also explore the document structures in a bucket — all in a single window.
+You can also explore the document structures in a bucket -- all in a single window.
 
-The Query Workbench is available under your cluster’s menu:Tools[Query Workbench] menu.
+The Query Workbench is available under your cluster’s *Tools[Query Workbench]* menu.
 
 image::run-first-queries/16.png[]
 
 
 [#first-query]
-=== First Query
+== Running your First Query
 
 Couchbase makes it easy for teams to leverage their SQL knowledge. 
-The power of SQL as a declarative language, combined with our cost-based optimizer, makes data access simple, even for JOINS across documents - which is complex in other document databases.
+The power of SQL as a declarative language, combined with our cost-based optimizer, makes data access simple, even for JOINS across documents -- which is complex in other document databases.
 
 Let’s run our first query. 
 The following query uses an inner join to list the source airports and airlines that fly into SFO, where only the non-null route documents join with matching airline documents. 
@@ -56,13 +56,13 @@ To learn more about using the Query Workbench, refer to the xref:cloud:clusters:
 
 
 [#index]
-=== Build an Index
+== Speed up your Query: Build an Index
 
 Let’s speed this query up with our Indexing Service.
 To determine the right index, we’ll press the Advise button.
 This gives us a lot of information and recommends an index.
 You can either copy the recommended `CREATE INDEX` command from the results or use the statement below. 
-Select the Select statement, paste the `CREATE INDEX` statement, and press Execute. 
+Select the Index creation statement, paste the `CREATE INDEX` statement, and press Execute. 
 This will take a few seconds to run. 
 
 [source,n1ql]
@@ -76,12 +76,14 @@ image::run-first-queries/18.png[]
 Now let’s re-run the Select statement. 
 Press the btn:[History]  button. 
 This will show you all previous queries. 
-Choose the Select statement. 
+Click the Select statement. 
 In doing so, Capella will automatically rerun the query on your behalf. 
 
 Now take a look at the execution time. 
 It is radically lower, and should be around 10 milliseconds.
 
-Congratulations. 
-You finished this part of the tutorial. 
-We round off this tutorial with a look at xref:other-data-tools.adoc[other data tools], for documents, indexes, and Full-Text Search.
+Congratulations. You finished this part of the tutorial. 
+ 
+* Next Topic: xref:other-data-tools.adoc[Other Utilites and Services].
+* Need a trial account? -- https://cloud.couchbase.com/sign-up[Sign up]
+
