@@ -9,7 +9,7 @@
 
 
 [#doc-viewer]
-=== Document Viewer
+== Document Viewer
 
 Another simple and fast way to find and look at documents is by selecting Tools, then Documents.  
 
@@ -31,7 +31,7 @@ This will pull up a hotel in Paris near the Louvre Metro.
 
 
 [#indexes]
-=== Sample Indexes
+== Sample Indexes
 
 Now let's look at the cluster indexes. 
 Choose the Tools tab then Indexes.
@@ -50,7 +50,7 @@ image::other-data-tools/21.png[]
  
 
 [#full-text-search]
-=== Full Text Search
+== Full Text Search
 
 Couchbase Capella Full Text Search (FTS) lets you create, manage, and query specially purposed indexes, defined on JSON documents within a Couchbase bucket.
 
