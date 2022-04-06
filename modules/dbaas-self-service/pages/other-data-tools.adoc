@@ -91,4 +91,6 @@ Congratulations!
 You have completed all the steps in this "First timer" tutorial.
 
 Want to learn more about Capella? 
-Go to the main Capella page on the Couchbase website at https://www.couchbase.com/products/capella[couchbase.com/products/capella] or within the Docs site at https://docs.couchbase.com/cloud/index.html[docs.couchbase.com/cloud/].
+
+* Go to the main Capella page on the Couchbase website at https://www.couchbase.com/products/capella[couchbase.com/products/capella] or within the Docs site at https://docs.couchbase.com/cloud/index.html[docs.couchbase.com/cloud/].
+* Need a trial account? -- https://cloud.couchbase.com/sign-up[Sign up]
