@@ -69,7 +69,7 @@ Whether you are writing key-value applications or querying via N1QL, Couchbaseâ€
 
 The Couchbase SDKs are available for developers to access clusters using their favorite IDE. 
 Install appropriate Couchbase SDK. 
-For more information on SDKs go to: xref:home:ROOT:sdk.adoc
+For more information on SDKs go to: xref:home:ROOT:sdk.adoc[]
 
 
 [#samples]
