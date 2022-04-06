@@ -63,18 +63,20 @@ image::cluster-and-data/11.png[]
 
 [#sdk]
 == Connecting to Capella Using SDKs
+
 Couchbase services are exposed through the SDK. 
 Whether you are writing key-value applications or querying via N1QL, Couchbase’s SQL language.
 
 The Couchbase SDKs are available for developers to access clusters using their favorite IDE. 
 Install appropriate Couchbase SDK. 
-For more information on SDKs go to: xref::home::sdk.adoc
+For more information on SDKs go to: xref:home:ROOT:sdk.adoc
 
 
 [#samples]
 == SDK Code Examples
 
 Head back to the Capella UI and the Cluster section, Connect tab:
+
 . Click on the btn:[SDK Examples] link. Opening a flyout.
 . Check out the samples for: Java, C, Go, .NET, Node.js, PHP, and Python.
 . Copy and paste into your IDE.
