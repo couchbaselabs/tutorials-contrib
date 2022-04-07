@@ -46,7 +46,7 @@ image::run-first-queries/17.png[]
 
 The results are displayed in JSON format in the Query Results field.
 
-If you select the Plan button, Capella will show how the query was executed. 
+If you select the btn:[Plan] button, Capella will show how the query was executed. 
 We can look at the data-flow diagram to see query operators. 
 Initial scans at the right, final output on the left.
 Potentially expensive operators are highlighted. 
@@ -59,7 +59,7 @@ To learn more about using the Query Workbench, refer to the xref:cloud:clusters:
 == Speed up your Query: Build an Index
 
 Let’s speed this query up with our Indexing Service.
-To determine the right index, we’ll press the Advise button.
+To determine the right index, we’ll press the btn:[Advise] button.
 This gives us a lot of information and recommends an index.
 You can either copy the recommended `CREATE INDEX` command from the results or use the statement below. 
 Select the Index creation statement, paste the `CREATE INDEX` statement, and press Execute. 
