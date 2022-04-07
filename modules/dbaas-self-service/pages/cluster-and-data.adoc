@@ -1,4 +1,4 @@
-= Cluster and Data
+= Connecting to Your Database
 :imagesdir: ../assets/images
 :tabs:
 
@@ -85,7 +85,7 @@ Head back to the Capella UI and the Cluster section, Connect tab:
 
 From your IDE you should now be able to connect, create a JSON document, and run a Couchbase N1QL query. 
 
-For more information Couchbase SDS see Docs and the SDK section of our Developer Tutorials, which include tutorials on building sample applications.
+For more information Couchbase SDKs, see xref:home:ROOT:sdk.adoc[Docs] and the SDK section of our https://developer.couchbase.com/tutorials/#SDKs[Developer Tutorials], which include tutorials on building sample applications.
 
 image::cluster-and-data/12.png[]
 
