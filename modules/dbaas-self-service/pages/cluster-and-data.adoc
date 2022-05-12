@@ -102,6 +102,21 @@ To load your own data into Capella, do the following.
 
 image::cluster-and-data/6.png[]
 
+[NOTE]
+====
+If you load data into a new bucket that you have created, you will need to build an index before performing a N1QL query. 
+(A primary index is simplest, but not recommended for production environments.)
+
+Do this:
+
+. Go to the Query Workbench (Within *Cluster, Tools*).
+. Near Settings, leave "Select a bucket" as is. Make no change. 
+. Execute `"CREATE PRIMARY INDEX ON bucketName"` (replace with correct name).
+ 
+
+Learn more about the Index Service in the xref:clusters:index-service/index-service.adoc[documentation].
+====
+
 Congratulations. 
 You finished this part of the tutorial. 
  
