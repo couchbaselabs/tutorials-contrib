@@ -16,7 +16,7 @@ It guides you through creating your first cluster and using it for storing and a
 
 .  Go to https://cloud.couchbase.com/sign-up.
 +
-image::signing-up-ui-overview/1b.png[The sign-up page for the 30-day free trial of Couchbase Capella]
+image::signing-up-ui-overview/1c.png[The sign-up page for the 30-day free trial of Couchbase Capella]
 
 . Provide your account details.
 Enter the following information to create your account:
@@ -52,7 +52,7 @@ image::signing-up-ui-overview/2B.png[]
 . A cluster will generally take under 2 minutes to deploy.
 
 
-image::signing-up-ui-overview/3.png[]
+image::signing-up-ui-overview/3b.png[]
 
 In the middle section, you will see three sections: _Set Up_, _Access_, and _Work With Data_.
 
