@@ -243,7 +243,7 @@ http://localhost:8094/api/index/movies-index/query \
   ],
   "highlight": {},
   "query": {
-       "match": "drama",
+      "match": "drama",
       "field": "genre",
       "analyzer": "standard",
       "fuzziness": 2,
