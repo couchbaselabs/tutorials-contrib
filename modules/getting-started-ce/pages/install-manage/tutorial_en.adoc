@@ -13,7 +13,7 @@ This tutorial was built using the https://docs.couchbase.com/server/current/intr
 
 https://www.couchbase.com/products/server[Couchbase Server] is an integrated document database and key-value store with a distributed architecture for performance, scalability, and availability. It enables developers to build applications easier and faster by leveraging the power of `SQL` with the flexibility of `JSON`.
 
-For additional questions and feedback, please check tagged questions on link:stackoverflow.com/questions/tagged/couchbase[Stack Overflow] or the https://forums.couchbase.com[Couchbase Forums].
+For additional questions and feedback, please check tagged questions on https://stackoverflow.com/questions/tagged/couchbase[Stack Overflow] or the https://forums.couchbase.com[Couchbase Forums].
 
 == Installation
 
