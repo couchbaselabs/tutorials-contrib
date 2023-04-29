@@ -26,6 +26,6 @@
     "express-basic-auth": "^1.2.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.22"
   }
 }
