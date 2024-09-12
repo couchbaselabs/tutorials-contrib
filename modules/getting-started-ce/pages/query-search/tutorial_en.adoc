@@ -217,12 +217,12 @@ http://localhost:8094/api/index/movies-index/query \
 -d '{
   "explain": true,
   "fields": [
-    "*"
+      "*"
   ],
   "highlight": {},
   "query": {
-     "query": "+drama +pulp"
-   }
+      "query": "+drama +pulp"
+  }
 }'
 ----
 
@@ -239,16 +239,16 @@ http://localhost:8094/api/index/movies-index/query \
 -d '{
   "explain": true,
   "fields": [
-    "*"
+      "*"
   ],
   "highlight": {},
   "query": {
-       "match": "drama",
+      "match": "drama",
       "field": "genre",
       "analyzer": "standard",
       "fuzziness": 2,
       "prefix_length": 3
-    }
+  }
 }'
 ----
 
@@ -264,15 +264,15 @@ http://localhost:8094/api/index/movies-index/query \
 -d '{
   "explain": true,
   "fields": [
-    "*"
+      "*"
   ],
   "highlight": {},
   "query": {
-       "conjuncts":[
+      "conjuncts":[
         {"field":"genre", "match": "drama"},
         {"field":"name", "match": "movie_1"}
       ]
-   }
+  }
 }'
 ----
 
@@ -288,15 +288,15 @@ http://localhost:8094/api/index/movies-index/query \
 -d '{
   "explain": true,
   "fields": [
-    "*"
+      "*"
   ],
   "highlight": {},
-   "query": {
+  "query": {
       "min": 1966, "max": 2000,
       "inclusive_min": false,
       "inclusive_max": false,
       "field": "year"
-      }
+  }
 }'
 ----
 
